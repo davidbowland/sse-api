@@ -1,5 +1,3 @@
-Sonnet
-
 <instructions>
 
 - The context is a conversation. Carry on the conversation based on the supplied history.

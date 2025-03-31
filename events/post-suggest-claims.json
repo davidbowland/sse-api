@@ -1,0 +1,9 @@
+{
+  "body": "{}",
+  "requestContext": {
+    "http": {
+      "method": "POST",
+      "path": "/v1/suggest-claims"
+    }
+  }
+}

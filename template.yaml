@@ -1,0 +1,214 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  API for sse project
+
+Transform:
+  - AWS::Serverless-2016-10-31
+
+Parameters:
+  Environment:
+    Type: String
+    Default: prod
+    AllowedValues:
+      - prod
+      - test
+    Description: Environment for deploy
+  SuggestClaimsUrl:
+    Type: String
+    Description: URL used for sourcing claims
+
+Mappings:
+  EnvironmentMap:
+    prod:
+      certificateRegional: 5d4db894-c9fc-42ca-8f80-3c5da6c1678e
+      corsDomain: https://sse.dbowland.com
+      domain: sse-api.dbowland.com
+      logStreamFunction: log-subscriber
+      project: sse
+      promptTable: sse-api-prompts
+      sessionTable: sse-api-sessions
+      zoneId: Z072422417XWM8PIXXSFA
+    test:
+      certificateRegional: 14a32175-0c26-4768-b71f-3fa611b8f5a2
+      corsDomain: https://sse.bowland.link
+      domain: sse-api.bowland.link
+      logStreamFunction: log-subscriber-test
+      project: sse-test
+      promptTable: sse-api-prompts-test
+      sessionTable: sse-api-sessions-test
+      zoneId: Z01312547RGU1BYKIJXY
+
+Resources:
+  # API Gateway
+
+  HttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration:
+        AllowCredentials: true
+        AllowHeaders:
+          - Authorization
+          - Content-Type
+          - X-Amz-Date
+          - X-Amz-Security-Token
+          - X-Api-Key
+          - X-Twitch-Token
+        AllowMethods:
+          - DELETE
+          - GET
+          - OPTIONS
+          - PATCH
+          - POST
+          - PUT
+        AllowOrigins:
+          - !FindInMap [EnvironmentMap, !Ref Environment, corsDomain]
+      Domain:
+        BasePath:
+          - /v1
+        CertificateArn: !Sub
+          - 'arn:aws:acm:${AWS::Region}:${AWS::AccountId}:certificate/${Certificate}'
+          - Certificate: !FindInMap [EnvironmentMap, !Ref Environment, certificateRegional]
+        DomainName: !FindInMap [EnvironmentMap, !Ref Environment, domain]
+        EndpointConfiguration: REGIONAL
+      FailOnWarnings: true
+      StageName: v1
+
+  # SAM won't create two Route53 records, so the HttpApi domain name is created separately
+  # HttpRecordSet:
+  #   Type: AWS::Route53::RecordSet
+  #   Properties:
+  #     AliasTarget:
+  #       DNSName: !Sub '${HttpApi.DomainName.RegionalDomainName}'
+  #       HostedZoneId: !Sub '${HttpApi.DomainName.RegionalHostedZoneId}'
+  #     HostedZoneId: !FindInMap [EnvironmentMap, !Ref Environment, zoneId]
+  #     Name: !FindInMap [EnvironmentMap, !Ref Environment, domain]
+  #     Type: A
+
+  # LLM invocation
+
+  # Suggest claims
+
+  PostSuggestClaimsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/post-suggest-claims.postSuggestClaimsHandler
+      Runtime: nodejs22.x
+      Architectures:
+        - x86_64
+      MemorySize: 1536
+      Description: Suggest claims
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - DynamoDBReadPolicy:
+          TableName: !Ref PromptTable
+        - PolicyName: !Sub
+            - '${Project}-suggest-claims'
+            - Project: !FindInMap [EnvironmentMap, !Ref Environment, project]
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'bedrock:InvokeModel*'
+                  - 'bedrock-agent:GetPrompt'
+                Resource: '*'
+      Environment:
+        Variables:
+          DYNAMODB_PROMPT_TABLE_NAME: !Ref PromptTable
+          SUGGEST_CLAIMS_URL: !Ref SuggestClaimsUrl
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /suggest-claims
+            Method: post
+      Tags:
+        'created-by': 'sse-api'
+        'created-for': 'sse'
+        'environment': !Ref Environment
+      Timeout: 35
+      Tracing: Active
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: 'es2020'
+        Sourcemap: true
+        EntryPoints:
+          - src/handlers/post-suggest-claims.ts
+
+  PostSuggestClaimsLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${PostSuggestClaimsFunction}
+      RetentionInDays: 30
+      Tags:
+        - Key: 'created-by'
+          Value: 'sse-api'
+        - Key: 'created-for'
+          Value: 'sse'
+        - Key: 'environment'
+          Value: !Ref Environment
+
+  PostSuggestClaimsGroupSubscription:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !Sub
+        - 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Function}'
+        - Function: !FindInMap [EnvironmentMap, !Ref Environment, logStreamFunction]
+      FilterPattern: '[timestamp, uuid, level="ERROR", message]'
+      LogGroupName: !Ref PostSuggestClaimsLogGroup
+
+  SuggestClaimsPrompt:
+    Type: AWS::Bedrock::Prompt
+    Properties:
+      Description: Prompt for suggesting claims from source input
+      Name: sse-api-suggest-claims
+      Tags:
+        'created-by': 'sse-api'
+        'created-for': 'sse'
+        'environment': !Ref Environment
+
+  # DynamoDB
+
+  PromptTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: PromptId
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+        - AttributeName: PromptId
+          KeyType: HASH
+      TableName: !FindInMap [EnvironmentMap, !Ref Environment, promptTable]
+      Tags:
+        - Key: 'created-by'
+          Value: 'sse-api'
+        - Key: 'created-for'
+          Value: 'sse'
+        - Key: 'environment'
+          Value: !Ref Environment
+
+  SessionTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: SessionId
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+        - AttributeName: SessionId
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: Expiration
+        Enabled: true
+      TableName: !FindInMap [EnvironmentMap, !Ref Environment, sessionTable]
+      Tags:
+        - Key: 'created-by'
+          Value: 'sse-api'
+        - Key: 'created-for'
+          Value: 'sse'
+        - Key: 'environment'
+          Value: !Ref Environment

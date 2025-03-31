@@ -1,5 +1,3 @@
-Haiku
-
 <instructions>
 
 - Given input of recent headlines, generate six truth claims.
@@ -9,7 +7,7 @@ Haiku
 - A truth claim is a statement that MUST be true or false. A truth claim cannot be both true and false.
 - A truth claim cannot be a statement of fact. A truth claim must be about what should happen, what is best, or what is moral.
 - A truth claim should not promote violence, sexual violence, or felony crimes.
-- Respond in JSON format with no preamble. The object should contain:
+- Respond in JSON format and NEVER give a preamble. The object should contain:
   - `suggestions` an array that contains six claim suggestions
 
 </instructions>
@@ -57,10 +55,3 @@ Kentucky Lt. Gov. says she is concerned about Education Department disassembly
 }
 </output>
 </example>
-
-
-Recent headlines:
-
-<recent_headlines>
-
-</recent_headlines>

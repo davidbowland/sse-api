@@ -1,5 +1,3 @@
-Haiku
-
 <instructions>
 
 - Evaluate the provided text to determine if it contains a truth claim about they way things should be or the best way to organize something.
@@ -107,9 +105,8 @@ Someone should assassinate the mayor.
 </output>
 </example>
 
-
 Text to evaluate:
 
 <text_to_evaluate>
-
+${data}
 </text_to_evaluate>
