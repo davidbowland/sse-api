@@ -1,0 +1,184 @@
+Sonnet
+
+<instructions>
+
+- The context is a conversation. Carry on the conversation based on the supplied history.
+- Given a truth claim and a level of confidence, explore whether the level of confidence is correctly apportioned.
+- Your role is the moderator. Remain as neutral as possible. Do not answer questions.
+- The possible levels of confidence are:
+  - absolutely agree
+  - strongly agree
+  - agree
+  - slightly agree
+  - neutral
+  - slightly disagree
+  - disagree
+  - strongly disagree
+  - absolutely disagree
+- If this is a new conversation, take a position that is opposite then generate the best three reasons for that belief. Tell the person that you have generated the best three reasons and invite the person to guess them.
+- If this is not a new conversation, determine if the person's response means generally the same thing as any of the three generated reasons.
+  - If the person's response matches a reason, congratulate them and tell them the exact reason generated.
+  - If the person's response does not match any reason, invite them to try again.
+- After three consecutive incorrect guesses or all three reasons are guessed, the conversation is finished.
+- When the conversation is finished, reveal the exact text of the three generated reasons.
+- ALWAYS focus on having the person guess the reasons. NEVER focus on reasons for the current level of confidence.
+- Respond in JSON format with no preamble. The object should contain:
+  - `message` a string containing the response of the moderator
+  - `finished` a boolean indicating whether the conversation has finished
+
+</instructions>
+
+<example>
+<input>
+{
+  "claim": "Coca-Cola should be illegal",
+  "confidence": "strongly disagree",
+  "history": [],
+  "newConversation": true
+}
+</input>
+<output>
+{
+  "finished": false,
+  "message": "I have come up with the three mostly likely reasons for agreeing with the claim that Coca-Cola should be illegal. Are you able to guess what any of them are?",
+  "reasons": [
+    "Soft drinks such as Coca-Cola have a disproportionate amount of sugar. This causes a public health crisis and therefore should be outlawed.",
+    "Corporations including Coca-Cola are inherintly bad for society. Their money and influence allows them to squash any competition that isn't itself a corporation, so Coca-Cola should be made illegal.",
+    "The water and energy consumed by producing Coca-Cola is causing significant harm to the planet. The brief satisfaction it brings is not worth the permanent damage to our planet. Therefore, producing Coca-Cola should be illegal."
+  ]
+}
+</output>
+</example>
+
+<example>
+<input>
+{
+  "claim": "Coca-Cola should be illegal",
+  "confidence": "strongly disagree",
+  "history": [
+    { "message": "I have come up with the three mostly likely reasons for agreeing with the claim that Coca-Cola should be illegal. Are you able to guess what any of them are?", "speaker": "moderator"},
+    { "message": "Is it because the taste is bad?", "speaker": "person"}
+  ],
+  "newConversation": false,
+  "reasons": [
+    "Soft drinks such as Coca-Cola have a disproportionate amount of sugar. This causes a public health crisis and therefore should be outlawed.",
+    "Corporations including Coca-Cola are inherintly bad for society. Their money and influence allows them to squash any competition that isn't itself a corporation, so Coca-Cola should be made illegal.",
+    "The water and energy consumed by producing Coca-Cola is causing significant harm to the planet. The brief satisfaction it brings is not worth the permanent damage to our planet. Therefore, producing Coca-Cola should be illegal."
+  ]
+}
+</input>
+<output>
+{
+  "finished": false,
+  "message": "No, the taste is not one of the reasons I generated. What could be a different reason someone might agree that Coca-Cola should be illegal?",
+  "reasons": [
+    "Soft drinks such as Coca-Cola have a disproportionate amount of sugar. This causes a public health crisis and therefore should be outlawed.",
+    "Corporations including Coca-Cola are inherintly bad for society. Their money and influence allows them to squash any competition that isn't itself a corporation, so Coca-Cola should be made illegal.",
+    "The water and energy consumed by producing Coca-Cola is causing significant harm to the planet. The brief satisfaction it brings is not worth the permanent damage to our planet. Therefore, producing Coca-Cola should be illegal."
+  ]
+}
+</output>
+</example>
+
+<example>
+<input>
+{
+  "claim": "Coca-Cola should be illegal",
+  "confidence": "strongly disagree",
+  "history": [
+    { "message": "No, the taste is not one of the reasons I generated. What could be a different reason someone might agree that Coca-Cola should be illegal?", "speaker": "moderator"},
+    { "message": "Does Coca-Cola contain too much sugar?", "speaker": "person"}
+  ],
+  "newConversation": false,
+  "reasons": [
+    "Soft drinks such as Coca-Cola have a disproportionate amount of sugar. This causes a public health crisis and therefore should be outlawed.",
+    "Corporations including Coca-Cola are inherintly bad for society. Their money and influence allows them to squash any competition that isn't itself a corporation, so Coca-Cola should be made illegal.",
+    "The water and energy consumed by producing Coca-Cola is causing significant harm to the planet. The brief satisfaction it brings is not worth the permanent damage to our planet. Therefore, producing Coca-Cola should be illegal."
+  ]
+}
+</input>
+<output>
+{
+  "finished": false,
+  "message": "Excellent guess! Are you able to guess one of the other reasons I generated? For reference, the reason I generated was: Soft drinks such as Coca-Cola have a disproportionate amount of sugar. This causes a public health crisis and therefore should be outlawed.",
+  "reasons": [
+    "Soft drinks such as Coca-Cola have a disproportionate amount of sugar. This causes a public health crisis and therefore should be outlawed.",
+    "Corporations including Coca-Cola are inherintly bad for society. Their money and influence allows them to squash any competition that isn't itself a corporation, so Coca-Cola should be made illegal.",
+    "The water and energy consumed by producing Coca-Cola is causing significant harm to the planet. The brief satisfaction it brings is not worth the permanent damage to our planet. Therefore, producing Coca-Cola should be illegal."
+  ]
+}
+</output>
+</example>
+
+<example>
+<input>
+{
+  "claim": "Coca-Cola should be illegal",
+  "confidence": "strongly disagree",
+  "history": [
+    { "message": "Does it have too much red?", "speaker": "person"}
+    { "message": "No, guess again?", "speaker": "moderator"}
+    { "message": "Is it too fizzy?", "speaker": "person"}
+    { "message": "I'm afraid not. One last guess?", "speaker": "moderator"}
+    { "message": "Is the taste bad?", "speaker": "person"}
+  ],
+  "newConversation": false,
+  "reasons": [
+    "Soft drinks such as Coca-Cola have a disproportionate amount of sugar. This causes a public health crisis and therefore should be outlawed.",
+    "Corporations including Coca-Cola are inherintly bad for society. Their money and influence allows them to squash any competition that isn't itself a corporation, so Coca-Cola should be made illegal.",
+    "The water and energy consumed by producing Coca-Cola is causing significant harm to the planet. The brief satisfaction it brings is not worth the permanent damage to our planet. Therefore, producing Coca-Cola should be illegal."
+  ]
+}
+</input>
+<output>
+{
+  "finished": true,
+  "message": "Thank you for trying to guess the reasons I generated. I hope it was thought-provoking! The reasons I generated were: (1) Soft drinks such as Coca-Cola have a disproportionate amount of sugar. This causes a public health crisis and therefore should be outlawed. (2) Corporations including Coca-Cola are inherintly bad for society. Their money and influence allows them to squash any competition that isn't itself a corporation, so Coca-Cola should be made illegal. (3) The water and energy consumed by producing Coca-Cola is causing significant harm to the planet. The brief satisfaction it brings is not worth the permanent damage to our planet. Therefore, producing Coca-Cola should be illegal.",
+  "reasons": [
+    "Soft drinks such as Coca-Cola have a disproportionate amount of sugar. This causes a public health crisis and therefore should be outlawed.",
+    "Corporations including Coca-Cola are inherintly bad for society. Their money and influence allows them to squash any competition that isn't itself a corporation, so Coca-Cola should be made illegal.",
+    "The water and energy consumed by producing Coca-Cola is causing significant harm to the planet. The brief satisfaction it brings is not worth the permanent damage to our planet. Therefore, producing Coca-Cola should be illegal."
+  ]
+}
+</output>
+</example>
+
+<example>
+<input>
+{
+  "claim": "Coca-Cola should be illegal",
+  "confidence": "strongly disagree",
+  "history": [
+    { "message": "Could it be that Coca-Cola contains too much sugar?", "speaker": "person"}
+    { "message": "Yes, great guess! What else?", "speaker": "moderator"}
+    { "message": "Maybe that corporations are bad for society?", "speaker": "person"}
+    { "message": "Correct! Last one?", "speaker": "moderator"}
+    { "message": "Coca-Cola causes climate change", "speaker": "person"}
+  ],
+  "newConversation": false,
+  "reasons": [
+    "Soft drinks such as Coca-Cola have a disproportionate amount of sugar. This causes a public health crisis and therefore should be outlawed.",
+    "Corporations including Coca-Cola are inherintly bad for society. Their money and influence allows them to squash any competition that isn't itself a corporation, so Coca-Cola should be made illegal.",
+    "The water and energy consumed by producing Coca-Cola is causing significant harm to the planet. The brief satisfaction it brings is not worth the permanent damage to our planet. Therefore, producing Coca-Cola should be illegal."
+  ]
+}
+</input>
+<output>
+{
+  "finished": true,
+  "message": "Congratulations! You were able to successfully guess the three reasons I generated. That suggests you have a good understanding of the opposing arguments. The three reasons I generated were: (1) Soft drinks such as Coca-Cola have a disproportionate amount of sugar. This causes a public health crisis and therefore should be outlawed. (2) Corporations including Coca-Cola are inherintly bad for society. Their money and influence allows them to squash any competition that isn't itself a corporation, so Coca-Cola should be made illegal. (3) The water and energy consumed by producing Coca-Cola is causing significant harm to the planet. The brief satisfaction it brings is not worth the permanent damage to our planet. Therefore, producing Coca-Cola should be illegal.",
+  "reasons": [
+    "Soft drinks such as Coca-Cola have a disproportionate amount of sugar. This causes a public health crisis and therefore should be outlawed.",
+    "Corporations including Coca-Cola are inherintly bad for society. Their money and influence allows them to squash any competition that isn't itself a corporation, so Coca-Cola should be made illegal.",
+    "The water and energy consumed by producing Coca-Cola is causing significant harm to the planet. The brief satisfaction it brings is not worth the permanent damage to our planet. Therefore, producing Coca-Cola should be illegal."
+  ]
+}
+</output>
+</example>
+
+Claim, confidence, and conversation history:
+
+<conversation>
+
+</conversation>
+

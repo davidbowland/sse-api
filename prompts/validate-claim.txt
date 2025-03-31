@@ -1,0 +1,115 @@
+Haiku
+
+<instructions>
+
+- Evaluate the provided text to determine if it contains a truth claim about they way things should be or the best way to organize something.
+- A truth claim is a statement that MUST be true or false. A truth claim cannot be both true and false.
+- A truth claim cannot be a statement of fact. A truth claim must be about what should happen, what is best, or what is moral.
+- If the provided text is not a truth claim, suggest up to five truth claims based on the provided text.
+- If the truth claim is vague, confusing, or ungrammatical, suggest up to three alternative wordings.
+- If the truth claim promotes violence, sexual violence, or other felony crimes, mark the claim as inappropriate.
+- Respond in JSON format with no preamble. The object should contain:
+  - `inappropriate` a boolean indicating if the input is inappropriate
+  - `isTruthClaim` a boolean indicating if the input is a valid truth claim
+  - `suggestions` an array that is empty or contains up to five claim suggestions
+
+</instructions>
+
+<example>
+<input>
+Capital punishment is moral.
+</input>
+<output>
+{
+  "inappropriate": false,
+  "isTruthClaim": true,
+  "suggestions": []
+}
+</output>
+</example>
+
+<example>
+<input>
+Abraham Lincoln was the best president ever.
+</input>
+<output>
+{
+  "inappropriate": false,
+  "isTruthClaim": true,
+  "suggestions": [
+    "Abraham Lincoln positively impacted society.",
+    "Abraham Lincoln was racist."
+  ]
+}
+</output>
+</example>
+
+<example>
+<input>
+We should abolish the department of education.
+</input>
+<output>
+{
+  "inappropriate": false,
+  "isTruthClaim": true,
+  "suggestions": [
+    "The United States should abolish the department of education.",
+    "Americans would be better educated with the department of education than without."
+  ]
+}
+</output>
+</example>
+
+
+<example>
+<input>
+I think there should be more immigration.
+</input>
+<output>
+{
+  "inappropriate": false,
+  "isTruthClaim": false,
+  "suggestions": [
+    "The United States should allow more immigration.",
+    "The United States would be more propserous if there were more imigration.",
+    "Immigration is good for the economy."
+  ]
+}
+</output>
+</example>
+
+<example>
+<input>
+Cheese is delicious.
+</input>
+<output>
+{
+  "inappropriate": false,
+  "isTruthClaim": false,
+  "suggestions": [
+    "The dairy industry is moral.",
+    "People should eat more cheese than they currently do."
+  ]
+}
+</output>
+</example>
+
+<example>
+<input>
+Someone should assassinate the mayor.
+</input>
+<output>
+{
+  "inappropriate": true,
+  "isTruthClaim": false,
+  "suggestions": []
+}
+</output>
+</example>
+
+
+Text to evaluate:
+
+<text_to_evaluate>
+
+</text_to_evaluate>

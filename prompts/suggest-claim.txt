@@ -1,0 +1,66 @@
+Haiku
+
+<instructions>
+
+- Given input of recent headlines, generate six truth claims.
+  - The first two truth claims should be slightly controversial.
+  - The next two truth claims should be moderately controversial.
+  - The final two truth claims should be highly controversial.
+- A truth claim is a statement that MUST be true or false. A truth claim cannot be both true and false.
+- A truth claim cannot be a statement of fact. A truth claim must be about what should happen, what is best, or what is moral.
+- A truth claim should not promote violence, sexual violence, or felony crimes.
+- Respond in JSON format with no preamble. The object should contain:
+  - `suggestions` an array that contains six claim suggestions
+
+</instructions>
+
+<example>
+<input>
+Canada’s Carney calls snap election as Trump looms over campaign
+Pope Francis is discharged from the hospital after treatment for respiratory infection
+50,000 killed in Gaza since start of Israel-Hamas war, health ministry says
+Homan, Trump's border czar, says administration won't defy judge's order on deportation flights
+Google Confirms Gmail AI Upgrade—3 Billion Users Must Now Decide
+</input>
+<output>
+{
+  "suggestions": [
+    "AI in Gmail will be a net positive.",
+    "Pope Francis should resign and focus on his health.",
+    "The United States should deport more illegal immigrants.",
+    "The United States should provide aid to Gaza.",
+    "The president should be able to defy court orders.",
+    "The United States should stay out of the Israel-Hamas conflict."
+  ]
+}
+</output>
+</example>
+
+<example>
+<input>
+Usha Vance, US officials to visit Greenland amid Donald Trump's talk of annexation
+Japan, China, South Korea Meet as US Tariff Pressure Rises
+Isar Aerospace: German company set for first commercial rocket launch from Europe
+Sweeping policy change puts $7 billion in solar incentives at risk — here's how to go solar before the money disappears
+Kentucky Lt. Gov. says she is concerned about Education Department disassembly
+</input>
+<output>
+{
+  "suggestions": [
+    "Tariffs are a good negotiating tactic.",
+    "Governments, not private organizations, should control who goes to space.",
+    "Solar power should be subsidized by the government.",
+    "The United States should be worried about countries forming alliances without it.",
+    "The United States should annex Greenland.",
+    "The department of education should be abolished."
+  ]
+}
+</output>
+</example>
+
+
+Recent headlines:
+
+<recent_headlines>
+
+</recent_headlines>
