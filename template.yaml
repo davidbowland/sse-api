@@ -244,7 +244,7 @@ Resources:
           KeyType: HASH
         - AttributeName: UpdatedAt
           KeyType: RANGE
-      # TableName: !FindInMap [EnvironmentMap, !Ref Environment, promptTable]
+      TableName: !FindInMap [EnvironmentMap, !Ref Environment, promptTable]
       Tags:
         - Key: 'created-by'
           Value: 'sse-api'
