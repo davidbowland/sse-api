@@ -1,4 +1,4 @@
-import { DynamoDB, GetItemCommand, PutItemCommand, PutItemOutput } from '@aws-sdk/client-dynamodb'
+import { DynamoDB, GetItemCommand, PutItemCommand, PutItemOutput, QueryCommand } from '@aws-sdk/client-dynamodb'
 
 import { dynamodbPromptTableName, dynamodbSessionTableName } from '../config'
 import { Prompt, PromptId, Session, SessionId } from '../types'
@@ -9,18 +9,17 @@ const dynamodb = xrayCapture(new DynamoDB({ apiVersion: '2012-08-10' }))
 // Prompts
 
 export const getPromptById = async (promptId: PromptId): Promise<Prompt> => {
-  const command = new GetItemCommand({
-    Key: {
-      PromptId: {
-        S: `${promptId}`,
-      },
-    },
+  const command = new QueryCommand({
+    ExpressionAttributeValues: { ':promptId': { S: `${promptId}` } },
+    KeyConditionExpression: 'PromptId = :promptId',
+    Limit: 1,
+    ScanIndexForward: false,
     TableName: dynamodbPromptTableName,
   })
   const response = await dynamodb.send(command)
   return {
-    config: JSON.parse(response.Item.Config.S as string),
-    contents: response.Item.SystemPrompt.S as string,
+    config: JSON.parse(response.Items?.[0]?.Config?.S as string),
+    contents: response.Items?.[0]?.SystemPrompt?.S as string,
   }
 }
 
@@ -54,5 +53,5 @@ export const setSessionById = async (sessionId: SessionId, session: Session): Pr
     },
     TableName: dynamodbSessionTableName,
   })
-  return dynamodb.send(command)
+  return await dynamodb.send(command)
 }

@@ -8,6 +8,7 @@ jest.mock('@aws-sdk/client-dynamodb', () => ({
   })),
   GetItemCommand: jest.fn().mockImplementation((x) => x),
   PutItemCommand: jest.fn().mockImplementation((x) => x),
+  QueryCommand: jest.fn().mockImplementation((x) => x),
 }))
 jest.mock('@utils/logging', () => ({
   xrayCapture: jest.fn().mockImplementation((x) => x),
@@ -15,39 +16,40 @@ jest.mock('@utils/logging', () => ({
 
 describe('dynamodb', () => {
   describe('getPromptById', () => {
-    it('should call DynamoDB and parse the prompt', async () => {
-      mockSend.mockResolvedValueOnce({
-        Item: { Config: { S: JSON.stringify(promptConfig) }, SystemPrompt: { S: prompt.contents } },
+    beforeAll(() => {
+      mockSend.mockResolvedValue({
+        Items: [{ Config: { S: JSON.stringify(promptConfig) }, SystemPrompt: { S: prompt.contents } }],
       })
+    })
 
+    it('should call DynamoDB and parse the prompt', async () => {
       const result = await getPromptById(promptId)
-      expect(mockSend).toHaveBeenCalledWith(
-        expect.objectContaining({
-          Key: {
-            PromptId: { S: promptId },
-          },
-          TableName: 'prompt-table',
-        }),
-      )
+      expect(mockSend).toHaveBeenCalledWith({
+        ExpressionAttributeValues: { ':promptId': { S: `${promptId}` } },
+        KeyConditionExpression: 'PromptId = :promptId',
+        Limit: 1,
+        ScanIndexForward: false,
+        TableName: 'prompt-table',
+      })
       expect(result).toEqual(prompt)
     })
   })
 
   describe('getSessionById', () => {
-    it('should call DynamoDB with the correct arguments', async () => {
-      mockSend.mockResolvedValueOnce({
+    beforeAll(() => {
+      mockSend.mockResolvedValue({
         Item: { Data: { S: JSON.stringify(session) } },
       })
+    })
 
+    it('should call DynamoDB with the correct arguments', async () => {
       const result = await getSessionById(sessionId)
-      expect(mockSend).toHaveBeenCalledWith(
-        expect.objectContaining({
-          Key: {
-            SessionId: { S: sessionId },
-          },
-          TableName: 'session-table',
-        }),
-      )
+      expect(mockSend).toHaveBeenCalledWith({
+        Key: {
+          SessionId: { S: sessionId },
+        },
+        TableName: 'session-table',
+      })
       expect(result).toEqual(session)
     })
   })
@@ -55,22 +57,20 @@ describe('dynamodb', () => {
   describe('setSessionById', () => {
     it('should call DynamoDB with the correct arguments', async () => {
       await setSessionById(sessionId, session)
-      expect(mockSend).toHaveBeenCalledWith(
-        expect.objectContaining({
-          Item: {
-            Data: {
-              S: JSON.stringify(session),
-            },
-            Expiration: {
-              N: `${session.expiration}`,
-            },
-            SessionId: {
-              S: sessionId,
-            },
+      expect(mockSend).toHaveBeenCalledWith({
+        Item: {
+          Data: {
+            S: JSON.stringify(session),
           },
-          TableName: 'session-table',
-        }),
-      )
+          Expiration: {
+            N: `${session.expiration}`,
+          },
+          SessionId: {
+            S: sessionId,
+          },
+        },
+        TableName: 'session-table',
+      })
     })
   })
 })

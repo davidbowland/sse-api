@@ -236,11 +236,15 @@ Resources:
       AttributeDefinitions:
         - AttributeName: PromptId
           AttributeType: S
+        - AttributeName: UpdatedAt
+          AttributeType: N
       BillingMode: PAY_PER_REQUEST
       KeySchema:
         - AttributeName: PromptId
           KeyType: HASH
-      TableName: !FindInMap [EnvironmentMap, !Ref Environment, promptTable]
+        - AttributeName: UpdatedAt
+          KeyType: RANGE
+      # TableName: !FindInMap [EnvironmentMap, !Ref Environment, promptTable]
       Tags:
         - Key: 'created-by'
           Value: 'sse-api'
