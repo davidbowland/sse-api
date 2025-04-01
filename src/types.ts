@@ -19,6 +19,12 @@ export interface ChatMessage {
   role: 'assistant' | 'user'
 }
 
+// Claims
+
+export interface Claim {
+  claim: string
+}
+
 // Prompts
 
 export type PromptId = string
@@ -46,4 +52,12 @@ export interface Session {
   expiration: number
   history: ChatMessage[]
   reasons: string[]
+}
+
+// Validation
+
+export interface ValidationResponse {
+  inappropriate: boolean
+  isTruthClaim: boolean
+  suggestions: string[]
 }

@@ -11,6 +11,8 @@ export const suggestClaimsCount = parseInt(process.env.SUGGEST_CLAIMS_COUNT as s
 export const suggestClaimsPromptId = process.env.SUGGEST_CLAIMS_PROMPT_ID as string
 export const suggestClaimsUrl = process.env.SUGGEST_CLAIMS_URL as string
 
+export const validateClaimPromptId = process.env.VALIDATE_CLAIM_PROMPT_ID as string
+
 // DynamoDB
 
 export const dynamodbPromptTableName = process.env.DYNAMODB_PROMPT_TABLE_NAME as string

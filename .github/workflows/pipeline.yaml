@@ -11,6 +11,7 @@ env:
   PROD_REGION: ${{ secrets.AWS_REGION }}
   PROD_STACK_NAME: sse-api
   SAM_TEMPLATE: template.yaml
+  SUGGEST_CLAIMS_URL: ${{ secrets.SUGGEST_CLAIMS_URL }}
   TESTING_ARTIFACTS_BUCKET: sse-lambda-test
   TESTING_CLOUDFORMATION_EXECUTION_ROLE: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/sse-cloudformation-test
   TESTING_PIPELINE_EXECUTION_ROLE: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/sse-pipeline-test
@@ -84,7 +85,7 @@ jobs:
             --s3-prefix ${TESTING_STACK_NAME} \
             --no-fail-on-empty-changeset \
             --role-arn ${TESTING_CLOUDFORMATION_EXECUTION_ROLE} \
-            --parameter-overrides "Environment=test"
+            --parameter-overrides "Environment=test SuggestClaimsUrl=${SUGGEST_CLAIMS_URL}"
 
   build-and-package:
     name: Build and package lambda
@@ -195,7 +196,7 @@ jobs:
             --s3-prefix ${TESTING_STACK_NAME} \
             --no-fail-on-empty-changeset \
             --role-arn ${TESTING_CLOUDFORMATION_EXECUTION_ROLE} \
-            --parameter-overrides "Environment=test"
+            --parameter-overrides "Environment=test SuggestClaimsUrl=${SUGGEST_CLAIMS_URL}"
 
   deploy-prod:
     name: Deploy to production
@@ -235,7 +236,8 @@ jobs:
             --s3-bucket ${PROD_ARTIFACTS_BUCKET} \
             --s3-prefix ${PROD_STACK_NAME} \
             --no-fail-on-empty-changeset \
-            --role-arn ${PROD_CLOUDFORMATION_EXECUTION_ROLE}
+            --role-arn ${PROD_CLOUDFORMATION_EXECUTION_ROLE} \
+            --parameter-overrides "SuggestClaimsUrl=${SUGGEST_CLAIMS_URL}"
 
   bump:
     name: Bump the version number and tag the commit

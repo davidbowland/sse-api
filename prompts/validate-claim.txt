@@ -58,7 +58,6 @@ We should abolish the department of education.
 </output>
 </example>
 
-
 <example>
 <input>
 I think there should be more immigration.
@@ -104,9 +103,3 @@ Someone should assassinate the mayor.
 }
 </output>
 </example>
-
-Text to evaluate:
-
-<text_to_evaluate>
-${data}
-</text_to_evaluate>

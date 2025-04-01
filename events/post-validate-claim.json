@@ -1,0 +1,9 @@
+{
+  "body": "{\"claim\":\"Chickpeas are neither chicks nor peas.\"}",
+  "requestContext": {
+    "http": {
+      "method": "POST",
+      "path": "/v1/validate-claim"
+    }
+  }
+}

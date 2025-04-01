@@ -4,10 +4,10 @@ import { ChatMessage, Prompt } from '../types'
 
 const runtimeClient = new BedrockRuntimeClient({ region: 'us-east-1' })
 
-export const invokeModel = async (prompt: any, data: string) =>
+export const invokeModel = async (prompt: any, data: string): Promise<any> =>
   invokeModelMessage(prompt, [{ content: data, role: 'user' }])
 
-export const invokeModelMessage = async (prompt: Prompt, history: ChatMessage[]) => {
+export const invokeModelMessage = async (prompt: Prompt, history: ChatMessage[]): Promise<any> => {
   const messageBody = {
     anthropic_version: prompt.config.anthropicVersion,
     max_tokens: prompt.config.maxTokens,
@@ -23,6 +23,5 @@ export const invokeModelMessage = async (prompt: Prompt, history: ChatMessage[])
   })
   const response = await runtimeClient.send(command)
   const modelResponse = JSON.parse(new TextDecoder().decode(response.body))
-  const suggestions = JSON.parse(modelResponse.content[0].text).suggestions
-  return suggestions
+  return JSON.parse(modelResponse.content[0].text)
 }

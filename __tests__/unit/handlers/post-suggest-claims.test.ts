@@ -16,13 +16,13 @@ describe('post-suggest-claims', () => {
   const event = eventJson as unknown as APIGatewayProxyEventV2
 
   beforeAll(() => {
-    jest.mocked(bedrock).invokeModel.mockResolvedValue(invokeModelSuggestedClaims)
+    jest.mocked(bedrock).invokeModel.mockResolvedValue({ suggestions: invokeModelSuggestedClaims })
     jest.mocked(claimSourcesService).getClaimSources.mockResolvedValue(claimSources)
     jest.mocked(dynamodb).getPromptById.mockResolvedValue(prompt)
   })
 
   describe('postSuggestClaimsHandler', () => {
-    it('returns claims successfully', async () => {
+    it('returns claims', async () => {
       const result = await postSuggestClaimsHandler(event)
       expect(result).toEqual(expect.objectContaining(status.OK))
       expect(JSON.parse(result.body)).toEqual({ claims: invokeModelSuggestedClaims })

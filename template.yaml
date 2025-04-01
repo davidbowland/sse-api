@@ -20,7 +20,7 @@ Parameters:
 Mappings:
   EnvironmentMap:
     prod:
-      certificateRegional: 5d4db894-c9fc-42ca-8f80-3c5da6c1678e
+      certificate: adce1a21-90b4-4120-8548-111215e582f0
       corsDomain: https://sse.dbowland.com
       domain: sse-api.dbowland.com
       logStreamFunction: log-subscriber
@@ -29,7 +29,7 @@ Mappings:
       sessionTable: sse-api-sessions
       zoneId: Z072422417XWM8PIXXSFA
     test:
-      certificateRegional: 14a32175-0c26-4768-b71f-3fa611b8f5a2
+      certificate: 6a48cba7-feb9-4de5-8cbf-d383140fcdef
       corsDomain: https://sse.bowland.link
       domain: sse-api.bowland.link
       logStreamFunction: log-subscriber-test
@@ -67,7 +67,7 @@ Resources:
           - /v1
         CertificateArn: !Sub
           - 'arn:aws:acm:${AWS::Region}:${AWS::AccountId}:certificate/${Certificate}'
-          - Certificate: !FindInMap [EnvironmentMap, !Ref Environment, certificateRegional]
+          - Certificate: !FindInMap [EnvironmentMap, !Ref Environment, certificate]
         DomainName: !FindInMap [EnvironmentMap, !Ref Environment, domain]
         EndpointConfiguration: REGIONAL
       FailOnWarnings: true
@@ -100,18 +100,14 @@ Resources:
       Policies:
         - AWSLambdaBasicExecutionRole
         - DynamoDBReadPolicy:
-          TableName: !Ref PromptTable
-        - PolicyName: !Sub
-            - '${Project}-suggest-claims'
-            - Project: !FindInMap [EnvironmentMap, !Ref Environment, project]
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - 'bedrock:InvokeModel*'
-                  - 'bedrock-agent:GetPrompt'
-                Resource: '*'
+            TableName: !Ref PromptTable
+        # Allow invoking a model in Bedrock
+        - Version: 2012-10-17
+          Statement:
+            - Action:
+                - 'bedrock:InvokeModel*'
+              Effect: Allow
+              Resource: '*'
       Environment:
         Variables:
           DYNAMODB_PROMPT_TABLE_NAME: !Ref PromptTable
@@ -161,6 +157,76 @@ Resources:
         - Function: !FindInMap [EnvironmentMap, !Ref Environment, logStreamFunction]
       FilterPattern: '[timestamp, uuid, level="ERROR", message]'
       LogGroupName: !Ref PostSuggestClaimsLogGroup
+
+  # Validate claim
+
+  PostValidateClaimFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/post-validate-claim.postValidateClaimHandler
+      Runtime: nodejs22.x
+      Architectures:
+        - x86_64
+      MemorySize: 1536
+      Description: Validate a claim
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - DynamoDBReadPolicy:
+            TableName: !Ref PromptTable
+        # Allow invoking a model in Bedrock
+        - Version: 2012-10-17
+          Statement:
+            - Action:
+                - 'bedrock:InvokeModel*'
+              Effect: Allow
+              Resource: '*'
+      Environment:
+        Variables:
+          DYNAMODB_PROMPT_TABLE_NAME: !Ref PromptTable
+          VALIDATE_CLAIM_PROMPT_ID: validate-claim
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /validate-claim
+            Method: post
+      Tags:
+        'created-by': 'sse-api'
+        'created-for': 'sse'
+        'environment': !Ref Environment
+      Timeout: 35
+      Tracing: Active
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: 'es2020'
+        Sourcemap: true
+        EntryPoints:
+          - src/handlers/post-validate-claim.ts
+
+  PostValidateClaimLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${PostValidateClaimFunction}
+      RetentionInDays: 30
+      Tags:
+        - Key: 'created-by'
+          Value: 'sse-api'
+        - Key: 'created-for'
+          Value: 'sse'
+        - Key: 'environment'
+          Value: !Ref Environment
+
+  PostValidateClaimGroupSubscription:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !Sub
+        - 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Function}'
+        - Function: !FindInMap [EnvironmentMap, !Ref Environment, logStreamFunction]
+      FilterPattern: '[timestamp, uuid, level="ERROR", message]'
+      LogGroupName: !Ref PostValidateClaimLogGroup
 
   # DynamoDB
 

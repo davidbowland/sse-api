@@ -13,10 +13,10 @@ export const postSuggestClaimsHandler = async (
   try {
     const claimSources = await getClaimSources()
     const prompt = await getPromptById(suggestClaimsPromptId)
-    const claims = await invokeModel(prompt, claimSources.join('\n'))
-    log('Generated claims', { claims, claimSources })
+    const { suggestions } = await invokeModel(prompt, claimSources.join('\n'))
+    log('Generated claims', { claimSources, suggestions })
 
-    return { ...status.OK, body: JSON.stringify({ claims }) }
+    return { ...status.OK, body: JSON.stringify({ claims: suggestions }) }
   } catch (error) {
     logError(error)
     return status.INTERNAL_SERVER_ERROR

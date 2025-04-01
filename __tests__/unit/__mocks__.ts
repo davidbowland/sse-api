@@ -12,7 +12,7 @@ export const invokeModelSuggestedClaims = [
   'Congress should abolish collective bargaining for federal employees.',
 ]
 
-export const invokeModelResponseData = {
+export const invokeModelSuggestedClaimsResponseData = {
   id: 'msg_bdrk_01YA7pmVfUZvZM9reruSimYT',
   type: 'message',
   role: 'assistant',
@@ -38,7 +38,7 @@ export const invokeModelResponseData = {
   usage: { input_tokens: 3398, output_tokens: 99 },
 }
 
-export const invokeModelResponse = {
+export const invokeModelSuggestedClaimsResponse = {
   $metadata: {
     attempts: 1,
     cfId: undefined,
@@ -50,7 +50,7 @@ export const invokeModelResponse = {
     success: true,
     totalRetryDelay: 0,
   },
-  body: new TextEncoder().encode(JSON.stringify(invokeModelResponseData)),
+  body: new TextEncoder().encode(JSON.stringify(invokeModelSuggestedClaimsResponseData)),
 }
 
 // Messages
@@ -106,3 +106,17 @@ export const claimSources = [
   'Three US Soldiers Found Dead After Vehicle Recovered in Lithuanian Swamp',
   'US Military Races Against Time to Recover Four Soldiers in Lithuanian Bog',
 ]
+
+// Validation
+
+export const validationResult = {
+  inappropriate: false,
+  isTruthClaim: true,
+  suggestions: [
+    'Military intervention causes more harm than good.',
+    'The world would be more peaceful with less US military intervention.',
+    'US military spending should be reduced.',
+    'The US should only intervene militarily when directly attacked.',
+    'US foreign policy should focus on diplomacy rather than military action.',
+  ],
+}

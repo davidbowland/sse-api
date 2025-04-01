@@ -1,4 +1,10 @@
-import { assistantMessage, invokeModelResponse, invokeModelSuggestedClaims, prompt, userMessage } from '../__mocks__'
+import {
+  assistantMessage,
+  invokeModelSuggestedClaims,
+  invokeModelSuggestedClaimsResponse,
+  prompt,
+  userMessage,
+} from '../__mocks__'
 import { invokeModel, invokeModelMessage } from '@services/bedrock'
 
 const mockSend = jest.fn()
@@ -17,12 +23,12 @@ describe('bedrock', () => {
 
   describe('invokeModel', () => {
     beforeAll(() => {
-      mockSend.mockResolvedValue(invokeModelResponse)
+      mockSend.mockResolvedValue(invokeModelSuggestedClaimsResponse)
     })
 
     it('should invoke the correct model based on the prompt', async () => {
       const result = await invokeModel(prompt, data)
-      expect(result).toEqual(invokeModelSuggestedClaims)
+      expect(result).toEqual({ suggestions: invokeModelSuggestedClaims })
       expect(mockSend).toHaveBeenCalledWith({
         body: new TextEncoder().encode(
           JSON.stringify({
@@ -44,12 +50,12 @@ describe('bedrock', () => {
     const history = [assistantMessage, userMessage]
 
     beforeAll(() => {
-      mockSend.mockResolvedValue(invokeModelResponse)
+      mockSend.mockResolvedValue(invokeModelSuggestedClaimsResponse)
     })
 
     it('should invoke the correct model based on the prompt', async () => {
       const result = await invokeModelMessage(prompt, history)
-      expect(result).toEqual(invokeModelSuggestedClaims)
+      expect(result).toEqual({ suggestions: invokeModelSuggestedClaims })
       expect(mockSend).toHaveBeenCalledWith({
         body: new TextEncoder().encode(
           JSON.stringify({
