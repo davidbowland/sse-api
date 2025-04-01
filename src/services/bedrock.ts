@@ -22,5 +22,7 @@ export const invokeModelMessage = async (prompt: Prompt, history: ChatMessage[])
     modelId: prompt.config.model,
   })
   const response = await runtimeClient.send(command)
-  return JSON.parse(new TextDecoder().decode(response.body))
+  const modelResponse = JSON.parse(new TextDecoder().decode(response.body))
+  const suggestions = JSON.parse(modelResponse.content[0].text).suggestions
+  return suggestions
 }

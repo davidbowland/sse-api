@@ -1,5 +1,7 @@
 // Claims
 
+process.env.SUGGEST_CLAIMS_COUNT = '10'
+process.env.SUGGEST_CLAIMS_PROMPT_ID = 'suggest-claims-prompt'
 process.env.SUGGEST_CLAIMS_URL = 'https://a-great.claims-site'
 
 // DynamoDB

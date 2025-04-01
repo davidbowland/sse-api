@@ -115,6 +115,8 @@ Resources:
       Environment:
         Variables:
           DYNAMODB_PROMPT_TABLE_NAME: !Ref PromptTable
+          SUGGEST_CLAIMS_COUNT: 20
+          SUGGEST_CLAIMS_PROMPT_ID: suggest-claims
           SUGGEST_CLAIMS_URL: !Ref SuggestClaimsUrl
       Events:
         Api:
@@ -159,16 +161,6 @@ Resources:
         - Function: !FindInMap [EnvironmentMap, !Ref Environment, logStreamFunction]
       FilterPattern: '[timestamp, uuid, level="ERROR", message]'
       LogGroupName: !Ref PostSuggestClaimsLogGroup
-
-  SuggestClaimsPrompt:
-    Type: AWS::Bedrock::Prompt
-    Properties:
-      Description: Prompt for suggesting claims from source input
-      Name: sse-api-suggest-claims
-      Tags:
-        'created-by': 'sse-api'
-        'created-for': 'sse'
-        'environment': !Ref Environment
 
   # DynamoDB
 

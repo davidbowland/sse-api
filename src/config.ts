@@ -7,6 +7,8 @@ axiosRetry(axios, { retries: 3 })
 
 // Claims
 
+export const suggestClaimsCount = parseInt(process.env.SUGGEST_CLAIMS_COUNT as string, 10)
+export const suggestClaimsPromptId = process.env.SUGGEST_CLAIMS_PROMPT_ID as string
 export const suggestClaimsUrl = process.env.SUGGEST_CLAIMS_URL as string
 
 // DynamoDB

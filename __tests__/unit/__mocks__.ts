@@ -3,6 +3,15 @@ import { ChatMessage, Prompt, PromptConfig, PromptId, Session, SessionId } from 
 
 // Bedrock
 
+export const invokeModelSuggestedClaims = [
+  'Voter ID requirements strengthen democracy.',
+  'Museums in federal agencies are a waste of taxpayer money.',
+  'Universities should lose federal funding over antisemitism.',
+  'The president should have the power to serve unlimited terms.',
+  'The US should implement a 100% tariff on all foreign goods.',
+  'Congress should abolish collective bargaining for federal employees.',
+]
+
 export const invokeModelResponseData = {
   id: 'msg_bdrk_01YA7pmVfUZvZM9reruSimYT',
   type: 'message',
@@ -77,3 +86,23 @@ export const session: Session = {
   history: [userMessage, assistantMessage],
   reasons: ["They're animatronic"],
 }
+
+// Claims
+
+export const claimSourcesRaw = `
+\\"title\\":\\"Russia's war economy fuels rustbelt revival\\"',
+\\"title\\":\\"Russian Rustbelt Sees Economic Growth as War Production Drives Local Business\\"',
+\\"title\\":\\"Man Suspected of Accidentally Starting South Korea's Largest Wildfires\\"",
+\\"title\\":\\"South Korea Battles Deadliest Wildfire After Ancestral Ritual Sparks Massive Blaze\\"',
+\\"title\\":\\"Three US Soldiers Found Dead After Vehicle Recovered in Lithuanian Swamp\\"',
+\\"title\\":\\"US Military Races Against Time to Recover Four Soldiers in Lithuanian Bog\\"',
+`
+
+export const claimSources = [
+  "Russia's war economy fuels rustbelt revival",
+  'Russian Rustbelt Sees Economic Growth as War Production Drives Local Business',
+  "Man Suspected of Accidentally Starting South Korea's Largest Wildfires",
+  'South Korea Battles Deadliest Wildfire After Ancestral Ritual Sparks Massive Blaze',
+  'Three US Soldiers Found Dead After Vehicle Recovered in Lithuanian Swamp',
+  'US Military Races Against Time to Recover Four Soldiers in Lithuanian Bog',
+]
