@@ -70,6 +70,9 @@ Resources:
           - Certificate: !FindInMap [EnvironmentMap, !Ref Environment, certificate]
         DomainName: !FindInMap [EnvironmentMap, !Ref Environment, domain]
         EndpointConfiguration: REGIONAL
+        Route53:
+          DistributionDomainName: !FindInMap [EnvironmentMap, !Ref Environment, domain]
+          HostedZoneId: !FindInMap [EnvironmentMap, !Ref Environment, zoneId]
       FailOnWarnings: true
       StageName: v1
 
