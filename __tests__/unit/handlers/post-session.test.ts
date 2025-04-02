@@ -12,7 +12,7 @@ jest.mock('@utils/id-generator')
 jest.mock('@utils/events')
 jest.mock('@utils/logging')
 
-describe('post-suggest-claims', () => {
+describe('post-session', () => {
   const epochTime = 1742760571384
   const event = eventJson as unknown as APIGatewayProxyEventV2
 

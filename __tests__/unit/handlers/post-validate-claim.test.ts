@@ -12,7 +12,7 @@ jest.mock('@services/dynamodb')
 jest.mock('@utils/events')
 jest.mock('@utils/logging')
 
-describe('post-suggest-claims', () => {
+describe('post-validate-claim', () => {
   const event = eventJson as unknown as APIGatewayProxyEventV2
 
   const claim = 'Brisket is the best meat'

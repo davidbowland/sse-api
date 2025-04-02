@@ -25,3 +25,7 @@ content-type: application/json
 }
 
 ###
+
+GET https://{{sse-api-host}}/v1/sessions/8675309 HTTP/1.1
+
+###

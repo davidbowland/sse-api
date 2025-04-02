@@ -77,7 +77,7 @@ export const prompt: Prompt = {
 
 // Sessions
 
-export const sessionId: SessionId = '34151'
+export const sessionId: SessionId = '8675309'
 
 export const session: Session = {
   claim: 'The Holy Roman Empire was neither Holy nor Roman nor an Empire.',
