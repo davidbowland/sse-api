@@ -216,8 +216,18 @@ Resources:
         - AWSLambdaBasicExecutionRole
         - DynamoDBCrudPolicy:
             TableName: !Ref SessionTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref PromptTable
+        # Allow invoking a model in Bedrock
+        - Version: 2012-10-17
+          Statement:
+            - Action:
+                - 'bedrock:InvokeModel*'
+              Effect: Allow
+              Resource: '*'
       Environment:
         Variables:
+          DYNAMODB_PROMPT_TABLE_NAME: !Ref PromptTable
           DYNAMODB_SESSION_TABLE_NAME: !Ref SessionTable
           RESPONSE_PROMPT_ID: guess-reasons
       Events:
@@ -277,8 +287,18 @@ Resources:
         - AWSLambdaBasicExecutionRole
         - DynamoDBCrudPolicy:
             TableName: !Ref SessionTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref PromptTable
+        # Allow invoking a model in Bedrock
+        - Version: 2012-10-17
+          Statement:
+            - Action:
+                - 'bedrock:InvokeModel*'
+              Effect: Allow
+              Resource: '*'
       Environment:
         Variables:
+          DYNAMODB_PROMPT_TABLE_NAME: !Ref PromptTable
           DYNAMODB_SESSION_TABLE_NAME: !Ref SessionTable
           RESPONSE_PROMPT_ID: probe-confidence
       Events:
@@ -338,8 +358,18 @@ Resources:
         - AWSLambdaBasicExecutionRole
         - DynamoDBCrudPolicy:
             TableName: !Ref SessionTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref PromptTable
+        # Allow invoking a model in Bedrock
+        - Version: 2012-10-17
+          Statement:
+            - Action:
+                - 'bedrock:InvokeModel*'
+              Effect: Allow
+              Resource: '*'
       Environment:
         Variables:
+          DYNAMODB_PROMPT_TABLE_NAME: !Ref PromptTable
           DYNAMODB_SESSION_TABLE_NAME: !Ref SessionTable
           RESPONSE_PROMPT_ID: probe-reasons
       Events:
