@@ -29,14 +29,16 @@
 </instructions>
 
 <example>
+<history>
+[
+  { "message": "Why do you strongly disagree that Coca-Cola should be illegal?", "speaker": "moderator"},
+  { "message": "I don't think anything they do is so egregious that it should be classified as illegal.", "speaker": "person"}
+]
+</history>
 <input>
 {
   "claim": "Coca-Cola should be illegal",
   "confidence": "strongly disagree",
-  "history": [
-    { "message": "Why do you strongly disagree that Coca-Cola should be illegal?", "speaker": "moderator"},
-    { "message": "I don't think anything they do is so egregious that it should be classified as illegal.", "speaker": "person"}
-  ],
   "newConversation": true
 }
 </input>
@@ -49,14 +51,16 @@
 </example>
 
 <example>
+<history>
+[
+  { "message": "Let's explore together why you chose strongly disagree with the claim that Coca-Cola should be illegal. You said you don't think they do anything that should be classified as illegal. What would you need to see or discover or hear to convince you to move to absolutely disagree?", "speaker": "moderator" },
+  { "message": "I'd need to see evidence that Coca-Cola is so dangerous that it causes the risk of imminent bodily harm.", "speaker": "person" }
+]
+</history>
 <input>
 {
   "claim": "Coca-Cola should be illegal",
   "confidence": "strongly disagree",
-  "history": [
-    { "message": "Let's explore together why you chose strongly disagree with the claim that Coca-Cola should be illegal. You said you don't think they do anything that should be classified as illegal. What would you need to see or discover or hear to convince you to move to absolutely disagree?", "speaker": "moderator" },
-    { "message": "I'd need to see evidence that Coca-Cola is so dangerous that it causes the risk of imminent bodily harm.", "speaker": "person" }
-  ],
   "newConversation": false
 }
 </input>
@@ -69,14 +73,16 @@
 </example>
 
 <example>
+<history>
+[
+  { "message": "If evidence existed that Coca-Cola causes the risk of imminent bodily harm, how would you become aware of it?", "speaker": "moderator"},
+  { "message": "Coca-Cola is a big enough company and enough servings per day that any issues with it would make national news. Additionally, the company makes billions. They're smart enough not to risk that.", "speaker": "person" }
+]
+</history>
 <input>
 {
   "claim": "Coca-Cola should be illegal",
   "confidence": "strongly disagree",
-  "history": [
-    { "message": "If evidence existed that Coca-Cola causes the risk of imminent bodily harm, how would you become aware of it?", "speaker": "moderator"},
-    { "message": "Coca-Cola is a big enough company and enough servings per day that any issues with it would make national news. Additionally, the company makes billions. They're smart enough not to risk that.", "speaker": "person" }
-  ],
   "newConversation": false
 }
 </input>
@@ -89,14 +95,16 @@
 </example>
 
 <example>
+<history>
+[
+  { "message": "Speaking of evidence, what evidence would you need to see to move from strongly disagree to disagree?", "speaker": "moderator"},
+  { "message": "Coca-Cola is a big enough company and enough servings per day that any issues with it would make national news. Additionally, the company makes billions. They're smart enough not to risk that.", "speaker": "person" }
+]
+</history>
 <input>
 {
   "claim": "Coca-Cola should be illegal",
   "confidence": "strongly disagree",
-  "history": [
-    { "message": "Speaking of evidence, what evidence would you need to see to move from strongly disagree to disagree?", "speaker": "moderator"},
-    { "message": "Coca-Cola is a big enough company and enough servings per day that any issues with it would make national news. Additionally, the company makes billions. They're smart enough not to risk that.", "speaker": "person" }
-  ],
   "newConversation": false
 }
 </input>
@@ -109,11 +117,13 @@
 </example>
 
 <example>
+<history>
+[]
+</history>
 <input>
 {
   "claim": "Coca-Cola should be illegal",
   "confidence": "absolutely agree",
-  "history": [],
   "newConversation": false
 }
 </input>
@@ -125,8 +135,8 @@
 </output>
 </example>
 
-Claim, confidence, and conversation history:
+Claim and confidence:
 
-<conversation>
-
-</conversation>
+<input>
+${data}
+</input>

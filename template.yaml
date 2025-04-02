@@ -203,6 +203,189 @@ Resources:
 
   # LLM invocation
 
+  PostGuessReasonsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/post-llm-response.postLlmResponseHandler
+      Runtime: nodejs22.x
+      Architectures:
+        - x86_64
+      MemorySize: 1536
+      Description: Send a message to guess reasons handler
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SessionTable
+      Environment:
+        Variables:
+          DYNAMODB_SESSION_TABLE_NAME: !Ref SessionTable
+          RESPONSE_PROMPT_ID: guess-reasons
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /sessions/{sessionId}/guess-reasons
+            Method: post
+      Tags:
+        'created-by': 'sse-api'
+        'created-for': 'sse'
+        'environment': !Ref Environment
+      Timeout: 35
+      Tracing: Active
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: 'es2020'
+        Sourcemap: true
+        EntryPoints:
+          - src/handlers/post-llm-response.ts
+
+  PostGuessReasonsLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${PostGuessReasonsFunction}
+      RetentionInDays: 30
+      Tags:
+        - Key: 'created-by'
+          Value: 'sse-api'
+        - Key: 'created-for'
+          Value: 'sse'
+        - Key: 'environment'
+          Value: !Ref Environment
+
+  PostGuessReasonsGroupSubscription:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !Sub
+        - 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Function}'
+        - Function: !FindInMap [EnvironmentMap, !Ref Environment, logStreamFunction]
+      FilterPattern: '[timestamp, uuid, level="ERROR", message]'
+      LogGroupName: !Ref PostGuessReasonsLogGroup
+
+  PostProbeConfidenceFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/post-llm-response.postLlmResponseHandler
+      Runtime: nodejs22.x
+      Architectures:
+        - x86_64
+      MemorySize: 1536
+      Description: Send a message to probe confidence handler
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SessionTable
+      Environment:
+        Variables:
+          DYNAMODB_SESSION_TABLE_NAME: !Ref SessionTable
+          RESPONSE_PROMPT_ID: probe-confidence
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /sessions/{sessionId}/probe-confidence
+            Method: post
+      Tags:
+        'created-by': 'sse-api'
+        'created-for': 'sse'
+        'environment': !Ref Environment
+      Timeout: 35
+      Tracing: Active
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: 'es2020'
+        Sourcemap: true
+        EntryPoints:
+          - src/handlers/post-llm-response.ts
+
+  PostProbeConfidenceLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${PostProbeConfidenceFunction}
+      RetentionInDays: 30
+      Tags:
+        - Key: 'created-by'
+          Value: 'sse-api'
+        - Key: 'created-for'
+          Value: 'sse'
+        - Key: 'environment'
+          Value: !Ref Environment
+
+  PostProbeConfidenceGroupSubscription:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !Sub
+        - 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Function}'
+        - Function: !FindInMap [EnvironmentMap, !Ref Environment, logStreamFunction]
+      FilterPattern: '[timestamp, uuid, level="ERROR", message]'
+      LogGroupName: !Ref PostProbeConfidenceLogGroup
+
+  PostProbeReasonsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/post-llm-response.postLlmResponseHandler
+      Runtime: nodejs22.x
+      Architectures:
+        - x86_64
+      MemorySize: 1536
+      Description: Send a message to probe reasons handler
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SessionTable
+      Environment:
+        Variables:
+          DYNAMODB_SESSION_TABLE_NAME: !Ref SessionTable
+          RESPONSE_PROMPT_ID: probe-reasons
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /sessions/{sessionId}/probe-reasons
+            Method: post
+      Tags:
+        'created-by': 'sse-api'
+        'created-for': 'sse'
+        'environment': !Ref Environment
+      Timeout: 35
+      Tracing: Active
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: 'es2020'
+        Sourcemap: true
+        EntryPoints:
+          - src/handlers/post-llm-response.ts
+
+  PostProbeReasonsLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${PostProbeReasonsFunction}
+      RetentionInDays: 30
+      Tags:
+        - Key: 'created-by'
+          Value: 'sse-api'
+        - Key: 'created-for'
+          Value: 'sse'
+        - Key: 'environment'
+          Value: !Ref Environment
+
+  PostProbeReasonsGroupSubscription:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !Sub
+        - 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Function}'
+        - Function: !FindInMap [EnvironmentMap, !Ref Environment, logStreamFunction]
+      FilterPattern: '[timestamp, uuid, level="ERROR", message]'
+      LogGroupName: !Ref PostProbeReasonsLogGroup
+
   # Suggest claims
 
   PostSuggestClaimsFunction:

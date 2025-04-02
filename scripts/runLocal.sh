@@ -19,6 +19,7 @@ export DYNAMODB_PROMPT_TABLE_NAME=sse-api-prompts-test
 export DYNAMODB_SESSION_TABLE_NAME=sse-api-sessions-test
 export ID_MAX_LENGTH: 16
 export ID_MIN_LENGTH: 6
+export RESPONSE_PROMPT_ID=probe-confidence
 export SESSION_EXPIRE_HOURS=36
 export SUGGEST_CLAIMS_COUNT=20
 export SUGGEST_CLAIMS_PROMPT_ID=suggest-claims

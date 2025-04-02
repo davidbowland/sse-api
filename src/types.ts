@@ -42,16 +42,33 @@ export interface Prompt {
   contents: string
 }
 
+// LLM interactions
+
+export interface LLMRequest {
+  message: ChatMessage
+  newConversation?: boolean
+}
+
+export interface LLMResponse {
+  finished: boolean
+  message: string
+  reasons?: string[]
+}
+
 // Sessions
 
 export type SessionId = string
 
-export interface Session {
+export interface SessionContext {
   claim: string
   confidence: ConfidenceLevel
+  reasons: string[]
+}
+
+export interface Session {
+  context: SessionContext
   expiration: number
   history: ChatMessage[]
-  reasons: string[]
 }
 
 // Validation

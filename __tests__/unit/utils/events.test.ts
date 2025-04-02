@@ -1,7 +1,8 @@
-import { extractClaimFromEvent, extractSessionFromEvent } from '@utils/events'
+import { extractClaimFromEvent, extractLlmRequestFromEvent, extractSessionFromEvent } from '@utils/events'
+import { llmRequest, newSession } from '../__mocks__'
 import { APIGatewayProxyEventV2 } from '@types'
 import createEventJson from '@events/post-session.json'
-import { newSession } from '../__mocks__'
+import llmResponseEventJson from '@events/post-llm-response.json'
 import validateEventJson from '@events/post-validate-claim.json'
 
 describe('events', () => {
@@ -38,6 +39,45 @@ describe('events', () => {
         body: JSON.stringify({}),
       }
       expect(() => extractClaimFromEvent(eventWithMalformedClaim)).toThrow()
+    })
+  })
+
+  describe('extractLlmRequestFromEvent', () => {
+    const event = llmResponseEventJson as unknown as APIGatewayProxyEventV2
+
+    it('should extract the LLMRequest from the event', () => {
+      const result = extractLlmRequestFromEvent(event)
+      expect(result).toEqual(llmRequest)
+    })
+
+    it('should extract the LLMRequest from the event when it is Base64', () => {
+      const eventWithBase64Request = {
+        ...event,
+        body: Buffer.from(event.body).toString('base64'),
+        isBase64Encoded: true,
+      }
+      const result = extractLlmRequestFromEvent(eventWithBase64Request)
+      expect(result).toEqual(llmRequest)
+    })
+
+    it('should correct detect a new conversation', () => {
+      const eventWithNewConversation = {
+        ...event,
+        body: JSON.stringify({
+          content: 'I think I saw a cat',
+          newConversation: true,
+        }),
+      }
+      const result = extractLlmRequestFromEvent(eventWithNewConversation)
+      expect(result).toEqual({ ...llmRequest, newConversation: true })
+    })
+
+    it('should error when the chat message is malformed', () => {
+      const eventWithMalformedRequest = {
+        ...event,
+        body: JSON.stringify({}),
+      }
+      expect(() => extractLlmRequestFromEvent(eventWithMalformedRequest)).toThrow()
     })
   })
 

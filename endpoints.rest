@@ -21,11 +21,50 @@ content-type: application/json
 
 {
   "claim": "Feelings are more important than truth.",
-  "confidence": "strongly disagree",
+  "confidence": "strongly disagree"
 }
 
 ###
 
 GET https://{{sse-api-host}}/v1/sessions/8675309 HTTP/1.1
+
+###
+
+POST https://{{sse-api-host}}/v1/sessions/8675309/guess-reasons HTTP/1.1
+content-type: application/json
+
+{
+  "message": {
+    "content": "I strongly disagree with the claim: Feelings are more important than truth.",
+    "role": "user"
+  },
+  "newConversation": true
+}
+
+###
+
+POST https://{{sse-api-host}}/v1/sessions/8675309/probe-confidence HTTP/1.1
+content-type: application/json
+
+{
+  "message": {
+    "content": "I strongly disagree with the claim: Feelings are more important than truth.",
+    "role": "user"
+  },
+  "newConversation": true
+}
+
+###
+
+POST https://{{sse-api-host}}/v1/sessions/8675309/probe-reasons HTTP/1.1
+content-type: application/json
+
+{
+  "message": {
+    "content": "I strongly disagree with the claim: Feelings are more important than truth.",
+    "role": "user"
+  },
+  "newConversation": true
+}
 
 ###

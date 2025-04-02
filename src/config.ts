@@ -23,6 +23,10 @@ export const dynamodbSessionTableName = process.env.DYNAMODB_SESSION_TABLE_NAME 
 export const idMaxLength = parseInt(process.env.ID_MAX_LENGTH as string, 10)
 export const idMinLength = parseInt(process.env.ID_MIN_LENGTH as string, 10)
 
+// LLM response
+
+export const responsePromptId = process.env.RESPONSE_PROMPT_ID as string
+
 // Sessions
 
 export const sessionExpireHours = parseInt(process.env.SESSION_EXPIRE_HOURS as string, 10)

@@ -7,12 +7,12 @@ const runtimeClient = new BedrockRuntimeClient({ region: 'us-east-1' })
 export const invokeModel = async (prompt: any, data: string): Promise<any> =>
   invokeModelMessage(prompt, [{ content: data, role: 'user' }])
 
-export const invokeModelMessage = async (prompt: Prompt, history: ChatMessage[]): Promise<any> => {
+export const invokeModelMessage = async (prompt: Prompt, history: ChatMessage[], data?: any): Promise<any> => {
   const messageBody = {
     anthropic_version: prompt.config.anthropicVersion,
     max_tokens: prompt.config.maxTokens,
     messages: history,
-    system: prompt.contents,
+    system: data ? prompt.contents.replace('${data}', JSON.stringify(data)) : prompt.contents,
     temperature: prompt.config.temperature,
     top_k: prompt.config.topK,
   }

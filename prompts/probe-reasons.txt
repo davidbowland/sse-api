@@ -32,11 +32,13 @@
 </instructions>
 
 <example>
+<history>
+[]
+</history>
 <input>
 {
   "claim": "Coca-Cola should be illegal",
   "confidence": "strongly disagree",
-  "history": [],
   "newConversation": true,
 }
 </input>
@@ -49,14 +51,16 @@
 </example>
 
 <example>
+<history>
+[
+  { "message": "Why do you strongly disagree that Coca-Cola should be illegal?", "speaker": "moderator"},
+  { "message": "I don't think anything they do is so egregious that it should be classified as illegal.", "speaker": "person"}
+]
+</history>
 <input>
 {
   "claim": "Coca-Cola should be illegal",
   "confidence": "strongly disagree",
-  "history": [
-    { "message": "Why do you strongly disagree that Coca-Cola should be illegal?", "speaker": "moderator"},
-    { "message": "I don't think anything they do is so egregious that it should be classified as illegal.", "speaker": "person"}
-  ],
   "newConversation": false,
 }
 </input>
@@ -69,14 +73,16 @@
 </example>
 
 <example>
+<history>
+[
+  { "message": "What would you need to see or discover or hear to convince you to move to absolutely disagree?", "speaker": "moderator"},
+  { "message": "A great deal of evidence they're harming the planet", "speaker": "person"}
+]
+</history>
 <input>
 {
   "claim": "Coca-Cola should be illegal",
   "confidence": "strongly disagree",
-  "history": [
-    { "message": "What would you need to see or discover or hear to convince you to move to absolutely disagree?", "speaker": "moderator"},
-    { "message": "A great deal of evidence they're harming the planet", "speaker": "person"}
-  ],
   "newConversation": false,
 }
 </input>
@@ -89,14 +95,16 @@
 </example>
 
 <example>
+<history>
+[
+  { "message": "What would you need to see or discover or hear to convince you to move to absolutely disagree?", "speaker": "moderator"},
+  { "message": "Nothing would convince me to move", "speaker": "person"}
+]
+</history>
 <input>
 {
   "claim": "Coca-Cola should be illegal",
   "confidence": "strongly disagree",
-  "history": [
-    { "message": "What would you need to see or discover or hear to convince you to move to absolutely disagree?", "speaker": "moderator"},
-    { "message": "Nothing would convince me to move", "speaker": "person"}
-  ],
   "newConversation": false,
 }
 </input>
@@ -108,8 +116,8 @@
 </output>
 </example>
 
-Claim, confidence, and conversation history:
+Claim and confidence:
 
-<conversation>
-
-</conversation>
+<input>
+${data}
+</input>

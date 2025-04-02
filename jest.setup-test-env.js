@@ -16,6 +16,10 @@ process.env.DYNAMODB_SESSION_TABLE_NAME = 'session-table'
 process.env.ID_MAX_LENGTH = '4'
 process.env.ID_MIN_LENGTH = '1'
 
+// LLM response
+
+process.env.RESPONSE_PROMPT_ID = 'probe-confidence-prompt'
+
 // Sessions
 
 process.env.SESSION_EXPIRE_HOURS = '24'

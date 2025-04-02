@@ -1,4 +1,4 @@
-import { APIGatewayProxyEventV2, Claim, Session } from '../types'
+import { APIGatewayProxyEventV2, Claim, LLMRequest, Session } from '../types'
 import AJV from 'ajv/dist/jtd'
 import { sessionExpireHours } from '../config'
 
@@ -21,6 +21,29 @@ const formatClaim = (body: any): Claim => {
 }
 
 export const extractClaimFromEvent = (event: APIGatewayProxyEventV2): Claim => formatClaim(parseEventBody(event))
+
+// LLM request
+
+const formatLlmRequest = (body: any): LLMRequest => {
+  const jsonTypeDefinition = {
+    optionalProperties: {
+      newConversation: { type: 'boolean' },
+    },
+    properties: {
+      content: { type: 'string' },
+    },
+  }
+  if (ajv.validate(jsonTypeDefinition, body) === false) {
+    throw new Error(JSON.stringify(ajv.errors))
+  }
+  return {
+    message: { content: body.content, role: 'user' },
+    newConversation: body.newConversation ?? false,
+  }
+}
+
+export const extractLlmRequestFromEvent = (event: APIGatewayProxyEventV2): LLMRequest =>
+  formatLlmRequest(parseEventBody(event))
 
 // Sessions
 
@@ -65,11 +88,13 @@ const formatSession = (body: any): Session => {
     )
   }
   return {
-    claim: body.claim,
-    confidence: body.confidence,
+    context: {
+      claim: body.claim,
+      confidence: body.confidence,
+      reasons: [],
+    },
     expiration: body.expiration ?? lastExpiration,
     history: [],
-    reasons: [],
   }
 }
 

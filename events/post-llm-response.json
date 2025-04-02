@@ -1,0 +1,12 @@
+{
+  "body": "{\"content\":\"I think I saw a cat\"}",
+  "pathParameters": {
+    "sessionId": "8675309"
+  },
+  "requestContext": {
+    "http": {
+      "method": "POST",
+      "path": "/v1/sessions/8675309/probe-confidence"
+    }
+  }
+}

@@ -27,11 +27,13 @@
 </instructions>
 
 <example>
+<history>
+[]
+</history>
 <input>
 {
   "claim": "Coca-Cola should be illegal",
   "confidence": "strongly disagree",
-  "history": [],
   "newConversation": true
 }
 </input>
@@ -49,14 +51,16 @@
 </example>
 
 <example>
+<history>
+[
+  { "message": "I have come up with the three mostly likely reasons for agreeing with the claim that Coca-Cola should be illegal. Are you able to guess what any of them are?", "speaker": "moderator"},
+  { "message": "Is it because the taste is bad?", "speaker": "person"}
+]
+</history>
 <input>
 {
   "claim": "Coca-Cola should be illegal",
   "confidence": "strongly disagree",
-  "history": [
-    { "message": "I have come up with the three mostly likely reasons for agreeing with the claim that Coca-Cola should be illegal. Are you able to guess what any of them are?", "speaker": "moderator"},
-    { "message": "Is it because the taste is bad?", "speaker": "person"}
-  ],
   "newConversation": false,
   "reasons": [
     "Soft drinks such as Coca-Cola have a disproportionate amount of sugar. This causes a public health crisis and therefore should be outlawed.",
@@ -79,14 +83,16 @@
 </example>
 
 <example>
+<history>
+[
+  { "message": "No, the taste is not one of the reasons I generated. What could be a different reason someone might agree that Coca-Cola should be illegal?", "speaker": "moderator"},
+  { "message": "Does Coca-Cola contain too much sugar?", "speaker": "person"}
+]
+</history>
 <input>
 {
   "claim": "Coca-Cola should be illegal",
   "confidence": "strongly disagree",
-  "history": [
-    { "message": "No, the taste is not one of the reasons I generated. What could be a different reason someone might agree that Coca-Cola should be illegal?", "speaker": "moderator"},
-    { "message": "Does Coca-Cola contain too much sugar?", "speaker": "person"}
-  ],
   "newConversation": false,
   "reasons": [
     "Soft drinks such as Coca-Cola have a disproportionate amount of sugar. This causes a public health crisis and therefore should be outlawed.",
@@ -109,17 +115,19 @@
 </example>
 
 <example>
+<history>
+[
+  { "message": "Does it have too much red?", "speaker": "person"}
+  { "message": "No, guess again?", "speaker": "moderator"}
+  { "message": "Is it too fizzy?", "speaker": "person"}
+  { "message": "I'm afraid not. One last guess?", "speaker": "moderator"}
+  { "message": "Is the taste bad?", "speaker": "person"}
+]
+</history>
 <input>
 {
   "claim": "Coca-Cola should be illegal",
   "confidence": "strongly disagree",
-  "history": [
-    { "message": "Does it have too much red?", "speaker": "person"}
-    { "message": "No, guess again?", "speaker": "moderator"}
-    { "message": "Is it too fizzy?", "speaker": "person"}
-    { "message": "I'm afraid not. One last guess?", "speaker": "moderator"}
-    { "message": "Is the taste bad?", "speaker": "person"}
-  ],
   "newConversation": false,
   "reasons": [
     "Soft drinks such as Coca-Cola have a disproportionate amount of sugar. This causes a public health crisis and therefore should be outlawed.",
@@ -142,17 +150,19 @@
 </example>
 
 <example>
+<history>
+[
+  { "message": "Could it be that Coca-Cola contains too much sugar?", "speaker": "person"}
+  { "message": "Yes, great guess! What else?", "speaker": "moderator"}
+  { "message": "Maybe that corporations are bad for society?", "speaker": "person"}
+  { "message": "Correct! Last one?", "speaker": "moderator"}
+  { "message": "Coca-Cola causes climate change", "speaker": "person"}
+]
+</history>
 <input>
 {
   "claim": "Coca-Cola should be illegal",
   "confidence": "strongly disagree",
-  "history": [
-    { "message": "Could it be that Coca-Cola contains too much sugar?", "speaker": "person"}
-    { "message": "Yes, great guess! What else?", "speaker": "moderator"}
-    { "message": "Maybe that corporations are bad for society?", "speaker": "person"}
-    { "message": "Correct! Last one?", "speaker": "moderator"}
-    { "message": "Coca-Cola causes climate change", "speaker": "person"}
-  ],
   "newConversation": false,
   "reasons": [
     "Soft drinks such as Coca-Cola have a disproportionate amount of sugar. This causes a public health crisis and therefore should be outlawed.",
@@ -174,9 +184,8 @@
 </output>
 </example>
 
-Claim, confidence, and conversation history:
+Claim and confidence:
 
-<conversation>
-
-</conversation>
-
+<input>
+${data}
+</input>

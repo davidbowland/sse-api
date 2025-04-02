@@ -1,5 +1,5 @@
 /* eslint sort-keys:0 */
-import { ChatMessage, Prompt, PromptConfig, PromptId, Session, SessionId } from '@types'
+import { ChatMessage, LLMRequest, LLMResponse, Prompt, PromptConfig, PromptId, Session, SessionId } from '@types'
 
 // Bedrock
 
@@ -56,6 +56,7 @@ export const invokeModelSuggestedClaimsResponse = {
 // Messages
 
 export const assistantMessage: ChatMessage = { content: 'Whatchu mean?', role: 'assistant' }
+export const newAssistantMessage: ChatMessage = { content: 'Why do you think that?', role: 'assistant' }
 export const userMessage: ChatMessage = { content: 'I think I saw a cat', role: 'user' }
 
 // Prompts
@@ -80,19 +81,23 @@ export const prompt: Prompt = {
 export const sessionId: SessionId = '8675309'
 
 export const session: Session = {
-  claim: 'The Holy Roman Empire was neither Holy nor Roman nor an Empire.',
-  confidence: 'strongly agree',
+  context: {
+    claim: 'The Holy Roman Empire was neither Holy nor Roman nor an Empire.',
+    confidence: 'strongly agree',
+    reasons: ["They're animatronic"],
+  },
   expiration: 1743407368,
   history: [userMessage, assistantMessage],
-  reasons: ["They're animatronic"],
 }
 
 export const newSession: Session = {
-  claim: 'Rhode Island is neither a road nor an island.',
-  confidence: 'slightly agree',
+  context: {
+    claim: 'Rhode Island is neither a road nor an island.',
+    confidence: 'slightly agree',
+    reasons: [],
+  },
   expiration: 1742846971,
   history: [],
-  reasons: [],
 }
 
 // Claims
@@ -114,6 +119,23 @@ export const claimSources = [
   'Three US Soldiers Found Dead After Vehicle Recovered in Lithuanian Swamp',
   'US Military Races Against Time to Recover Four Soldiers in Lithuanian Bog',
 ]
+
+// LLM response
+
+export const llmRequest: LLMRequest = {
+  message: userMessage,
+  newConversation: false,
+}
+
+export const llmResponse: LLMResponse = {
+  finished: false,
+  message: 'Why do you think that?',
+  reasons: [
+    'Military intervention causes more harm than good.',
+    'The world would be more peaceful with less US military intervention.',
+    'US military spending should be reduced.',
+  ],
+}
 
 // Validation
 

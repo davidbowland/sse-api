@@ -71,5 +71,28 @@ describe('bedrock', () => {
         modelId: 'the-best-ai:1.0',
       })
     })
+
+    it('should inject passed data into the prompt', async () => {
+      const promptWithData = {
+        ...prompt,
+        contents: 'My data should go here: ${data}',
+      }
+      const result = await invokeModelMessage(promptWithData, history, { foo: 'bar' })
+      expect(result).toEqual({ suggestions: invokeModelSuggestedClaims })
+      expect(mockSend).toHaveBeenCalledWith({
+        body: new TextEncoder().encode(
+          JSON.stringify({
+            anthropic_version: 'bedrock-2023-05-31',
+            max_tokens: 256,
+            messages: history,
+            system: 'My data should go here: {"foo":"bar"}',
+            temperature: 0.5,
+            top_k: 250,
+          }),
+        ),
+        contentType: 'application/json',
+        modelId: 'the-best-ai:1.0',
+      })
+    })
   })
 })
