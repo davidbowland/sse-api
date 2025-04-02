@@ -1,10 +1,12 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, ChatMessage, LLMResponse } from '../types'
 import { getPromptById, getSessionById, setSessionById } from '../services/dynamodb'
+import { invokeModelMessage, parseJson } from '../services/bedrock'
 import { log, logError } from '../utils/logging'
 import { extractLlmRequestFromEvent } from '../utils/events'
-import { invokeModelMessage } from '../services/bedrock'
 import { responsePromptId } from '../config'
 import status from '../utils/status'
+
+const PROMPT_OUTPUT_FORMAT = '{"finished": boolean, "message": string, "reasons": [string]}'
 
 export const postLlmResponseHandler = async (event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2<any>> => {
   log('Received event', { ...event, body: undefined })
@@ -15,11 +17,13 @@ export const postLlmResponseHandler = async (event: APIGatewayProxyEventV2): Pro
       const session = await getSessionById(sessionId)
       try {
         const prompt = await getPromptById(responsePromptId)
-        const response: LLMResponse = await invokeModelMessage(
-          prompt,
-          [...session.history, llmRequest.message],
-          session.context,
-        )
+        const response: LLMResponse = (await parseJson(
+          invokeModelMessage(prompt, [...session.history, llmRequest.message], session.context),
+          PROMPT_OUTPUT_FORMAT,
+        )) ?? {
+          finished: false,
+          message: "I'm sorry, but I had trouble generating a response. Would you please rephrase your last message?",
+        }
 
         const updatedSession = {
           ...session,

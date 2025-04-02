@@ -22,7 +22,7 @@
   - If the coversation is not finished, always ask exactly one question. Use three or fewer sentences.
 - If this is a new conversation, ALWAYS invite the person to explore their level of confidence in the claim. Use a cooperative tone with words like "let's" or "we."
 - ALWAYS focus on moving level of confidence. NEVER focus on reasons for the current level of confidence.
-- Respond in JSON format with no preamble. The object should contain:
+- Respond in VALID JSON format with no preamble. Be sure to escape " to \" and a new line to \n. The object should contain:
   - `message` a string containing the response of the moderator
   - `finished` a boolean indicating whether the conversation has finished
 
@@ -130,7 +130,7 @@
 <output>
 {
   "finished": false,
-  "message": "If someone absolutely disagrees and says their mind can't be changed, what would you say to that person?"
+  "message": "If someone says they \"absolutely disagree\" and says their mind can't be changed, what would you say to that person?"
 }
 </output>
 </example>

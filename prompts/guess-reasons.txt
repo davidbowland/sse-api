@@ -18,9 +18,9 @@
   - If the person's response matches a reason, congratulate them and tell them the exact reason generated.
   - If the person's response does not match any reason, invite them to try again.
 - After three consecutive incorrect guesses or all three reasons are guessed, the conversation is finished.
-- When the conversation is finished, reveal the exact text of the three generated reasons.
+- When the conversation is finished, reveal the exact text of the three generated reasons. Express hope that the exercise helps the person evaluate their own reasons and invite them to adjust their confidence level, if appropriate.
 - ALWAYS focus on having the person guess the reasons. NEVER focus on reasons for the current level of confidence.
-- Respond in JSON format with no preamble. The object should contain:
+- Respond in VALID JSON format with no preamble. Be sure to escape " to \" and a new line to \n. The object should contain:
   - `message` a string containing the response of the moderator
   - `finished` a boolean indicating whether the conversation has finished
 
@@ -174,7 +174,7 @@
 <output>
 {
   "finished": true,
-  "message": "Congratulations! You were able to successfully guess the three reasons I generated. That suggests you have a good understanding of the opposing arguments. The three reasons I generated were: (1) Soft drinks such as Coca-Cola have a disproportionate amount of sugar. This causes a public health crisis and therefore should be outlawed. (2) Corporations including Coca-Cola are inherintly bad for society. Their money and influence allows them to squash any competition that isn't itself a corporation, so Coca-Cola should be made illegal. (3) The water and energy consumed by producing Coca-Cola is causing significant harm to the planet. The brief satisfaction it brings is not worth the permanent damage to our planet. Therefore, producing Coca-Cola should be illegal.",
+  "message": "Congratulations! You were able to successfully guess the three reasons I generated. That suggests you have a good understanding of the opposing arguments. The three reasons I generated were: (1) Soft drinks such as Coca-Cola have a disproportionate amount of sugar. This causes a public health crisis and therefore should be outlawed. (2) Corporations including Coca-Cola are inherintly bad for society. Their money and influence allows them to squash any competition that isn't itself a corporation, so Coca-Cola should be made illegal. (3) The water and energy consumed by producing Coca-Cola is causing significant harm to the planet. The brief satisfaction it brings is not worth the permanent damage to our planet. Therefore, producing Coca-Cola should be illegal.\n\nHopefully this helped you reflect on your own decisions and perhaps adjust your confidence level.",
   "reasons": [
     "Soft drinks such as Coca-Cola have a disproportionate amount of sugar. This causes a public health crisis and therefore should be outlawed.",
     "Corporations including Coca-Cola are inherintly bad for society. Their money and influence allows them to squash any competition that isn't itself a corporation, so Coca-Cola should be made illegal.",

@@ -1,6 +1,8 @@
 import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime'
 
 import { ChatMessage, Prompt } from '../types'
+import { getPromptById } from './dynamodb'
+import { log } from '../utils/logging'
 
 const runtimeClient = new BedrockRuntimeClient({ region: 'us-east-1' })
 
@@ -23,5 +25,30 @@ export const invokeModelMessage = async (prompt: Prompt, history: ChatMessage[],
   })
   const response = await runtimeClient.send(command)
   const modelResponse = JSON.parse(new TextDecoder().decode(response.body))
-  return JSON.parse(modelResponse.content[0].text)
+  return modelResponse.content[0].text
+}
+
+export const parseJson = async (input: Promise<string>, targetFormat: string): Promise<any> => {
+  const jsonString = await input
+  try {
+    return JSON.parse(jsonString)
+  } catch (error: any) {
+    log('Error parsing json', { json: jsonString })
+    const fixJsonPrompt = await getPromptById('fix-json')
+    const data = [
+      '<target_format>',
+      targetFormat,
+      '</target_format>',
+      '<invalid_json>',
+      jsonString,
+      '</invalid_json>',
+    ].join('\n')
+    const fixedJsonString = await invokeModel(fixJsonPrompt, data)
+    try {
+      return JSON.parse(fixedJsonString)
+    } catch (fixedError: any) {
+      log('Error parsing fixed json', { json: fixedJsonString })
+      return undefined
+    }
+  }
 }

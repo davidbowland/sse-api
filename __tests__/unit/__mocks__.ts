@@ -53,6 +53,37 @@ export const invokeModelSuggestedClaimsResponse = {
   body: new TextEncoder().encode(JSON.stringify(invokeModelSuggestedClaimsResponseData)),
 }
 
+export const invokeModelInvalidResponseData = {
+  id: 'msg_bdrk_01YA7pmVfUZvZM9reruSimYT',
+  type: 'message',
+  role: 'assistant',
+  model: 'claude-3-5-sonnet-20241022',
+  content: [
+    {
+      type: 'text',
+      text: 'this-is-invalid-json',
+    },
+  ],
+  stop_reason: 'end_turn',
+  stop_sequence: null,
+  usage: { input_tokens: 3398, output_tokens: 99 },
+}
+
+export const invokeModelInvalidResponse = {
+  $metadata: {
+    attempts: 1,
+    cfId: undefined,
+    extendedRequestId: undefined,
+    httpStatusCode: 200,
+    requestId: 'fragglerock',
+    retryDelay: 0,
+    statusCode: 200,
+    success: true,
+    totalRetryDelay: 0,
+  },
+  body: new TextEncoder().encode(JSON.stringify(invokeModelInvalidResponseData)),
+}
+
 // Messages
 
 export const assistantMessage: ChatMessage = { content: 'Whatchu mean?', role: 'assistant' }
