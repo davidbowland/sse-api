@@ -80,11 +80,19 @@ export const prompt: Prompt = {
 export const sessionId: SessionId = '34151'
 
 export const session: Session = {
-  claim: 'Spiders are real',
+  claim: 'The Holy Roman Empire was neither Holy nor Roman nor an Empire.',
   confidence: 'strongly agree',
   expiration: 1743407368,
   history: [userMessage, assistantMessage],
   reasons: ["They're animatronic"],
+}
+
+export const newSession: Session = {
+  claim: 'Rhode Island is neither a road nor an island.',
+  confidence: 'slightly agree',
+  expiration: 1742846971,
+  history: [],
+  reasons: [],
 }
 
 // Claims

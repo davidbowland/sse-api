@@ -1,0 +1,9 @@
+{
+  "body": "{\"claim\":\"Rhode Island is neither a road nor an island.\",\"confidence\":\"slightly agree\"}",
+  "requestContext": {
+    "http": {
+      "method": "POST",
+      "path": "/v1/validate-claim"
+    }
+  }
+}

@@ -76,16 +76,70 @@ Resources:
       FailOnWarnings: true
       StageName: v1
 
-  # SAM won't create two Route53 records, so the HttpApi domain name is created separately
-  # HttpRecordSet:
-  #   Type: AWS::Route53::RecordSet
-  #   Properties:
-  #     AliasTarget:
-  #       DNSName: !Sub '${HttpApi.DomainName.RegionalDomainName}'
-  #       HostedZoneId: !Sub '${HttpApi.DomainName.RegionalHostedZoneId}'
-  #     HostedZoneId: !FindInMap [EnvironmentMap, !Ref Environment, zoneId]
-  #     Name: !FindInMap [EnvironmentMap, !Ref Environment, domain]
-  #     Type: A
+  # Session
+
+  PostSessionFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/post-session.postSessionHandler
+      Runtime: nodejs22.x
+      Architectures:
+        - x86_64
+      MemorySize: 1536
+      Description: Create session
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SessionTable
+      Environment:
+        Variables:
+          DYNAMODB_SESSION_TABLE_NAME: !Ref SessionTable
+          ID_MAX_LENGTH: 16
+          ID_MIN_LENGTH: 6
+          SESSION_EXPIRE_HOURS: 36
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /sessions
+            Method: post
+      Tags:
+        'created-by': 'sse-api'
+        'created-for': 'sse'
+        'environment': !Ref Environment
+      Timeout: 15
+      Tracing: Active
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: 'es2020'
+        Sourcemap: true
+        EntryPoints:
+          - src/handlers/post-session.ts
+
+  PostSessionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${PostSessionFunction}
+      RetentionInDays: 30
+      Tags:
+        - Key: 'created-by'
+          Value: 'sse-api'
+        - Key: 'created-for'
+          Value: 'sse'
+        - Key: 'environment'
+          Value: !Ref Environment
+
+  PostSessionGroupSubscription:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !Sub
+        - 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Function}'
+        - Function: !FindInMap [EnvironmentMap, !Ref Environment, logStreamFunction]
+      FilterPattern: '[timestamp, uuid, level="ERROR", message]'
+      LogGroupName: !Ref PostSessionLogGroup
 
   # LLM invocation
 

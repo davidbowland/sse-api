@@ -1,0 +1,27 @@
+###
+
+POST https://{{sse-api-host}}/v1/suggest-claims HTTP/1.1
+content-type: application/json
+
+{}
+
+###
+
+POST https://{{sse-api-host}}/v1/validate-claim HTTP/1.1
+content-type: application/json
+
+{
+  "claim": "Some citizens who can currently vote should not be able to."
+}
+
+###
+
+POST https://{{sse-api-host}}/v1/sessions HTTP/1.1
+content-type: application/json
+
+{
+  "claim": "Feelings are more important than truth.",
+  "confidence": "strongly disagree",
+}
+
+###

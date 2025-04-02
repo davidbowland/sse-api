@@ -25,5 +25,4 @@ export const idMinLength = parseInt(process.env.ID_MIN_LENGTH as string, 10)
 
 // Sessions
 
-// 60 minutes * 60 seconds = 3_600
-export const sessionExpireDuration = parseInt(process.env.SESSION_EXPIRE_HOURS as string, 10) * 3_600
+export const sessionExpireHours = parseInt(process.env.SESSION_EXPIRE_HOURS as string, 10)
