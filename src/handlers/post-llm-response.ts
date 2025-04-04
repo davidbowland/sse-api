@@ -25,6 +25,8 @@ export const postLlmResponseHandler = async (event: APIGatewayProxyEventV2): Pro
           message: "I'm sorry, but I had trouble generating a response. Would you please rephrase your last message?",
         }
 
+        const assistantMessage = { content: response.message, role: 'assistant' } as ChatMessage
+        const newMessages = llmRequest.newConversation ? [assistantMessage] : [llmRequest.message, assistantMessage]
         const updatedSession = {
           ...session,
           context: {
@@ -32,11 +34,7 @@ export const postLlmResponseHandler = async (event: APIGatewayProxyEventV2): Pro
             reasons:
               session.context.reasons.length === 0 && response.reasons ? response.reasons : session.context.reasons,
           },
-          history: [
-            ...session.history,
-            llmRequest.message,
-            { content: response.message, role: 'assistant' } as ChatMessage,
-          ],
+          history: [...session.history, ...newMessages],
         }
         await setSessionById(sessionId, updatedSession)
 
@@ -45,7 +43,6 @@ export const postLlmResponseHandler = async (event: APIGatewayProxyEventV2): Pro
           body: JSON.stringify({
             finished: response.finished,
             history: updatedSession.history,
-            reasons: updatedSession.context.reasons,
           }),
         }
       } catch (error: any) {

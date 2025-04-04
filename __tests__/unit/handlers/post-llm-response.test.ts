@@ -21,7 +21,6 @@ describe('post-llm-response', () => {
   const expectedResponse = {
     finished: false,
     history: updatedSession.history,
-    reasons: updatedSession.context.reasons,
   }
 
   beforeAll(() => {
@@ -42,11 +41,38 @@ describe('post-llm-response', () => {
 
     it('returns the response from the LLM, no reason', async () => {
       const sessionNoReason = { ...session, context: { ...session.context, reasons: [] } }
-      const expectedResponseNoReason = { ...expectedResponse, reasons: llmResponse.reasons }
+      const expectedSession = {
+        ...updatedSession,
+        context: {
+          ...updatedSession.context,
+          reasons: [
+            'Military intervention causes more harm than good.',
+            'The world would be more peaceful with less US military intervention.',
+            'US military spending should be reduced.',
+          ],
+        },
+      }
       jest.mocked(dynamodb).getSessionById.mockResolvedValueOnce(sessionNoReason)
       const result = await postLlmResponseHandler(event)
 
-      expect(result).toEqual({ ...status.OK, body: JSON.stringify(expectedResponseNoReason) })
+      expect(jest.mocked(dynamodb).setSessionById).toHaveBeenCalledWith(sessionId, expectedSession)
+      expect(result).toEqual({ ...status.OK, body: JSON.stringify(expectedResponse) })
+    })
+
+    it('returns only adds the assistant response to history for new conversations', async () => {
+      jest.mocked(events).extractLlmRequestFromEvent.mockReturnValueOnce({ ...llmRequest, newConversation: true })
+      const expectedSession = {
+        ...updatedSession,
+        history: [...session.history, newAssistantMessage],
+      }
+      const newConversationResponse = {
+        finished: false,
+        history: expectedSession.history,
+      }
+      const result = await postLlmResponseHandler(event)
+
+      expect(jest.mocked(dynamodb).setSessionById).toHaveBeenCalledWith(sessionId, expectedSession)
+      expect(result).toEqual({ ...status.OK, body: JSON.stringify(newConversationResponse) })
     })
 
     it('returns BAD_REQUEST when the event is invalid', async () => {
@@ -87,7 +113,6 @@ describe('post-llm-response', () => {
       const expectedErrorResponse = {
         finished: false,
         history: [...session.history, userMessage, assistantErrorMessage],
-        reasons: updatedSession.context.reasons,
       }
       jest.mocked(bedrock).invokeModelMessage.mockResolvedValueOnce(undefined)
       const result = await postLlmResponseHandler(event)

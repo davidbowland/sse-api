@@ -1,11 +1,11 @@
-###
+### Suggest claims
 
 POST https://{{sse-api-host}}/v1/suggest-claims HTTP/1.1
 content-type: application/json
 
 {}
 
-###
+### Validate a claim
 
 POST https://{{sse-api-host}}/v1/validate-claim HTTP/1.1
 content-type: application/json
@@ -14,7 +14,7 @@ content-type: application/json
   "claim": "Some citizens who can currently vote should not be able to."
 }
 
-###
+### Create a new session
 
 POST https://{{sse-api-host}}/v1/sessions HTTP/1.1
 content-type: application/json
@@ -24,11 +24,11 @@ content-type: application/json
   "confidence": "strongly disagree"
 }
 
-###
+### Retrieve a session
 
 GET https://{{sse-api-host}}/v1/sessions/8675309 HTTP/1.1
 
-###
+### Send a "guess reasons" message
 
 POST https://{{sse-api-host}}/v1/sessions/8675309/guess-reasons HTTP/1.1
 content-type: application/json
@@ -38,7 +38,7 @@ content-type: application/json
   "newConversation": true
 }
 
-###
+### Send a "probe confidence" message
 
 POST https://{{sse-api-host}}/v1/sessions/8675309/probe-confidence HTTP/1.1
 content-type: application/json
@@ -48,7 +48,7 @@ content-type: application/json
   "newConversation": true
 }
 
-###
+### Send a "probe reasons" message
 
 POST https://{{sse-api-host}}/v1/sessions/8675309/probe-reasons HTTP/1.1
 content-type: application/json
