@@ -3,17 +3,6 @@ export { Operation as PatchOperation } from 'fast-json-patch'
 
 // Chatting
 
-export type ConfidenceLevel =
-  | 'absolutely disagree'
-  | 'strongly disagree'
-  | 'disagree'
-  | 'slightly disagree'
-  | 'neutral'
-  | 'slightly agree'
-  | 'agree'
-  | 'strongly agree'
-  | 'absolutely agree'
-
 export interface ChatMessage {
   content: string
   role: 'assistant' | 'user'
@@ -23,6 +12,14 @@ export interface ChatMessage {
 
 export interface Claim {
   claim: string
+}
+
+// Confidence Levels
+
+export interface ConfidenceLevel {
+  label: string
+  text: string
+  value: string
 }
 
 // Prompts
@@ -61,8 +58,9 @@ export type SessionId = string
 
 export interface SessionContext {
   claim: string
-  confidence: ConfidenceLevel
-  reasons: string[]
+  confidence: string
+  generatedReasons: string[]
+  possibleConfidenceLevels: ConfidenceLevel[]
 }
 
 export interface Session {

@@ -1,5 +1,6 @@
 /* eslint sort-keys:0 */
 import { ChatMessage, LLMRequest, LLMResponse, Prompt, PromptConfig, PromptId, Session, SessionId } from '@types'
+import { confidenceLevels } from '@assets/confidence-levels'
 
 // Bedrock
 
@@ -115,7 +116,8 @@ export const session: Session = {
   context: {
     claim: 'The Holy Roman Empire was neither Holy nor Roman nor an Empire.',
     confidence: 'strongly agree',
-    reasons: ["They're animatronic"],
+    generatedReasons: ["They're animatronic"],
+    possibleConfidenceLevels: confidenceLevels,
   },
   expiration: 1743407368,
   history: [userMessage, assistantMessage],
@@ -125,7 +127,8 @@ export const newSession: Session = {
   context: {
     claim: 'Rhode Island is neither a road nor an island.',
     confidence: 'slightly agree',
-    reasons: [],
+    generatedReasons: [],
+    possibleConfidenceLevels: confidenceLevels,
   },
   expiration: 1742846971,
   history: [],

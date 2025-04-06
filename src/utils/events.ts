@@ -1,4 +1,5 @@
 import { APIGatewayProxyEventV2, Claim, LLMRequest, Session } from '../types'
+import { confidenceLevels, confidenceLevelsOrdered } from '../assets/confidence-levels'
 import AJV from 'ajv/dist/jtd'
 import { sessionExpireHours } from '../config'
 
@@ -55,17 +56,7 @@ const formatSession = (body: any): Session => {
     properties: {
       claim: { type: 'string' },
       confidence: {
-        enum: [
-          'absolutely disagree',
-          'strongly disagree',
-          'disagree',
-          'slightly disagree',
-          'neutral',
-          'slightly agree',
-          'agree',
-          'strongly agree',
-          'absolutely agree',
-        ],
+        enum: confidenceLevelsOrdered,
       },
     },
   }
@@ -91,7 +82,8 @@ const formatSession = (body: any): Session => {
     context: {
       claim: body.claim,
       confidence: body.confidence,
-      reasons: [],
+      generatedReasons: [],
+      possibleConfidenceLevels: confidenceLevels,
     },
     expiration: body.expiration ?? lastExpiration,
     history: [],

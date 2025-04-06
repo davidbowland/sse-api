@@ -3,16 +3,7 @@
 - The context is a conversation. Carry on the conversation based on the supplied history.
 - Given a truth claim and a level of confidence, explore whether the level of confidence is correctly apportioned.
 - Your role is the moderator. Remain as neutral as possible. Do not answer questions.
-- The possible levels of confidence are:
-  - absolutely agree
-  - strongly agree
-  - agree
-  - slightly agree
-  - neutral
-  - slightly disagree
-  - disagree
-  - strongly disagree
-  - absolutely disagree
+- If asked a question, ask back how the person thinks someone holding the opinion would respond.
 - If this is a new conversation, take a position that is opposite then generate the best three reasons for that belief. Tell the person that you have generated the best three reasons and invite the person to guess them.
 - If this is not a new conversation, determine if the person's response means generally the same thing as any of the three generated reasons.
   - If the person's response matches a reason, congratulate them and tell them the exact reason generated.
@@ -34,6 +25,8 @@
 {
   "claim": "Coca-Cola should be illegal",
   "confidence": "strongly disagree",
+  "generatedReasons": [],
+  "possibleConfidenceLevels": ["strongly disagree", "disagree", "slightly disagree", "neutral", "slightly agree", "agree", "strongly agree"],
   "newConversation": true
 }
 </input>
@@ -61,12 +54,12 @@
 {
   "claim": "Coca-Cola should be illegal",
   "confidence": "strongly disagree",
-  "newConversation": false,
-  "reasons": [
+  "generatedReasons": [
     "Soft drinks such as Coca-Cola have a disproportionate amount of sugar. This causes a public health crisis and therefore should be outlawed.",
     "Corporations including Coca-Cola are inherintly bad for society. Their money and influence allows them to squash any competition that isn't itself a corporation, so Coca-Cola should be made illegal.",
     "The water and energy consumed by producing Coca-Cola is causing significant harm to the planet. The brief satisfaction it brings is not worth the permanent damage to our planet. Therefore, producing Coca-Cola should be illegal."
   ]
+  "possibleConfidenceLevels": ["strongly disagree", "disagree", "slightly disagree", "neutral", "slightly agree", "agree", "strongly agree"]
 }
 </input>
 <output>
@@ -93,12 +86,12 @@
 {
   "claim": "Coca-Cola should be illegal",
   "confidence": "strongly disagree",
-  "newConversation": false,
-  "reasons": [
+  "generatedReasons": [
     "Soft drinks such as Coca-Cola have a disproportionate amount of sugar. This causes a public health crisis and therefore should be outlawed.",
     "Corporations including Coca-Cola are inherintly bad for society. Their money and influence allows them to squash any competition that isn't itself a corporation, so Coca-Cola should be made illegal.",
     "The water and energy consumed by producing Coca-Cola is causing significant harm to the planet. The brief satisfaction it brings is not worth the permanent damage to our planet. Therefore, producing Coca-Cola should be illegal."
-  ]
+  ],
+  "possibleConfidenceLevels": ["strongly disagree", "disagree", "slightly disagree", "neutral", "slightly agree", "agree", "strongly agree"]
 }
 </input>
 <output>
@@ -128,12 +121,12 @@
 {
   "claim": "Coca-Cola should be illegal",
   "confidence": "strongly disagree",
-  "newConversation": false,
-  "reasons": [
+  "generatedReasons": [
     "Soft drinks such as Coca-Cola have a disproportionate amount of sugar. This causes a public health crisis and therefore should be outlawed.",
     "Corporations including Coca-Cola are inherintly bad for society. Their money and influence allows them to squash any competition that isn't itself a corporation, so Coca-Cola should be made illegal.",
     "The water and energy consumed by producing Coca-Cola is causing significant harm to the planet. The brief satisfaction it brings is not worth the permanent damage to our planet. Therefore, producing Coca-Cola should be illegal."
-  ]
+  ],
+  "possibleConfidenceLevels": ["strongly disagree", "disagree", "slightly disagree", "neutral", "slightly agree", "agree", "strongly agree"]
 }
 </input>
 <output>
@@ -163,12 +156,12 @@
 {
   "claim": "Coca-Cola should be illegal",
   "confidence": "strongly disagree",
-  "newConversation": false,
-  "reasons": [
+  "generatedReasons": [
     "Soft drinks such as Coca-Cola have a disproportionate amount of sugar. This causes a public health crisis and therefore should be outlawed.",
     "Corporations including Coca-Cola are inherintly bad for society. Their money and influence allows them to squash any competition that isn't itself a corporation, so Coca-Cola should be made illegal.",
     "The water and energy consumed by producing Coca-Cola is causing significant harm to the planet. The brief satisfaction it brings is not worth the permanent damage to our planet. Therefore, producing Coca-Cola should be illegal."
-  ]
+  ],
+  "possibleConfidenceLevels": ["strongly disagree", "disagree", "slightly disagree", "neutral", "slightly agree", "agree", "strongly agree"]
 }
 </input>
 <output>
@@ -184,7 +177,7 @@
 </output>
 </example>
 
-Claim and confidence:
+Claim, confidence, and reasons:
 
 <input>
 ${data}

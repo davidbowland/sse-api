@@ -40,12 +40,12 @@ describe('post-llm-response', () => {
     })
 
     it('returns the response from the LLM, no reason', async () => {
-      const sessionNoReason = { ...session, context: { ...session.context, reasons: [] } }
+      const sessionNoReason = { ...session, context: { ...session.context, generatedReasons: [] } }
       const expectedSession = {
         ...updatedSession,
         context: {
           ...updatedSession.context,
-          reasons: [
+          generatedReasons: [
             'Military intervention causes more harm than good.',
             'The world would be more peaceful with less US military intervention.',
             'US military spending should be reduced.',

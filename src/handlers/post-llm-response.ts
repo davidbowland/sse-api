@@ -18,7 +18,10 @@ export const postLlmResponseHandler = async (event: APIGatewayProxyEventV2): Pro
       try {
         const prompt = await getPromptById(responsePromptId)
         const response: LLMResponse = (await parseJson(
-          invokeModelMessage(prompt, [...session.history, llmRequest.message], session.context),
+          invokeModelMessage(prompt, [...session.history, llmRequest.message], {
+            ...session.context,
+            newConversation: llmRequest.newConversation,
+          }),
           PROMPT_OUTPUT_FORMAT,
         )) ?? {
           finished: false,
@@ -31,8 +34,10 @@ export const postLlmResponseHandler = async (event: APIGatewayProxyEventV2): Pro
           ...session,
           context: {
             ...session.context,
-            reasons:
-              session.context.reasons.length === 0 && response.reasons ? response.reasons : session.context.reasons,
+            generatedReasons:
+              session.context.generatedReasons.length === 0 && response.reasons
+                ? response.reasons
+                : session.context.generatedReasons,
           },
           history: [...session.history, ...newMessages],
         }
