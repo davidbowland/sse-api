@@ -1,6 +1,7 @@
 import * as bedrock from '@services/bedrock'
 import * as claimSourcesService from '@services/claim-sources'
 import * as dynamodb from '@services/dynamodb'
+import * as events from '@utils/events'
 import { claimSources, invokeModelSuggestedClaims, prompt } from '../__mocks__'
 import { APIGatewayProxyEventV2 } from '@types'
 import eventJson from '@events/post-suggest-claims.json'
@@ -10,6 +11,7 @@ import status from '@utils/status'
 jest.mock('@services/bedrock')
 jest.mock('@services/dynamodb')
 jest.mock('@services/claim-sources')
+jest.mock('@utils/events')
 jest.mock('@utils/logging')
 
 describe('post-suggest-claims', () => {
@@ -20,6 +22,7 @@ describe('post-suggest-claims', () => {
     jest.mocked(bedrock).parseJson.mockImplementation((json) => json)
     jest.mocked(claimSourcesService).getClaimSources.mockResolvedValue(claimSources)
     jest.mocked(dynamodb).getPromptById.mockResolvedValue(prompt)
+    jest.mocked(events).extractSuggestClaimsRequestFromEvent.mockReturnValue({ language: 'en-US' })
   })
 
   describe('postSuggestClaimsHandler', () => {
@@ -27,6 +30,15 @@ describe('post-suggest-claims', () => {
       const result = await postSuggestClaimsHandler(event)
       expect(result).toEqual(expect.objectContaining(status.OK))
       expect(JSON.parse(result.body)).toEqual({ claims: invokeModelSuggestedClaims })
+    })
+
+    it('returns BAD_REQEUST when extractSuggestClaimsRequestFromEvent throws', async () => {
+      jest.mocked(events).extractSuggestClaimsRequestFromEvent.mockImplementationOnce(() => {
+        throw new Error('Bad request')
+      })
+
+      const result = await postSuggestClaimsHandler(event)
+      expect(result).toEqual(expect.objectContaining(status.BAD_REQUEST))
     })
 
     it('returns INTERNAL_SERVER_ERROR when getClaimSources rejects', async () => {

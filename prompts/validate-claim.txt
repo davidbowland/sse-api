@@ -10,10 +10,16 @@
   - `inappropriate` a boolean indicating if the input is inappropriate
   - `isTruthClaim` a boolean indicating if the input is a valid truth claim
   - `suggestions` an array that is empty or contains up to five claim suggestions
+- ALWAYS answer in the language requested.
 
 </instructions>
 
 <example>
+<context>
+{
+  "language": "en-US"
+}
+</context>
 <input>
 Capital punishment is moral.
 </input>
@@ -27,6 +33,11 @@ Capital punishment is moral.
 </example>
 
 <example>
+<context>
+{
+  "language": "en-US"
+}
+</context>
 <input>
 Abraham Lincoln was the best president ever.
 </input>
@@ -43,6 +54,11 @@ Abraham Lincoln was the best president ever.
 </example>
 
 <example>
+<context>
+{
+  "language": "en-US"
+}
+</context>
 <input>
 We should abolish the department of education.
 </input>
@@ -59,6 +75,11 @@ We should abolish the department of education.
 </example>
 
 <example>
+<context>
+{
+  "language": "en-US"
+}
+</context>
 <input>
 I think there should be more immigration.
 </input>
@@ -76,6 +97,11 @@ I think there should be more immigration.
 </example>
 
 <example>
+<context>
+{
+  "language": "en-US"
+}
+</context>
 <input>
 Cheese is delicious.
 </input>
@@ -92,6 +118,11 @@ Cheese is delicious.
 </example>
 
 <example>
+<context>
+{
+  "language": "en-US"
+}
+</context>
 <input>
 Someone should assassinate the mayor.
 </input>
@@ -103,3 +134,9 @@ Someone should assassinate the mayor.
 }
 </output>
 </example>
+
+Language:
+
+<context>
+${context}
+</context>

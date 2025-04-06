@@ -117,6 +117,7 @@ export const session: Session = {
     claim: 'The Holy Roman Empire was neither Holy nor Roman nor an Empire.',
     confidence: 'strongly agree',
     generatedReasons: ["They're animatronic"],
+    language: 'en-US',
     possibleConfidenceLevels: confidenceLevels,
   },
   expiration: 1743407368,
@@ -128,6 +129,7 @@ export const newSession: Session = {
     claim: 'Rhode Island is neither a road nor an island.',
     confidence: 'slightly agree',
     generatedReasons: [],
+    language: 'en-US',
     possibleConfidenceLevels: confidenceLevels,
   },
   expiration: 1742846971,
@@ -157,6 +159,7 @@ export const claimSources = [
 // LLM response
 
 export const llmRequest: LLMRequest = {
+  language: 'en-US',
   message: userMessage,
   newConversation: false,
 }

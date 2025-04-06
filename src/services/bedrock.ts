@@ -6,8 +6,12 @@ import { log } from '../utils/logging'
 
 const runtimeClient = new BedrockRuntimeClient({ region: 'us-east-1' })
 
-export const invokeModel = async (prompt: any, data: string): Promise<any> =>
-  invokeModelMessage(prompt, [{ content: data, role: 'user' }])
+export const invokeModel = async (prompt: any, data: string, context?: any): Promise<any> => {
+  const promptWithContext = context
+    ? { ...prompt, contents: prompt.contents.replace('${context}', JSON.stringify(context)) }
+    : prompt
+  return invokeModelMessage(promptWithContext, [{ content: data, role: 'user' }])
+}
 
 export const invokeModelMessage = async (prompt: Prompt, history: ChatMessage[], data?: any): Promise<any> => {
   const messageBody = {

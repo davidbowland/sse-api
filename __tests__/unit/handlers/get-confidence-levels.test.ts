@@ -14,7 +14,7 @@ describe('get-confidence-levels', () => {
       const result = await getConfidenceLevelsHandler(event)
 
       expect(result).toEqual(expect.objectContaining(status.OK))
-      expect(JSON.parse(result.body)).toEqual(confidenceLevels)
+      expect(JSON.parse(result.body)).toEqual({ confidenceLevels })
     })
   })
 })

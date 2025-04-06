@@ -31,10 +31,10 @@ Respond with NO PREAMBLE. Only respond with valid JSON.
 {"contents":"he said,
 "hello, world!"
 she answered back,
-"hello!"","message": "but the world didn't answer"}
+"hello!"","content": "but the world didn't answer"}
 </input>
 <output>
-{"contents":"he said,\n\"hello, world!\"\nshe answered back,\n\"hello!\"","message":"but the world didn't answer"}
+{"contents":"he said,\n\"hello, world!\"\nshe answered back,\n\"hello!\"","content":"but the world didn't answer"}
 </output>
 </example>
 

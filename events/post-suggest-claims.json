@@ -1,5 +1,5 @@
 {
-  "body": "{}",
+  "body": "{\"language\":\"en-GB\"}",
   "requestContext": {
     "http": {
       "method": "POST",
