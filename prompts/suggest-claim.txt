@@ -9,10 +9,16 @@
 - A truth claim should not promote violence, sexual violence, or felony crimes.
 - Respond in JSON format and NEVER give a preamble. The object should contain:
   - `suggestions` an array that contains six claim suggestions
+- ALWAYS answer in the language requested.
 
 </instructions>
 
 <example>
+<context>
+{
+  "language": "en-US"
+}
+</context>
 <input>
 Canada’s Carney calls snap election as Trump looms over campaign
 Pope Francis is discharged from the hospital after treatment for respiratory infection
@@ -35,6 +41,11 @@ Google Confirms Gmail AI Upgrade—3 Billion Users Must Now Decide
 </example>
 
 <example>
+<context>
+{
+  "language": "en-US"
+}
+</context>
 <input>
 Usha Vance, US officials to visit Greenland amid Donald Trump's talk of annexation
 Japan, China, South Korea Meet as US Tariff Pressure Rises
@@ -55,3 +66,9 @@ Kentucky Lt. Gov. says she is concerned about Education Department disassembly
 }
 </output>
 </example>
+
+Language:
+
+<context>
+${context}
+</context>

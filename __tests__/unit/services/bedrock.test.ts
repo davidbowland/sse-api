@@ -49,6 +49,29 @@ describe('bedrock', () => {
         modelId: 'the-best-ai:1.0',
       })
     })
+
+    it('should inject context into the prompt when passed', async () => {
+      const promptWithContext = {
+        ...prompt,
+        contents: 'My context should go here: ${context}',
+      }
+      const result = JSON.parse(await invokeModel(promptWithContext, data, { foo: 'bar' }))
+      expect(result).toEqual({ suggestions: invokeModelSuggestedClaims })
+      expect(mockSend).toHaveBeenCalledWith({
+        body: new TextEncoder().encode(
+          JSON.stringify({
+            anthropic_version: 'bedrock-2023-05-31',
+            max_tokens: 256,
+            messages: [{ content: data, role: 'user' }],
+            system: 'My context should go here: {"foo":"bar"}',
+            temperature: 0.5,
+            top_k: 250,
+          }),
+        ),
+        contentType: 'application/json',
+        modelId: 'the-best-ai:1.0',
+      })
+    })
   })
 
   describe('invokeModelMessage', () => {

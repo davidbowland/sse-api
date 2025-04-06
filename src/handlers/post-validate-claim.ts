@@ -13,10 +13,10 @@ export const postValidateClaimHandler = async (
 ): Promise<APIGatewayProxyResultV2<any>> => {
   log('Received event', { ...event, body: undefined })
   try {
-    const { claim } = extractClaimFromEvent(event)
+    const { claim, language } = extractClaimFromEvent(event)
     try {
       const prompt = await getPromptById(validateClaimPromptId)
-      const validation = await parseJson(invokeModel(prompt, claim), PROMPT_OUTPUT_FORMAT)
+      const validation = await parseJson(invokeModel(prompt, claim, { language }), PROMPT_OUTPUT_FORMAT)
       if (validation === undefined) {
         return status.INTERNAL_SERVER_ERROR
       }

@@ -1,8 +1,14 @@
-import { extractClaimFromEvent, extractLlmRequestFromEvent, extractSessionFromEvent } from '@utils/events'
+import {
+  extractClaimFromEvent,
+  extractLlmRequestFromEvent,
+  extractSessionFromEvent,
+  extractSuggestClaimsRequestFromEvent,
+} from '@utils/events'
 import { llmRequest, newSession } from '../__mocks__'
 import { APIGatewayProxyEventV2 } from '@types'
 import createEventJson from '@events/post-session.json'
 import llmResponseEventJson from '@events/post-llm-response.json'
+import suggestClaimsEventJson from '@events/post-suggest-claims.json'
 import validateEventJson from '@events/post-validate-claim.json'
 
 describe('events', () => {
@@ -16,6 +22,7 @@ describe('events', () => {
     const event = validateEventJson as unknown as APIGatewayProxyEventV2
     const newClaim = {
       claim: 'Chickpeas are neither chicks nor peas.',
+      language: 'en-US',
     }
 
     it('should extract the claim from the event', () => {
@@ -23,7 +30,7 @@ describe('events', () => {
       expect(result).toEqual(newClaim)
     })
 
-    it('should extract the claim from the event when it is Base64', () => {
+    it('should extract the claim from the event when it is Base64 encoded', () => {
       const eventWithBase64Claim = {
         ...event,
         body: Buffer.from(event.body).toString('base64'),
@@ -50,7 +57,7 @@ describe('events', () => {
       expect(result).toEqual(llmRequest)
     })
 
-    it('should extract the LLMRequest from the event when it is Base64', () => {
+    it('should extract the LLMRequest from the event when it is Base64 encoded', () => {
       const eventWithBase64Request = {
         ...event,
         body: Buffer.from(event.body).toString('base64'),
@@ -89,7 +96,7 @@ describe('events', () => {
       expect(result).toEqual(newSession)
     })
 
-    it('should extract the session from the event when it is Base64', () => {
+    it('should extract the session from the event when it is Base64 encoded', () => {
       const eventWithBase64Session = {
         ...event,
         body: Buffer.from(event.body).toString('base64'),
@@ -117,6 +124,37 @@ describe('events', () => {
         }),
       }
       expect(() => extractSessionFromEvent(eventWithMalformedSession)).toThrow()
+    })
+  })
+
+  describe('extractSuggestClaimsRequestFromEvent', () => {
+    const event = suggestClaimsEventJson as unknown as APIGatewayProxyEventV2
+
+    it('should extract the SuggestClaimsRequest from the event', () => {
+      const result = extractSuggestClaimsRequestFromEvent(event)
+      expect(result).toEqual({
+        language: 'en-GB',
+      })
+    })
+
+    it('should extract the SuggestRequest from the event when it is Base64', () => {
+      const eventWithBase64Request = {
+        ...event,
+        body: Buffer.from(event.body).toString('base64'),
+        isBase64Encoded: true,
+      }
+      const result = extractSuggestClaimsRequestFromEvent(eventWithBase64Request)
+      expect(result).toEqual({
+        language: 'en-GB',
+      })
+    })
+
+    it('should error when the SuggestRequest is malformed', () => {
+      const eventWithMalformedRequest = {
+        ...event,
+        body: JSON.stringify({ foo: 'bar' }),
+      }
+      expect(() => extractSuggestClaimsRequestFromEvent(eventWithMalformedRequest)).toThrow()
     })
   })
 })

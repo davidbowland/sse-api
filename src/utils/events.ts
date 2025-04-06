@@ -1,4 +1,4 @@
-import { APIGatewayProxyEventV2, Claim, LLMRequest, Session } from '../types'
+import { APIGatewayProxyEventV2, Claim, LLMRequest, Session, SuggestClaimsRequest } from '../types'
 import { confidenceLevels, confidenceLevelsOrdered } from '../assets/confidence-levels'
 import AJV from 'ajv/dist/jtd'
 import { sessionExpireHours } from '../config'
@@ -11,6 +11,9 @@ const getTimeInSeconds = () => Math.floor(Date.now() / 1000)
 
 const formatClaim = (body: any): Claim => {
   const jsonTypeDefinition = {
+    optionalProperties: {
+      language: { type: 'string' },
+    },
     properties: {
       claim: { type: 'string' },
     },
@@ -18,7 +21,7 @@ const formatClaim = (body: any): Claim => {
   if (ajv.validate(jsonTypeDefinition, body) === false) {
     throw new Error(JSON.stringify(ajv.errors))
   }
-  return { claim: body.claim }
+  return { claim: body.claim, language: body.language ?? 'en-US' }
 }
 
 export const extractClaimFromEvent = (event: APIGatewayProxyEventV2): Claim => formatClaim(parseEventBody(event))
@@ -28,6 +31,7 @@ export const extractClaimFromEvent = (event: APIGatewayProxyEventV2): Claim => f
 const formatLlmRequest = (body: any): LLMRequest => {
   const jsonTypeDefinition = {
     optionalProperties: {
+      language: { type: 'string' },
       newConversation: { type: 'boolean' },
     },
     properties: {
@@ -38,6 +42,7 @@ const formatLlmRequest = (body: any): LLMRequest => {
     throw new Error(JSON.stringify(ajv.errors))
   }
   return {
+    language: body.language ?? 'en-US',
     message: { content: body.content, role: 'user' },
     newConversation: body.newConversation ?? false,
   }
@@ -52,6 +57,7 @@ const formatSession = (body: any): Session => {
   const jsonTypeDefinition = {
     optionalProperties: {
       expiration: { type: 'float64' },
+      language: { type: 'string' },
     },
     properties: {
       claim: { type: 'string' },
@@ -83,6 +89,7 @@ const formatSession = (body: any): Session => {
       claim: body.claim,
       confidence: body.confidence,
       generatedReasons: [],
+      language: body.language ?? 'en-US',
       possibleConfidenceLevels: confidenceLevels,
     },
     expiration: body.expiration ?? lastExpiration,
@@ -91,6 +98,23 @@ const formatSession = (body: any): Session => {
 }
 
 export const extractSessionFromEvent = (event: APIGatewayProxyEventV2): Session => formatSession(parseEventBody(event))
+
+// Suggest claims request
+
+const formatSuggestClaimsRequest = (body: any): SuggestClaimsRequest => {
+  const jsonTypeDefinition = {
+    optionalProperties: {
+      language: { type: 'string' },
+    },
+  }
+  if (ajv.validate(jsonTypeDefinition, body) === false) {
+    throw new Error(JSON.stringify(ajv.errors))
+  }
+  return { language: body.language ?? 'en-US' }
+}
+
+export const extractSuggestClaimsRequestFromEvent = (event: APIGatewayProxyEventV2): SuggestClaimsRequest =>
+  formatSuggestClaimsRequest(parseEventBody(event))
 
 // Events
 

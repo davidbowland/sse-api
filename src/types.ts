@@ -12,6 +12,7 @@ export interface ChatMessage {
 
 export interface Claim {
   claim: string
+  language: string
 }
 
 // Confidence Levels
@@ -42,6 +43,7 @@ export interface Prompt {
 // LLM interactions
 
 export interface LLMRequest {
+  language: string
   message: ChatMessage
   newConversation?: boolean
 }
@@ -60,6 +62,7 @@ export interface SessionContext {
   claim: string
   confidence: string
   generatedReasons: string[]
+  language: string
   possibleConfidenceLevels: ConfidenceLevel[]
 }
 
@@ -67,6 +70,12 @@ export interface Session {
   context: SessionContext
   expiration: number
   history: ChatMessage[]
+}
+
+// Suggest claims
+
+export interface SuggestClaimsRequest {
+  language: string
 }
 
 // Validation

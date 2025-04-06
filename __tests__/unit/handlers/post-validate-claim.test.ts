@@ -21,7 +21,7 @@ describe('post-validate-claim', () => {
     jest.mocked(bedrock).invokeModel.mockResolvedValue(validationResult)
     jest.mocked(bedrock).parseJson.mockImplementation((json) => json)
     jest.mocked(dynamodb).getPromptById.mockResolvedValue(prompt)
-    jest.mocked(events).extractClaimFromEvent.mockReturnValue({ claim })
+    jest.mocked(events).extractClaimFromEvent.mockReturnValue({ claim, language: 'en-US' })
   })
 
   describe('postValidateClaimHandler', () => {
