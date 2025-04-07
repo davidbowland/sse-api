@@ -6,7 +6,7 @@ import { extractLlmRequestFromEvent } from '../utils/events'
 import { responsePromptId } from '../config'
 import status from '../utils/status'
 
-const PROMPT_OUTPUT_FORMAT = '{"finished": boolean, "message": string, "reasons": [string]}'
+const PROMPT_OUTPUT_FORMAT = '{"finished": false, "message": string, "reasons": [string]}'
 
 export const postLlmResponseHandler = async (event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2<any>> => {
   log('Received event', { ...event, body: undefined })
