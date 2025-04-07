@@ -1,9 +1,14 @@
+<instructions>
+
 Transform the provided invalid JSON into VALID JSON that conforms with rfc8259. Be sure the output:
   - " is escaped as \"
   - No trailing comma before the last }
   - New lines are escaped as \n
   - Each key is enclosed in quotes and string values are enclosed in quotes.
+  - If the input does not resemble JSON but is a sentence, consider that the message or text
 Respond with NO PREAMBLE. Only respond with valid JSON.
+
+</instructions>
 
 <example>
 <input>
