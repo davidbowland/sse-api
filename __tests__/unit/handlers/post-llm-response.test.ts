@@ -19,8 +19,9 @@ describe('post-llm-response', () => {
     history: [...session.history, userMessage, newAssistantMessage],
   }
   const expectedResponse = {
-    finished: false,
+    currentStep: 'probe confidence',
     history: updatedSession.history,
+    newConversation: false,
   }
 
   beforeAll(() => {
@@ -60,14 +61,58 @@ describe('post-llm-response', () => {
     })
 
     it('returns only adds the assistant response to history for new conversations', async () => {
-      jest.mocked(events).extractLlmRequestFromEvent.mockReturnValueOnce({ ...llmRequest, newConversation: true })
+      const sessionNewConversation = { ...session, newConversation: true }
+      jest.mocked(dynamodb).getSessionById.mockResolvedValueOnce(sessionNewConversation)
       const expectedSession = {
         ...updatedSession,
         history: [...session.history, newAssistantMessage],
       }
       const newConversationResponse = {
-        finished: false,
+        currentStep: 'probe confidence',
         history: expectedSession.history,
+        newConversation: false,
+      }
+      const result = await postLlmResponseHandler(event)
+
+      expect(jest.mocked(dynamodb).setSessionById).toHaveBeenCalledWith(sessionId, expectedSession)
+      expect(result).toEqual({ ...status.OK, body: JSON.stringify(newConversationResponse) })
+    })
+
+    it('moves on to next step', async () => {
+      const finishedLlmResponse = { ...llmResponse, finished: true }
+      const sessionNewConversation = { ...session, currentStep: 'probe confidence' }
+      jest.mocked(bedrock).invokeModelMessage.mockResolvedValueOnce(finishedLlmResponse)
+      jest.mocked(dynamodb).getSessionById.mockResolvedValueOnce(sessionNewConversation)
+      const expectedSession = {
+        ...updatedSession,
+        currentStep: 'probe reasons',
+        newConversation: true,
+      }
+      const newConversationResponse = {
+        currentStep: 'probe reasons',
+        history: expectedSession.history,
+        newConversation: true,
+      }
+      const result = await postLlmResponseHandler(event)
+
+      expect(jest.mocked(dynamodb).setSessionById).toHaveBeenCalledWith(sessionId, expectedSession)
+      expect(result).toEqual({ ...status.OK, body: JSON.stringify(newConversationResponse) })
+    })
+
+    it("doesn't move on from final step", async () => {
+      const finishedLlmResponse = { ...llmResponse, finished: true }
+      const sessionNewConversation = { ...session, currentStep: 'end' }
+      jest.mocked(bedrock).invokeModelMessage.mockResolvedValueOnce(finishedLlmResponse)
+      jest.mocked(dynamodb).getSessionById.mockResolvedValueOnce(sessionNewConversation)
+      const expectedSession = {
+        ...updatedSession,
+        currentStep: 'end',
+        newConversation: true,
+      }
+      const newConversationResponse = {
+        currentStep: 'end',
+        history: expectedSession.history,
+        newConversation: true,
       }
       const result = await postLlmResponseHandler(event)
 
@@ -105,14 +150,15 @@ describe('post-llm-response', () => {
       expect(result).toEqual(status.INTERNAL_SERVER_ERROR)
     })
 
-    it('returns INTERNAL_SERVER_ERROR when the LLM returns generic message', async () => {
+    it('returns OK with message when the LLM returns undefined', async () => {
       const assistantErrorMessage = {
         content: "I'm sorry, but I had trouble generating a response. Would you please rephrase your last message?",
         role: 'assistant',
       }
       const expectedErrorResponse = {
-        finished: false,
+        currentStep: 'probe confidence',
         history: [...session.history, userMessage, assistantErrorMessage],
+        newConversation: false,
       }
       jest.mocked(bedrock).invokeModelMessage.mockResolvedValueOnce(undefined)
       const result = await postLlmResponseHandler(event)

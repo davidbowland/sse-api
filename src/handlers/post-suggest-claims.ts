@@ -28,7 +28,7 @@ export const postSuggestClaimsHandler = async (
       log('Generated claims', { claimSources, suggestions: response.suggestions })
 
       return { ...status.OK, body: JSON.stringify({ claims: response.suggestions }) }
-    } catch (error) {
+    } catch (error: any) {
       logError(error)
       return status.INTERNAL_SERVER_ERROR
     }

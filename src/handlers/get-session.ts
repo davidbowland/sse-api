@@ -10,7 +10,7 @@ export const getSessionHandler = async (event: APIGatewayProxyEventV2): Promise<
   try {
     const result = await getSessionById(sessionId)
     return { ...status.OK, body: JSON.stringify(result) }
-  } catch (error) {
+  } catch (error: any) {
     return status.NOT_FOUND
   }
 }

@@ -5,8 +5,12 @@
   - The next two truth claims should be moderately controversial.
   - The final two truth claims should be highly controversial.
 - A truth claim is a statement that MUST be true or false. A truth claim cannot be both true and false.
-- A truth claim cannot be a statement of fact. A truth claim must be about what should happen, what is best, or what is moral.
-- A truth claim should not promote violence, sexual violence, or felony crimes.
+- Truth claims cannot be a statement of fact. A truth claim must be about what should happen, what is best, or what is moral.
+- Truth claims should not promote violence, sexual violence, or felony crimes.
+- Truth claims should be in the positive, for example:
+  - `fairly` instead of `unfairly`
+  - `should` instead of `should not`
+  - `can` instead of `can't`
 - Respond in JSON format and NEVER give a preamble. The object should contain:
   - `suggestions` an array that contains six claim suggestions
 - ALWAYS answer in the language requested.

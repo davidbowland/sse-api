@@ -8,6 +8,13 @@ export interface ChatMessage {
   role: 'assistant' | 'user'
 }
 
+export interface ConversationStep {
+  isFinalStep?: boolean
+  label: string
+  path: string
+  value: string
+}
+
 // Claims
 
 export interface Claim {
@@ -45,7 +52,6 @@ export interface Prompt {
 export interface LLMRequest {
   language: string
   message: ChatMessage
-  newConversation?: boolean
 }
 
 export interface LLMResponse {
@@ -68,8 +74,12 @@ export interface SessionContext {
 
 export interface Session {
   context: SessionContext
+  conversationSteps: ConversationStep[]
+  currentStep?: string
   expiration: number
   history: ChatMessage[]
+  newConversation: boolean
+  originalConfidence: string
 }
 
 // Suggest claims
