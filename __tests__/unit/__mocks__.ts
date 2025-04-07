@@ -1,6 +1,7 @@
 /* eslint sort-keys:0 */
 import { ChatMessage, LLMRequest, LLMResponse, Prompt, PromptConfig, PromptId, Session, SessionId } from '@types'
 import { confidenceLevels } from '@assets/confidence-levels'
+import { conversationSteps } from '@assets/conversation-steps'
 
 // Bedrock
 
@@ -120,8 +121,12 @@ export const session: Session = {
     language: 'en-US',
     possibleConfidenceLevels: confidenceLevels,
   },
+  conversationSteps,
+  currentStep: conversationSteps[1].value,
   expiration: 1743407368,
   history: [userMessage, assistantMessage],
+  newConversation: false,
+  originalConfidence: 'agree',
 }
 
 export const newSession: Session = {
@@ -132,8 +137,12 @@ export const newSession: Session = {
     language: 'en-US',
     possibleConfidenceLevels: confidenceLevels,
   },
+  conversationSteps,
+  currentStep: conversationSteps[0].value,
   expiration: 1742846971,
   history: [],
+  newConversation: true,
+  originalConfidence: 'slightly agree',
 }
 
 // Claims
@@ -161,7 +170,6 @@ export const claimSources = [
 export const llmRequest: LLMRequest = {
   language: 'en-US',
   message: userMessage,
-  newConversation: false,
 }
 
 export const llmResponse: LLMResponse = {

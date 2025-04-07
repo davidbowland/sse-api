@@ -28,14 +28,22 @@ content-type: application/json
 
 GET https://{{sse-api-host}}/v1/sessions/8675309 HTTP/1.1
 
+### Send an "start chat" message
+
+POST https://{{sse-api-host}}/v1/sessions/8675309/start-chat HTTP/1.1
+content-type: application/json
+
+{
+  "content": "I strongly disagree with the claim: Feelings are more important than truth."
+}
+
 ### Send a "guess reasons" message
 
 POST https://{{sse-api-host}}/v1/sessions/8675309/guess-reasons HTTP/1.1
 content-type: application/json
 
 {
-  "content": "I strongly disagree with the claim: Feelings are more important than truth.",
-  "newConversation": true
+  "content": "I strongly disagree with the claim: Feelings are more important than truth."
 }
 
 ### Send a "probe confidence" message
@@ -44,8 +52,7 @@ POST https://{{sse-api-host}}/v1/sessions/8675309/probe-confidence HTTP/1.1
 content-type: application/json
 
 {
-  "content": "I strongly disagree with the claim: Feelings are more important than truth.",
-  "newConversation": true
+  "content": "I strongly disagree with the claim: Feelings are more important than truth."
 }
 
 ### Send a "probe reasons" message
@@ -54,8 +61,16 @@ POST https://{{sse-api-host}}/v1/sessions/8675309/probe-reasons HTTP/1.1
 content-type: application/json
 
 {
-  "content": "I strongly disagree with the claim: Feelings are more important than truth.",
-  "newConversation": true
+  "content": "I strongly disagree with the claim: Feelings are more important than truth."
+}
+
+### Send an "end chat" message
+
+POST https://{{sse-api-host}}/v1/sessions/8675309/end-chat HTTP/1.1
+content-type: application/json
+
+{
+  "content": "I strongly disagree with the claim: Feelings are more important than truth."
 }
 
 ###

@@ -1,4 +1,6 @@
-export const confidenceLevels = [
+import { ConfidenceLevel } from '../types'
+
+export const confidenceLevels: ConfidenceLevel[] = [
   { label: 'Strongly agree', text: 'strongly agree', value: 'strongly agree' },
   { label: 'Agree', text: 'agree', value: 'agree' },
   { label: 'Slightly agree', text: 'slightly agree', value: 'slightly agree' },

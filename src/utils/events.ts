@@ -1,6 +1,7 @@
 import { APIGatewayProxyEventV2, Claim, LLMRequest, Session, SuggestClaimsRequest } from '../types'
 import { confidenceLevels, confidenceLevelsOrdered } from '../assets/confidence-levels'
 import AJV from 'ajv/dist/jtd'
+import { conversationSteps } from '../assets/conversation-steps'
 import { sessionExpireHours } from '../config'
 
 const ajv = new AJV({ allErrors: true })
@@ -32,7 +33,6 @@ const formatLlmRequest = (body: any): LLMRequest => {
   const jsonTypeDefinition = {
     optionalProperties: {
       language: { type: 'string' },
-      newConversation: { type: 'boolean' },
     },
     properties: {
       content: { type: 'string' },
@@ -44,7 +44,6 @@ const formatLlmRequest = (body: any): LLMRequest => {
   return {
     language: body.language ?? 'en-US',
     message: { content: body.content, role: 'user' },
-    newConversation: body.newConversation ?? false,
   }
 }
 
@@ -92,8 +91,12 @@ const formatSession = (body: any): Session => {
       language: body.language ?? 'en-US',
       possibleConfidenceLevels: confidenceLevels,
     },
+    conversationSteps,
+    currentStep: conversationSteps[0].value,
     expiration: body.expiration ?? lastExpiration,
     history: [],
+    newConversation: true,
+    originalConfidence: body.confidence,
   }
 }
 

@@ -14,7 +14,7 @@ const idExists = async (id: string, getById: GetById): Promise<boolean> => {
   try {
     await getById(id)
     return true
-  } catch (error) {
+  } catch (error: any) {
     return false
   }
 }

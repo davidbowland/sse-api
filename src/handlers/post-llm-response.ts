@@ -1,4 +1,4 @@
-import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, ChatMessage, LLMResponse } from '../types'
+import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, ChatMessage, LLMResponse, Session } from '../types'
 import { getPromptById, getSessionById, setSessionById } from '../services/dynamodb'
 import { invokeModelMessage, parseJson } from '../services/bedrock'
 import { log, logError } from '../utils/logging'
@@ -17,10 +17,14 @@ export const postLlmResponseHandler = async (event: APIGatewayProxyEventV2): Pro
       const session = await getSessionById(sessionId)
       try {
         const prompt = await getPromptById(responsePromptId)
+        const currentStepIndex = session.conversationSteps.findIndex((step) => step.value === session.currentStep)
+        const currentStepObject = session.conversationSteps[currentStepIndex]
+
         const response: LLMResponse = (await parseJson(
           invokeModelMessage(prompt, [...session.history, llmRequest.message], {
             ...session.context,
-            newConversation: llmRequest.newConversation,
+            newConversation: session.newConversation,
+            originalConfidence: currentStepObject.isFinalStep ? session.originalConfidence : undefined,
           }),
           PROMPT_OUTPUT_FORMAT,
         )) ?? {
@@ -29,8 +33,9 @@ export const postLlmResponseHandler = async (event: APIGatewayProxyEventV2): Pro
         }
 
         const assistantMessage = { content: response.message, role: 'assistant' } as ChatMessage
-        const newMessages = llmRequest.newConversation ? [assistantMessage] : [llmRequest.message, assistantMessage]
-        const updatedSession = {
+        const newMessages = session.newConversation ? [assistantMessage] : [llmRequest.message, assistantMessage]
+
+        const updatedSession: Session = {
           ...session,
           context: {
             ...session.context,
@@ -39,15 +44,21 @@ export const postLlmResponseHandler = async (event: APIGatewayProxyEventV2): Pro
                 ? response.reasons
                 : session.context.generatedReasons,
           },
+          currentStep:
+            response.finished && !currentStepObject.isFinalStep
+              ? session.conversationSteps[currentStepIndex + 1].value
+              : session.currentStep,
           history: [...session.history, ...newMessages],
+          newConversation: response.finished,
         }
         await setSessionById(sessionId, updatedSession)
 
         return {
           ...status.OK,
           body: JSON.stringify({
-            finished: response.finished,
+            currentStep: updatedSession.currentStep,
             history: updatedSession.history,
+            newConversation: updatedSession.newConversation,
           }),
         }
       } catch (error: any) {

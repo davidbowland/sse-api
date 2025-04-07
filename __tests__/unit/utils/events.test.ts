@@ -67,18 +67,6 @@ describe('events', () => {
       expect(result).toEqual(llmRequest)
     })
 
-    it('should correct detect a new conversation', () => {
-      const eventWithNewConversation = {
-        ...event,
-        body: JSON.stringify({
-          content: 'I think I saw a cat',
-          newConversation: true,
-        }),
-      }
-      const result = extractLlmRequestFromEvent(eventWithNewConversation)
-      expect(result).toEqual({ ...llmRequest, newConversation: true })
-    })
-
     it('should error when the chat message is malformed', () => {
       const eventWithMalformedRequest = {
         ...event,
@@ -146,6 +134,17 @@ describe('events', () => {
       const result = extractSuggestClaimsRequestFromEvent(eventWithBase64Request)
       expect(result).toEqual({
         language: 'en-GB',
+      })
+    })
+
+    it('should default to en-US when language is not provided', () => {
+      const eventNoLanguageRequest = {
+        ...event,
+        body: JSON.stringify({}),
+      }
+      const result = extractSuggestClaimsRequestFromEvent(eventNoLanguageRequest)
+      expect(result).toEqual({
+        language: 'en-US',
       })
     })
 
