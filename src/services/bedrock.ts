@@ -27,8 +27,10 @@ export const invokeModelMessage = async (prompt: Prompt, history: ChatMessage[],
     contentType: 'application/json',
     modelId: prompt.config.model,
   })
+  log('invokeModelMessage', { history, system: messageBody.system, system2: messageBody.system.slice(1500) })
   const response = await runtimeClient.send(command)
   const modelResponse = JSON.parse(new TextDecoder().decode(response.body))
+  log('Model response', { content: modelResponse.content[0], modelResponse })
   return modelResponse.content[0].text
 }
 
