@@ -17,8 +17,11 @@ export const invokeModelMessage = async (prompt: Prompt, history: ChatMessage[],
   const messageBody = {
     anthropic_version: prompt.config.anthropicVersion,
     max_tokens: prompt.config.maxTokens,
-    messages: history,
-    system: data ? prompt.contents.replace('${data}', JSON.stringify(data)) : prompt.contents,
+    messages: [
+      { content: data ? prompt.contents.replace('${data}', JSON.stringify(data)) : prompt.contents, role: 'user' },
+      ...history,
+    ],
+    // system: data ? prompt.contents.replace('${data}', JSON.stringify(data)) : prompt.contents,
     temperature: prompt.config.temperature,
     top_k: prompt.config.topK,
   }
@@ -27,7 +30,7 @@ export const invokeModelMessage = async (prompt: Prompt, history: ChatMessage[],
     contentType: 'application/json',
     modelId: prompt.config.model,
   })
-  log('invokeModelMessage', { history, system: messageBody.system, system2: messageBody.system.slice(1500) })
+  // log('invokeModelMessage', { history, system: messageBody.system, system2: messageBody.system.slice(1500) })
   const response = await runtimeClient.send(command)
   const modelResponse = JSON.parse(new TextDecoder().decode(response.body))
   log('Model response', { content: modelResponse.content[0], modelResponse })
