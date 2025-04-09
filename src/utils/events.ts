@@ -93,6 +93,7 @@ const formatSession = (body: any): Session => {
     },
     conversationSteps,
     currentStep: conversationSteps[0].value,
+    dividers: { 0: { label: conversationSteps[0].label } },
     expiration: body.expiration ?? lastExpiration,
     history: [],
     newConversation: true,
