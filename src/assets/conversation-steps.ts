@@ -7,3 +7,9 @@ export const conversationSteps: ConversationStep[] = [
   { label: 'Opposing reasons', path: 'guess-reasons', value: 'guess reasons' },
   { isFinalStep: true, label: 'Conclusion', path: 'end-chat', value: 'end' },
 ]
+
+export const confidenceChangedStep: ConversationStep = {
+  label: 'Confidence change',
+  path: '/new-confidence',
+  value: 'confidence changed',
+}

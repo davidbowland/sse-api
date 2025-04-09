@@ -59,10 +59,14 @@ export const postLlmResponseHandler = async (event: APIGatewayProxyEventV2): Pro
             generatedReasons: newGeneratedReasons,
           },
           currentStep: newCurrentStep,
-          dividers: newDividers,
-          history: newHistory,
-          newConversation: response.finished,
+          dividers:
+            response.finished && session.overrideStep
+              ? { ...session.dividers, [newHistory.length]: { label: currentStepObject?.label } }
+              : newDividers,
+          history: response.finished && session.storedMessage ? [...newHistory, session.storedMessage] : newHistory,
+          newConversation: response.finished && !session.overrideStep,
           overrideStep: response.finished ? undefined : session.overrideStep,
+          storedMessage: response.finished ? undefined : session.storedMessage,
         }
         await setSessionById(sessionId, updatedSession)
 
@@ -73,6 +77,7 @@ export const postLlmResponseHandler = async (event: APIGatewayProxyEventV2): Pro
             dividers: updatedSession.dividers,
             history: updatedSession.history,
             newConversation: updatedSession.newConversation,
+            overrideStep: updatedSession.overrideStep,
           }),
         }
       } catch (error: any) {

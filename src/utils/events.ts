@@ -1,4 +1,11 @@
-import { APIGatewayProxyEventV2, Claim, LLMRequest, Session, SuggestClaimsRequest } from '../types'
+import {
+  APIGatewayProxyEventV2,
+  Claim,
+  ConfidenceChangeRequest,
+  LLMRequest,
+  Session,
+  SuggestClaimsRequest,
+} from '../types'
 import { confidenceLevels, confidenceLevelsOrdered } from '../assets/confidence-levels'
 import AJV from 'ajv/dist/jtd'
 import { conversationSteps } from '../assets/conversation-steps'
@@ -27,13 +34,31 @@ const formatClaim = (body: any): Claim => {
 
 export const extractClaimFromEvent = (event: APIGatewayProxyEventV2): Claim => formatClaim(parseEventBody(event))
 
+// Change confidence
+
+const formatConfidenceChangeRequest = (body: any, confidenceLevels: string[]): ConfidenceChangeRequest => {
+  const jsonTypeDefinition = {
+    properties: {
+      confidence: {
+        enum: confidenceLevels,
+      },
+    },
+  }
+  if (ajv.validate(jsonTypeDefinition, body) === false) {
+    throw new Error(JSON.stringify(ajv.errors))
+  }
+  return { confidence: body.confidence }
+}
+
+export const extractConfidenceChangeRequest = (
+  event: APIGatewayProxyEventV2,
+  confidenceLevels: string[],
+): ConfidenceChangeRequest => formatConfidenceChangeRequest(parseEventBody(event), confidenceLevels)
+
 // LLM request
 
 const formatLlmRequest = (body: any): LLMRequest => {
   const jsonTypeDefinition = {
-    optionalProperties: {
-      language: { type: 'string' },
-    },
     properties: {
       content: { type: 'string' },
     },
@@ -42,7 +67,6 @@ const formatLlmRequest = (body: any): LLMRequest => {
     throw new Error(JSON.stringify(ajv.errors))
   }
   return {
-    language: body.language ?? 'en-US',
     message: { content: body.content, role: 'user' },
   }
 }

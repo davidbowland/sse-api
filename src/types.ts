@@ -10,7 +10,6 @@ export interface ChatMessage {
 
 export interface ConversationStep {
   isFinalStep?: boolean
-  isOverride?: boolean
   label: string
   path: string
   value: string
@@ -37,6 +36,10 @@ export interface ConfidenceLevel {
   value: string
 }
 
+export interface ConfidenceChangeRequest {
+  confidence: string
+}
+
 // Prompts
 
 export type PromptId = string
@@ -57,7 +60,6 @@ export interface Prompt {
 // LLM interactions
 
 export interface LLMRequest {
-  language: string
   message: ChatMessage
 }
 
@@ -89,6 +91,7 @@ export interface Session {
   newConversation: boolean
   originalConfidence: string
   overrideStep?: ConversationStep
+  storedMessage?: ChatMessage
 }
 
 // Suggest claims

@@ -33,6 +33,7 @@ describe('bedrock', () => {
 
     it('should invoke the correct model based on the prompt', async () => {
       const result = JSON.parse(await invokeModel(prompt, data))
+
       expect(result).toEqual({ suggestions: invokeModelSuggestedClaims })
       expect(mockSend).toHaveBeenCalledWith({
         body: new TextEncoder().encode(
@@ -56,6 +57,7 @@ describe('bedrock', () => {
         contents: 'My context should go here: ${context}',
       }
       const result = JSON.parse(await invokeModel(promptWithContext, data, { foo: 'bar' }))
+
       expect(result).toEqual({ suggestions: invokeModelSuggestedClaims })
       expect(mockSend).toHaveBeenCalledWith({
         body: new TextEncoder().encode(

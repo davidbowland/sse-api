@@ -24,6 +24,7 @@ describe('dynamodb', () => {
 
     it('should call DynamoDB and parse the prompt', async () => {
       const result = await getPromptById(promptId)
+
       expect(mockSend).toHaveBeenCalledWith({
         ExpressionAttributeValues: { ':promptId': { S: `${promptId}` } },
         KeyConditionExpression: 'PromptId = :promptId',
@@ -44,6 +45,7 @@ describe('dynamodb', () => {
 
     it('should call DynamoDB with the correct arguments', async () => {
       const result = await getSessionById(sessionId)
+
       expect(mockSend).toHaveBeenCalledWith({
         Key: {
           SessionId: { S: sessionId },
@@ -57,6 +59,7 @@ describe('dynamodb', () => {
   describe('setSessionById', () => {
     it('should call DynamoDB with the correct arguments', async () => {
       await setSessionById(sessionId, session)
+
       expect(mockSend).toHaveBeenCalledWith({
         Item: {
           Data: {

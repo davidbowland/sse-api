@@ -13,6 +13,7 @@ describe('claim-sources', () => {
 
     it('should return a list of claim sources', async () => {
       const result = await getClaimSources()
+
       expect(result).toEqual(claimSources)
       expect(axios.get).toHaveBeenCalledWith('https://a-great.claims-site')
     })

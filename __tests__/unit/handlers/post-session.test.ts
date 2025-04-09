@@ -26,6 +26,7 @@ describe('post-session', () => {
   describe('postSessionHandler', () => {
     it('should save new session and return session ID', async () => {
       const result = await postSessionHandler(event)
+
       expect(result).toEqual({
         ...status.CREATED,
         body: JSON.stringify({ sessionId }),
@@ -38,12 +39,14 @@ describe('post-session', () => {
         throw new Error('Bad request')
       })
       const result = await postSessionHandler({ ...event, body: JSON.stringify({}) })
+
       expect(result).toEqual(status.BAD_REQUEST)
     })
 
     it('should return internal server error on save failure', async () => {
       jest.mocked(dynamodb).setSessionById.mockRejectedValueOnce(undefined)
       const result = await postSessionHandler(event)
+
       expect(result).toEqual(status.INTERNAL_SERVER_ERROR)
     })
   })
