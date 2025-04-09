@@ -1,11 +1,14 @@
 import {
   extractClaimFromEvent,
+  extractConfidenceChangeRequest,
   extractLlmRequestFromEvent,
   extractSessionFromEvent,
   extractSuggestClaimsRequestFromEvent,
 } from '@utils/events'
 import { llmRequest, newSession } from '../__mocks__'
 import { APIGatewayProxyEventV2 } from '@types'
+import changeConfidenceJson from '@events/post-change-confidence.json'
+import { confidenceLevelsOrdered } from '@assets/confidence-levels'
 import createEventJson from '@events/post-session.json'
 import llmResponseEventJson from '@events/post-llm-response.json'
 import suggestClaimsEventJson from '@events/post-suggest-claims.json'
@@ -27,6 +30,7 @@ describe('events', () => {
 
     it('should extract the claim from the event', () => {
       const result = extractClaimFromEvent(event)
+
       expect(result).toEqual(newClaim)
     })
 
@@ -37,6 +41,7 @@ describe('events', () => {
         isBase64Encoded: true,
       }
       const result = extractClaimFromEvent(eventWithBase64Claim)
+
       expect(result).toEqual(newClaim)
     })
 
@@ -45,7 +50,31 @@ describe('events', () => {
         ...event,
         body: JSON.stringify({}),
       }
+
       expect(() => extractClaimFromEvent(eventWithMalformedClaim)).toThrow()
+    })
+  })
+
+  describe('extractConfidenceChangeRequest', () => {
+    const event = changeConfidenceJson as unknown as APIGatewayProxyEventV2
+
+    it('should extract the confidence change request from the event', () => {
+      const result = extractConfidenceChangeRequest(event, confidenceLevelsOrdered)
+
+      expect(result).toEqual({
+        confidence: 'disagree',
+      })
+    })
+
+    it('should reject invalid confidence levels', () => {
+      const eventWithInvalidConfidence = {
+        ...event,
+        body: JSON.stringify({
+          confidence: 'invalid',
+        }),
+      }
+
+      expect(() => extractConfidenceChangeRequest(eventWithInvalidConfidence, confidenceLevelsOrdered)).toThrow()
     })
   })
 
@@ -54,6 +83,7 @@ describe('events', () => {
 
     it('should extract the LLMRequest from the event', () => {
       const result = extractLlmRequestFromEvent(event)
+
       expect(result).toEqual(llmRequest)
     })
 
@@ -64,6 +94,7 @@ describe('events', () => {
         isBase64Encoded: true,
       }
       const result = extractLlmRequestFromEvent(eventWithBase64Request)
+
       expect(result).toEqual(llmRequest)
     })
 
@@ -72,6 +103,7 @@ describe('events', () => {
         ...event,
         body: JSON.stringify({}),
       }
+
       expect(() => extractLlmRequestFromEvent(eventWithMalformedRequest)).toThrow()
     })
   })
@@ -81,6 +113,7 @@ describe('events', () => {
 
     it('should extract the session from the event', () => {
       const result = extractSessionFromEvent(event)
+
       expect(result).toEqual(newSession)
     })
 
@@ -91,6 +124,7 @@ describe('events', () => {
         isBase64Encoded: true,
       }
       const result = extractSessionFromEvent(eventWithBase64Session)
+
       expect(result).toEqual(newSession)
     })
 
@@ -99,6 +133,7 @@ describe('events', () => {
         ...event,
         body: JSON.stringify({}),
       }
+
       expect(() => extractSessionFromEvent(eventWithMalformedSession)).toThrow()
     })
 
@@ -111,6 +146,7 @@ describe('events', () => {
           expiration: epochTime + 1_000_000_000,
         }),
       }
+
       expect(() => extractSessionFromEvent(eventWithMalformedSession)).toThrow()
     })
   })
@@ -120,6 +156,7 @@ describe('events', () => {
 
     it('should extract the SuggestClaimsRequest from the event', () => {
       const result = extractSuggestClaimsRequestFromEvent(event)
+
       expect(result).toEqual({
         language: 'en-GB',
       })
@@ -132,6 +169,7 @@ describe('events', () => {
         isBase64Encoded: true,
       }
       const result = extractSuggestClaimsRequestFromEvent(eventWithBase64Request)
+
       expect(result).toEqual({
         language: 'en-GB',
       })
@@ -143,6 +181,7 @@ describe('events', () => {
         body: JSON.stringify({}),
       }
       const result = extractSuggestClaimsRequestFromEvent(eventNoLanguageRequest)
+
       expect(result).toEqual({
         language: 'en-US',
       })

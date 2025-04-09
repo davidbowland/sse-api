@@ -17,6 +17,7 @@ describe('id-generator', () => {
 
     it('should return id passed to getNextId', async () => {
       const result = await getNextId(mockGetById)
+
       expect(result).toEqual('j225')
     })
 
@@ -25,6 +26,7 @@ describe('id-generator', () => {
       mockRandom.mockReturnValueOnce(0.5)
       mockRandom.mockReturnValueOnce(0.25)
       const result = await getNextId(mockGetById)
+
       expect(result).toEqual('b225')
     })
   })

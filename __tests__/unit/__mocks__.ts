@@ -1,5 +1,15 @@
 /* eslint sort-keys:0 */
-import { ChatMessage, LLMRequest, LLMResponse, Prompt, PromptConfig, PromptId, Session, SessionId } from '@types'
+import {
+  ChatMessage,
+  ConfidenceChangeRequest,
+  LLMRequest,
+  LLMResponse,
+  Prompt,
+  PromptConfig,
+  PromptId,
+  Session,
+  SessionId,
+} from '@types'
 import { confidenceLevels } from '@assets/confidence-levels'
 import { conversationSteps } from '@assets/conversation-steps'
 
@@ -167,10 +177,15 @@ export const claimSources = [
   'US Military Races Against Time to Recover Four Soldiers in Lithuanian Bog',
 ]
 
+// Confidence
+
+export const confidenceChangeRequest: ConfidenceChangeRequest = {
+  confidence: 'disagree',
+}
+
 // LLM response
 
 export const llmRequest: LLMRequest = {
-  language: 'en-US',
   message: userMessage,
 }
 

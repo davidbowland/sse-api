@@ -18,6 +18,7 @@ describe('get-session', () => {
   describe('getSessionHandler', () => {
     it('should return session', async () => {
       const result = await getSessionHandler(event)
+
       expect(result).toEqual({
         ...status.OK,
         body: JSON.stringify(session),
@@ -27,6 +28,7 @@ describe('get-session', () => {
     it("should return NOT_FOUND when the session doesn't exist", async () => {
       jest.mocked(dynamodb).getSessionById.mockRejectedValueOnce(undefined)
       const result = await getSessionHandler(event)
+
       expect(result).toEqual(status.NOT_FOUND)
     })
   })

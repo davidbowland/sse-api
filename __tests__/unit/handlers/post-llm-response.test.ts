@@ -1,7 +1,7 @@
 import * as bedrock from '@services/bedrock'
 import * as dynamodb from '@services/dynamodb'
 import * as events from '@utils/events'
-import { APIGatewayProxyEventV2, Session } from '@types'
+import { APIGatewayProxyEventV2, ChatMessage, Session } from '@types'
 import { llmRequest, llmResponse, newAssistantMessage, prompt, session, sessionId, userMessage } from '../__mocks__'
 import eventJson from '@events/post-llm-response.json'
 import { postLlmResponseHandler } from '@handlers/post-llm-response'
@@ -117,6 +117,40 @@ describe('post-llm-response', () => {
         currentStep: 'end',
         history: expectedSession.history,
         newConversation: true,
+      }
+      const result = await postLlmResponseHandler(event)
+
+      expect(jest.mocked(dynamodb).setSessionById).toHaveBeenCalledWith(sessionId, expectedSession)
+      expect(result).toEqual({ ...status.OK, body: JSON.stringify(newConversationResponse) })
+    })
+
+    it('add correct divider and restored saved message when override finishes', async () => {
+      const finishedLlmResponse = { ...llmResponse, finished: true }
+      const newMessage: ChatMessage = { content: 'Sup?', role: 'assistant' }
+      const sessionWithMessage = {
+        ...session,
+        overrideStep: {
+          label: 'Confidence change',
+          path: '/new-confidence',
+          value: 'confidence changed',
+        },
+        storedMessage: newMessage,
+      }
+      jest.mocked(bedrock).invokeModelMessage.mockResolvedValueOnce(finishedLlmResponse)
+      jest.mocked(dynamodb).getSessionById.mockResolvedValueOnce(sessionWithMessage)
+      const expectedSession = {
+        ...updatedSession,
+        currentStep: 'probe confidence',
+        dividers: { '0': { label: 'Introduction' }, '4': { label: 'Confidence' } },
+        history: [...updatedSession.history, newMessage],
+        newConversation: false,
+      }
+      const newConversationResponse = {
+        ...expectedResponse,
+        currentStep: expectedSession.currentStep,
+        dividers: expectedSession.dividers,
+        history: expectedSession.history,
+        newConversation: expectedSession.newConversation,
       }
       const result = await postLlmResponseHandler(event)
 

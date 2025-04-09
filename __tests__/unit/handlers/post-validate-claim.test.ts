@@ -27,6 +27,7 @@ describe('post-validate-claim', () => {
   describe('postValidateClaimHandler', () => {
     it('returns claims validation information', async () => {
       const result = await postValidateClaimHandler(event)
+
       expect(result).toEqual(expect.objectContaining(status.OK))
       expect(JSON.parse(result.body)).toEqual(validationResult)
     })
@@ -35,29 +36,29 @@ describe('post-validate-claim', () => {
       jest.mocked(events).extractClaimFromEvent.mockImplementationOnce(() => {
         throw new Error('Bad request')
       })
-
       const result = await postValidateClaimHandler(event)
+
       expect(result).toEqual(expect.objectContaining(status.BAD_REQUEST))
     })
 
     it('returns INTERNAL_SERVER_ERROR when getPromptById rejects', async () => {
       jest.mocked(dynamodb).getPromptById.mockRejectedValueOnce(new Error('Rejected'))
-
       const result = await postValidateClaimHandler(event)
+
       expect(result).toEqual(expect.objectContaining(status.INTERNAL_SERVER_ERROR))
     })
 
     it('returns INTERNAL_SERVER_ERROR when invokeModel rejects', async () => {
       jest.mocked(bedrock).invokeModel.mockRejectedValueOnce(new Error('Rejected'))
-
       const result = await postValidateClaimHandler(event)
+
       expect(result).toEqual(expect.objectContaining(status.INTERNAL_SERVER_ERROR))
     })
 
     it('returns INTERNAL_SERVER_ERROR when invokeModel returns undefined', async () => {
       jest.mocked(bedrock).invokeModel.mockResolvedValueOnce(undefined)
-
       const result = await postValidateClaimHandler(event)
+
       expect(result).toEqual(expect.objectContaining(status.INTERNAL_SERVER_ERROR))
     })
   })
