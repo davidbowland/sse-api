@@ -15,6 +15,7 @@
 - Respond in VALID JSON format with no preamble. Be sure to escape " to \" and a new line to \n. The object should contain:
   - `finished` a boolean indicating whether the conversation has finished
   - `message` a string containing the response of the assistant
+  - `reasons` an array of strings containing the reasons
 - ALWAYS answer in the language requested.
 
 </instructions>

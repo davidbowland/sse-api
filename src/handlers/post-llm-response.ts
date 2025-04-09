@@ -26,6 +26,7 @@ export const postLlmResponseHandler = async (event: APIGatewayProxyEventV2): Pro
             ...session.context,
             newConversation: session.newConversation,
             originalConfidence: currentStepObject.isFinalStep ? session.originalConfidence : undefined,
+            storedMessage: session.storedMessage,
           }),
           PROMPT_OUTPUT_FORMAT,
         )) ?? {
