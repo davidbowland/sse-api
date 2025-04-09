@@ -19,6 +19,7 @@ export const postLlmResponseHandler = async (event: APIGatewayProxyEventV2): Pro
         const prompt = await getPromptById(responsePromptId)
         const currentStepIndex = session.conversationSteps.findIndex((step) => step.value === session.currentStep)
         const currentStepObject = session.conversationSteps[currentStepIndex]
+        const nextStepObject = session.conversationSteps[currentStepIndex + 1]
 
         const response: LLMResponse = (await parseJson(
           invokeModelMessage(prompt, [...session.history, llmRequest.message], {
@@ -34,22 +35,34 @@ export const postLlmResponseHandler = async (event: APIGatewayProxyEventV2): Pro
 
         const assistantMessage = { content: response.message, role: 'assistant' } as ChatMessage
         const newMessages = session.newConversation ? [assistantMessage] : [llmRequest.message, assistantMessage]
+        const newHistory = [...session.history, ...newMessages]
+
+        const newGeneratedReasons =
+          session.context.generatedReasons.length === 0 && response.reasons
+            ? response.reasons
+            : session.context.generatedReasons
+
+        const newDividers =
+          response.finished && !currentStepObject.isFinalStep
+            ? { ...session.dividers, [newHistory.length]: { label: nextStepObject?.label } }
+            : session.dividers
+
+        const newCurrentStep =
+          response.finished && !session.overrideStep && !currentStepObject.isFinalStep
+            ? nextStepObject.value
+            : session.currentStep
 
         const updatedSession: Session = {
           ...session,
           context: {
             ...session.context,
-            generatedReasons:
-              session.context.generatedReasons.length === 0 && response.reasons
-                ? response.reasons
-                : session.context.generatedReasons,
+            generatedReasons: newGeneratedReasons,
           },
-          currentStep:
-            response.finished && !currentStepObject.isFinalStep
-              ? session.conversationSteps[currentStepIndex + 1].value
-              : session.currentStep,
-          history: [...session.history, ...newMessages],
+          currentStep: newCurrentStep,
+          dividers: newDividers,
+          history: newHistory,
           newConversation: response.finished,
+          overrideStep: response.finished ? undefined : session.overrideStep,
         }
         await setSessionById(sessionId, updatedSession)
 
@@ -57,6 +70,7 @@ export const postLlmResponseHandler = async (event: APIGatewayProxyEventV2): Pro
           ...status.OK,
           body: JSON.stringify({
             currentStep: updatedSession.currentStep,
+            dividers: updatedSession.dividers,
             history: updatedSession.history,
             newConversation: updatedSession.newConversation,
           }),

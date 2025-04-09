@@ -20,6 +20,7 @@ describe('post-llm-response', () => {
   }
   const expectedResponse = {
     currentStep: 'probe confidence',
+    dividers: { '0': { label: 'Introduction' } },
     history: updatedSession.history,
     newConversation: false,
   }
@@ -68,9 +69,8 @@ describe('post-llm-response', () => {
         history: [...session.history, newAssistantMessage],
       }
       const newConversationResponse = {
-        currentStep: 'probe confidence',
+        ...expectedResponse,
         history: expectedSession.history,
-        newConversation: false,
       }
       const result = await postLlmResponseHandler(event)
 
@@ -86,10 +86,13 @@ describe('post-llm-response', () => {
       const expectedSession = {
         ...updatedSession,
         currentStep: 'probe reasons',
+        dividers: { '0': { label: 'Introduction' }, '4': { label: 'Reasons' } },
         newConversation: true,
       }
       const newConversationResponse = {
+        ...expectedResponse,
         currentStep: 'probe reasons',
+        dividers: { '0': { label: 'Introduction' }, '4': { label: 'Reasons' } },
         history: expectedSession.history,
         newConversation: true,
       }
@@ -110,6 +113,7 @@ describe('post-llm-response', () => {
         newConversation: true,
       }
       const newConversationResponse = {
+        ...expectedResponse,
         currentStep: 'end',
         history: expectedSession.history,
         newConversation: true,
@@ -156,7 +160,7 @@ describe('post-llm-response', () => {
         role: 'assistant',
       }
       const expectedErrorResponse = {
-        currentStep: 'probe confidence',
+        ...expectedResponse,
         history: [...session.history, userMessage, assistantErrorMessage],
         newConversation: false,
       }

@@ -10,9 +10,16 @@ export interface ChatMessage {
 
 export interface ConversationStep {
   isFinalStep?: boolean
+  isOverride?: boolean
   label: string
   path: string
   value: string
+}
+
+export interface Dividers {
+  [key: number]: {
+    label: string
+  }
 }
 
 // Claims
@@ -76,10 +83,12 @@ export interface Session {
   context: SessionContext
   conversationSteps: ConversationStep[]
   currentStep?: string
+  dividers: Dividers
   expiration: number
   history: ChatMessage[]
   newConversation: boolean
   originalConfidence: string
+  overrideStep?: ConversationStep
 }
 
 // Suggest claims
