@@ -124,7 +124,7 @@ describe('post-llm-response', () => {
       expect(result).toEqual({ ...status.OK, body: JSON.stringify(newConversationResponse) })
     })
 
-    it('add correct divider and restored saved message when override finishes', async () => {
+    it('add correct divider when override finishes', async () => {
       const finishedLlmResponse = { ...llmResponse, finished: true }
       const newMessage: ChatMessage = { content: 'Sup?', role: 'assistant' }
       const sessionWithMessage = {
@@ -142,7 +142,6 @@ describe('post-llm-response', () => {
         ...updatedSession,
         currentStep: 'probe confidence',
         dividers: { '0': { label: 'Introduction' }, '4': { label: 'Confidence' } },
-        history: [...updatedSession.history, newMessage],
         newConversation: false,
       }
       const newConversationResponse = {

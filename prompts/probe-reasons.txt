@@ -63,7 +63,7 @@
 <output>
 {
   "finished": false,
-  "message": "What evidence would you need to see or discover or hear to convince you to move to strongly disagree?"
+  "message": "What evidence would you need to see or discover or hear to convince you to update your confidence to strongly disagree?"
 }
 </output>
 </example>
@@ -71,7 +71,7 @@
 <example>
 <history>
 [
-  { "content": "What evidence would you need to see or discover or hear to convince you to move to strongly disagree?", "role": "assistant"},
+  { "content": "What evidence would you need to see or discover or hear to convince you to change your confidence level to strongly disagree?", "role": "assistant"},
   { "content": "A great deal of evidence they're harming the planet", "role": "user"}
 ]
 </history>
@@ -94,8 +94,8 @@
 <example>
 <history>
 [
-  { "content": "What would you need to see or discover or hear to convince you to move to disagree?", "role": "assistant"},
-  { "content": "Nothing would convince me to move", "role": "user"}
+  { "content": "What would you need to see or discover or hear to convince you to change your confidence to disagree?", "role": "assistant"},
+  { "content": "Nothing would convince me to update my confidence.", "role": "user"}
 ]
 </history>
 <input>

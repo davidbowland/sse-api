@@ -64,7 +64,7 @@ export const postLlmResponseHandler = async (event: APIGatewayProxyEventV2): Pro
             response.finished && session.overrideStep
               ? { ...session.dividers, [newHistory.length]: { label: currentStepObject?.label } }
               : newDividers,
-          history: response.finished && session.storedMessage ? [...newHistory, session.storedMessage] : newHistory,
+          history: newHistory,
           newConversation: response.finished && !session.overrideStep,
           overrideStep: response.finished ? undefined : session.overrideStep,
           storedMessage: response.finished ? undefined : session.storedMessage,
