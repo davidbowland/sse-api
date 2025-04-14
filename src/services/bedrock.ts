@@ -1,8 +1,8 @@
 import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime'
 
 import { ChatMessage, Prompt } from '../types'
+import { log, logDebug } from '../utils/logging'
 import { getPromptById } from './dynamodb'
-import { log } from '../utils/logging'
 
 const runtimeClient = new BedrockRuntimeClient({ region: 'us-east-1' })
 
@@ -14,26 +14,29 @@ export const invokeModel = async (prompt: any, data: string, context?: any): Pro
 }
 
 export const invokeModelMessage = async (prompt: Prompt, history: ChatMessage[], data?: any): Promise<any> => {
+  const messageContent = data ? prompt.contents.replace('${data}', JSON.stringify(data)) : prompt.contents
+  logDebug('Invoking model', { data, messageContent, prompt })
   const messageBody = {
     anthropic_version: prompt.config.anthropicVersion,
     max_tokens: prompt.config.maxTokens,
-    messages: [
-      { content: data ? prompt.contents.replace('${data}', JSON.stringify(data)) : prompt.contents, role: 'user' },
-      ...history,
-    ],
-    // system: data ? prompt.contents.replace('${data}', JSON.stringify(data)) : prompt.contents,
+    messages: [{ content: messageContent, role: 'user' }, ...history],
     temperature: prompt.config.temperature,
     top_k: prompt.config.topK,
   }
+  logDebug('Invoking model', {
+    history1: history.slice(0, 10),
+    history2: history.slice(10, 20),
+    history3: history.slice(20),
+    messageBody,
+  })
   const command = new InvokeModelCommand({
     body: new TextEncoder().encode(JSON.stringify(messageBody)), // new Uint8Array(), // e.g. Buffer.from("") or new TextEncoder().encode("")
     contentType: 'application/json',
     modelId: prompt.config.model,
   })
-  // log('invokeModelMessage', { history, system: messageBody.system, system2: messageBody.system.slice(1500) })
   const response = await runtimeClient.send(command)
   const modelResponse = JSON.parse(new TextDecoder().decode(response.body))
-  log('Model response', { content: modelResponse.content[0], modelResponse })
+  logDebug('Model response', { modelResponse, text: modelResponse.content[0].text })
   return modelResponse.content[0].text
 }
 

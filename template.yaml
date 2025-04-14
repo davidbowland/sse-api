@@ -344,6 +344,7 @@ Resources:
               Resource: '*'
       Environment:
         Variables:
+          DEBUG_LOGGING: 'false'
           DYNAMODB_PROMPT_TABLE_NAME: !Ref PromptTable
           DYNAMODB_SESSION_TABLE_NAME: !Ref SessionTable
           RESPONSE_PROMPT_ID: end-chat
@@ -415,6 +416,7 @@ Resources:
               Resource: '*'
       Environment:
         Variables:
+          DEBUG_LOGGING: 'false'
           DYNAMODB_PROMPT_TABLE_NAME: !Ref PromptTable
           DYNAMODB_SESSION_TABLE_NAME: !Ref SessionTable
           RESPONSE_PROMPT_ID: guess-reasons
@@ -486,6 +488,7 @@ Resources:
               Resource: '*'
       Environment:
         Variables:
+          DEBUG_LOGGING: 'false'
           DYNAMODB_PROMPT_TABLE_NAME: !Ref PromptTable
           DYNAMODB_SESSION_TABLE_NAME: !Ref SessionTable
           RESPONSE_PROMPT_ID: new-confidence
@@ -557,6 +560,7 @@ Resources:
               Resource: '*'
       Environment:
         Variables:
+          DEBUG_LOGGING: 'false'
           DYNAMODB_PROMPT_TABLE_NAME: !Ref PromptTable
           DYNAMODB_SESSION_TABLE_NAME: !Ref SessionTable
           RESPONSE_PROMPT_ID: probe-confidence
@@ -628,6 +632,7 @@ Resources:
               Resource: '*'
       Environment:
         Variables:
+          DEBUG_LOGGING: 'false'
           DYNAMODB_PROMPT_TABLE_NAME: !Ref PromptTable
           DYNAMODB_SESSION_TABLE_NAME: !Ref SessionTable
           RESPONSE_PROMPT_ID: probe-reasons
@@ -699,6 +704,7 @@ Resources:
               Resource: '*'
       Environment:
         Variables:
+          DEBUG_LOGGING: 'false'
           DYNAMODB_PROMPT_TABLE_NAME: !Ref PromptTable
           DYNAMODB_SESSION_TABLE_NAME: !Ref SessionTable
           RESPONSE_PROMPT_ID: start-chat

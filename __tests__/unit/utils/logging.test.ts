@@ -36,6 +36,15 @@ describe('logging', () => {
     })
   })
 
+  describe('logDebug', () => {
+    it.each(['Hello', 0, null, undefined, { a: 1, b: 2 }])('should invoke logFunc with message', async (value) => {
+      const message = `Debug message for value ${JSON.stringify(value)}`
+      await log(message)
+
+      expect(console.log).toHaveBeenCalledWith(message)
+    })
+  })
+
   describe('logError', () => {
     it.each(['Hello', 0, null, undefined, { a: 1, b: 2 }])('should invoke logFunc with message', async (value) => {
       const message = `Error message for value ${JSON.stringify(value)}`

@@ -20,6 +20,7 @@ jest.mock('@aws-sdk/client-bedrock-runtime', () => ({
 jest.mock('@services/dynamodb')
 jest.mock('@utils/logging', () => ({
   log: jest.fn(),
+  logDebug: jest.fn(),
   xrayCapture: jest.fn().mockImplementation((x) => x),
 }))
 

@@ -1,4 +1,5 @@
 import AWSXRay from 'aws-xray-sdk-core'
+import { debugLogging } from '../config'
 import https from 'https'
 
 export const extractRequestError = (message: string): { errors?: any; message?: string } => {
@@ -10,6 +11,8 @@ export const extractRequestError = (message: string): { errors?: any; message?: 
 }
 
 export const log = (...args: any[]): unknown => console.log(...args)
+
+export const logDebug = (...args: any[]): unknown => (debugLogging ? console.log(...args) : undefined)
 
 export const logError = (...args: any[]): unknown => console.error(...args)
 
