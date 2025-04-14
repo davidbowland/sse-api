@@ -24,6 +24,9 @@ export const postLlmResponseHandler = async (event: APIGatewayProxyEventV2): Pro
         const response: LLMResponse = (await parseJson(
           invokeModelMessage(prompt, [...session.history, llmRequest.message], {
             ...session.context,
+            hasChangedConfidence: currentStepObject.isFinalStep
+              ? session.context.confidence === session.originalConfidence
+              : undefined,
             newConversation: session.newConversation,
             originalConfidence: currentStepObject.isFinalStep ? session.originalConfidence : undefined,
             possibleConfidenceLevels: session.context.possibleConfidenceLevels.map((level) => level.label),
