@@ -67,7 +67,7 @@ const formatLlmRequest = (body: any): LLMRequest => {
     throw new Error(JSON.stringify(ajv.errors))
   }
   return {
-    message: { content: body.content, role: 'user' },
+    message: { content: body.content.trim().replace(/\r|\n/g, ''), role: 'user' },
   }
 }
 

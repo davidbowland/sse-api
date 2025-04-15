@@ -98,6 +98,16 @@ describe('events', () => {
       expect(result).toEqual(llmRequest)
     })
 
+    it('should trim leading spaces, trailing spaces, and newlines', () => {
+      const eventWithWhitespace = {
+        ...event,
+        body: '{"content":"   A big,\\n fat, fuzzy\\r\\n testing!!\\n  \\t"}',
+      }
+      const result = extractLlmRequestFromEvent(eventWithWhitespace)
+
+      expect(result.message.content).toEqual('A big, fat, fuzzy testing!!')
+    })
+
     it('should error when the chat message is malformed', () => {
       const eventWithMalformedRequest = {
         ...event,
