@@ -19,13 +19,11 @@
 <example>
 <context>
 {
+  "changedConfidence": "Kept confidence at agree",
   "claim": "Parking laws should be abolished.",
-  "confidence": "agree",
   "generatedReasons": [],
-  "hasChangedConfidence": false,
   "language": "en-US",
   "newConversation": true,
-  "originalConfidence": "agree",
   "possibleConfidenceLevels": ["strongly disagree", "disagree", "slightly disagree", "neutral", "slightly agree", "agree", "strongly agree"]
 }
 </context>
@@ -45,13 +43,11 @@
 <example>
 <context>
 {
+  "changedConfidence": "Changed confidence from slightly agree to agree",
   "claim": "Eating fish is moral.",
-  "confidence": "agree",
   "generatedReasons": [],
-  "hasChangedConfidence": true,
   "language": "en-US",
   "newConversation": true,
-  "originalConfidence": "slightly agree",
   "possibleConfidenceLevels": ["strongly disagree", "disagree", "slightly disagree", "neutral", "slightly agree", "agree", "strongly agree"]
 }
 </context>
@@ -71,13 +67,11 @@
 <example>
 <context>
 {
+  "changedConfidence": "Changed confidence from disagree to strongly agree",
   "claim": "Violence is declining worldwide.",
-  "confidence": "strongly agree",
   "generatedReasons": [],
-  "hasChangedConfidence": true,
   "language": "en-US",
   "newConversation": true,
-  "originalConfidence": "disagree",
   "possibleConfidenceLevels": ["strongly disagree", "disagree", "slightly disagree", "neutral", "slightly agree", "agree", "strongly agree"]
 }
 </context>

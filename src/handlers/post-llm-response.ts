@@ -41,15 +41,17 @@ export const postLlmResponseHandler = async (event: APIGatewayProxyEventV2): Pro
         const currentStepIndex = session.conversationSteps.findIndex((step) => step.value === session.currentStep)
         const currentStepObject = session.conversationSteps[currentStepIndex]
         const nextStepObject = session.conversationSteps[currentStepIndex + 1]
+        const changedConfidence =
+          session.context.confidence === session.originalConfidence
+            ? `Kept confidence at ${session.originalConfidence}`
+            : `Changed confidence from ${session.originalConfidence} to ${session.context.confidence}`
 
         const response: LLMResponse = (await parseJson(
           invokeModelMessage(prompt, [...session.history, llmRequest.message], {
             ...session.context,
-            hasChangedConfidence: currentStepObject.isFinalStep
-              ? session.context.confidence === session.originalConfidence
-              : undefined,
+            changedConfidence: currentStepObject.isFinalStep ? changedConfidence : undefined,
+            confidence: currentStepObject.isFinalStep ? undefined : session.context.confidence,
             newConversation: session.newConversation,
-            originalConfidence: currentStepObject.isFinalStep ? session.originalConfidence : undefined,
             possibleConfidenceLevels: session.context.possibleConfidenceLevels.map((level) => level.label),
             storedMessage: session.storedMessage,
           }),

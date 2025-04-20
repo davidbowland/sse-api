@@ -2,7 +2,16 @@ import * as bedrock from '@services/bedrock'
 import * as dynamodb from '@services/dynamodb'
 import * as events from '@utils/events'
 import { APIGatewayProxyEventV2, ChatMessage, Session } from '@types'
-import { llmRequest, llmResponse, newAssistantMessage, prompt, session, sessionId, userMessage } from '../__mocks__'
+import {
+  assistantMessage,
+  llmRequest,
+  llmResponse,
+  newAssistantMessage,
+  prompt,
+  session,
+  sessionId,
+  userMessage,
+} from '../__mocks__'
 import eventJson from '@events/post-llm-response.json'
 import { postLlmResponseHandler } from '@handlers/post-llm-response'
 import status from '@utils/status'
@@ -24,6 +33,7 @@ describe('post-llm-response', () => {
     history: updatedSession.history,
     newConversation: false,
   }
+  const expectedConfidenceLevels = session.context.possibleConfidenceLevels.map((level) => level.label)
 
   beforeAll(() => {
     jest.mocked(bedrock).invokeModelMessage.mockResolvedValue(llmResponse)
@@ -39,6 +49,62 @@ describe('post-llm-response', () => {
 
       expect(jest.mocked(dynamodb).setSessionById).toHaveBeenCalledWith(sessionId, updatedSession)
       expect(result).toEqual({ ...status.OK, body: JSON.stringify(expectedResponse) })
+    })
+
+    it('passes connect arguments to LLM', async () => {
+      await postLlmResponseHandler(event)
+
+      expect(bedrock.invokeModelMessage).toHaveBeenCalledWith(prompt, [userMessage, assistantMessage, userMessage], {
+        changedConfidence: undefined,
+        claim: session.context.claim,
+        confidence: session.context.confidence,
+        generatedReasons: session.context.generatedReasons,
+        language: session.context.language,
+        newConversation: false,
+        possibleConfidenceLevels: expectedConfidenceLevels,
+        storedMessage: session.storedMessage,
+      })
+    })
+
+    it('passes connect arguments to LLM on final step when confidence changed', async () => {
+      const finishedLlmResponse = { ...llmResponse, finished: true }
+      const sessionNewConversation = { ...session, currentStep: 'end' }
+      jest.mocked(bedrock).invokeModelMessage.mockResolvedValueOnce(finishedLlmResponse)
+      jest.mocked(dynamodb).getSessionById.mockResolvedValueOnce(sessionNewConversation)
+      await postLlmResponseHandler(event)
+
+      expect(bedrock.invokeModelMessage).toHaveBeenCalledWith(prompt, [userMessage, assistantMessage, userMessage], {
+        changedConfidence: 'Changed confidence from agree to strongly agree',
+        claim: session.context.claim,
+        generatedReasons: session.context.generatedReasons,
+        language: session.context.language,
+        newConversation: false,
+        possibleConfidenceLevels: expectedConfidenceLevels,
+        storedMessage: session.storedMessage,
+      })
+    })
+
+    it('passes connect arguments to LLM on final step when confidence unchanged', async () => {
+      const finishedLlmResponse = { ...llmResponse, finished: true }
+      const sessionNewConversation = {
+        ...session,
+        context: { ...session.context, confidence: 'disagree' },
+        currentStep: 'end',
+        originalConfidence: 'disagree',
+      }
+      jest.mocked(bedrock).invokeModelMessage.mockResolvedValueOnce(finishedLlmResponse)
+      jest.mocked(dynamodb).getSessionById.mockResolvedValueOnce(sessionNewConversation)
+      await postLlmResponseHandler(event)
+
+      expect(bedrock.invokeModelMessage).toHaveBeenCalledWith(prompt, [userMessage, assistantMessage, userMessage], {
+        changedConfidence: 'Kept confidence at disagree',
+        claim: session.context.claim,
+        generatedReasons: session.context.generatedReasons,
+        language: session.context.language,
+        newConversation: false,
+        possibleConfidenceLevels: expectedConfidenceLevels,
+        storedMessage: session.storedMessage,
+      })
     })
 
     it('returns the response from the LLM, no reason', async () => {
