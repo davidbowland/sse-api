@@ -1,4 +1,11 @@
-import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, ChatMessage, LLMResponse, Session } from '../types'
+import {
+  APIGatewayProxyEventV2,
+  APIGatewayProxyResultV2,
+  ChatMessage,
+  ConversationStep,
+  LLMResponse,
+  Session,
+} from '../types'
 import { getPromptById, getSessionById, setSessionById } from '../services/dynamodb'
 import { invokeModelMessage, parseJson } from '../services/bedrock'
 import { log, logError } from '../utils/logging'
@@ -7,6 +14,20 @@ import { responsePromptId } from '../config'
 import status from '../utils/status'
 
 const PROMPT_OUTPUT_FORMAT = '{"finished": false, "message": string, "reasons": [string]}'
+
+const getDividers = (
+  session: Session,
+  currentStepObject: ConversationStep,
+  nextStepObject: ConversationStep,
+  history: ChatMessage[],
+) => {
+  if (session.overrideStep) {
+    return { ...session.dividers, [history.length]: { label: currentStepObject?.label } }
+  } else if (currentStepObject.isFinalStep) {
+    return session.dividers
+  }
+  return { ...session.dividers, [history.length]: { label: nextStepObject?.label } }
+}
 
 export const postLlmResponseHandler = async (event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2<any>> => {
   log('Received event', { ...event, body: undefined })
@@ -47,31 +68,27 @@ export const postLlmResponseHandler = async (event: APIGatewayProxyEventV2): Pro
             ? response.reasons
             : session.context.generatedReasons
 
-        const newDividers =
-          response.finished && !currentStepObject.isFinalStep
-            ? { ...session.dividers, [newHistory.length]: { label: nextStepObject?.label } }
-            : session.dividers
-
-        const newCurrentStep =
-          response.finished && !session.overrideStep && !currentStepObject.isFinalStep
-            ? nextStepObject.value
-            : session.currentStep
+        const finishedSession = response.finished
+          ? {
+            currentStep:
+                !session.overrideStep && !currentStepObject.isFinalStep ? nextStepObject.value : session.currentStep,
+            dividers: getDividers(session, currentStepObject, nextStepObject, newHistory),
+            newConversation: !session.overrideStep,
+            overrideStep: undefined,
+            storedMessage: undefined,
+          }
+          : {
+            newConversation: false,
+          }
 
         const updatedSession: Session = {
           ...session,
+          ...finishedSession,
           context: {
             ...session.context,
             generatedReasons: newGeneratedReasons,
           },
-          currentStep: newCurrentStep,
-          dividers:
-            response.finished && session.overrideStep
-              ? { ...session.dividers, [newHistory.length]: { label: currentStepObject?.label } }
-              : newDividers,
           history: newHistory,
-          newConversation: response.finished && !session.overrideStep,
-          overrideStep: response.finished ? undefined : session.overrideStep,
-          storedMessage: response.finished ? undefined : session.storedMessage,
         }
         await setSessionById(sessionId, updatedSession)
 
