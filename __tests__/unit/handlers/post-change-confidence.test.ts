@@ -1,6 +1,6 @@
 import * as dynamodb from '@services/dynamodb'
 import * as events from '@utils/events'
-import { APIGatewayProxyEventV2, Session } from '@types'
+import { APIGatewayProxyEventV2, ChatMessage, Session } from '@types'
 import { confidenceChangeRequest, session, sessionId } from '../__mocks__'
 import { confidenceChangedStep } from '@assets/conversation-steps'
 import eventJson from '@events/post-change-confidence.json'
@@ -45,6 +45,26 @@ describe('post-change-confidence', () => {
         body: JSON.stringify(expectedResponse),
       })
       expect(jest.mocked(dynamodb).setSessionById).toHaveBeenCalledWith(sessionId, expectedSession)
+    })
+
+    it('should update the confidence of the session but NOT set the chat override during confidence change', async () => {
+      const existingStoredMessage: ChatMessage = { content: 'This was already here', role: 'assistant' }
+      const sessionWithExistingConfidenceChange = {
+        ...session,
+        overrideStep: confidenceChangedStep,
+        storedMessage: existingStoredMessage,
+      }
+      jest.mocked(dynamodb).getSessionById.mockResolvedValue(sessionWithExistingConfidenceChange)
+      const result = await postChangeConfidenceHandler(event)
+
+      expect(result).toEqual({
+        ...status.OK,
+        body: JSON.stringify(expectedResponse),
+      })
+      expect(jest.mocked(dynamodb).setSessionById).toHaveBeenCalledWith(sessionId, {
+        ...expectedSession,
+        storedMessage: existingStoredMessage,
+      })
     })
 
     it('should return bad request on invalid session', async () => {

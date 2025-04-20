@@ -25,7 +25,7 @@ export const postChangeConfidenceHandler = async (
           dividers: { ...session.dividers, [session.history.length]: { label: confidenceChangedStep.label } },
           newConversation: true,
           overrideStep: confidenceChangedStep,
-          storedMessage: session.history[session.history.length - 1],
+          storedMessage: session.storedMessage ? session.storedMessage : session.history[session.history.length - 1],
         }
         await setSessionById(sessionId, updatedSession)
 
