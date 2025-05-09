@@ -67,7 +67,7 @@ describe('logging', () => {
       process.env.AWS_SAM_LOCAL = 'false'
       const result = xrayCapture(dynamodb)
 
-      expect(jest.mocked(AWSXRay).captureAWSv3Client).toHaveBeenCalledWith(dynamodb)
+      expect(AWSXRay.captureAWSv3Client).toHaveBeenCalledWith(dynamodb)
       expect(result).toEqual(capturedDynamodb)
     })
 
@@ -75,7 +75,7 @@ describe('logging', () => {
       process.env.AWS_SAM_LOCAL = 'true'
       const result = xrayCapture(dynamodb)
 
-      expect(jest.mocked(AWSXRay).captureAWSv3Client).toHaveBeenCalledTimes(0)
+      expect(AWSXRay.captureAWSv3Client).toHaveBeenCalledTimes(0)
       expect(result).toEqual(dynamodb)
     })
   })
@@ -85,14 +85,14 @@ describe('logging', () => {
       process.env.AWS_SAM_LOCAL = 'false'
       xrayCaptureHttps()
 
-      expect(jest.mocked(AWSXRay).captureHTTPsGlobal).toHaveBeenCalledWith(https)
+      expect(AWSXRay.captureHTTPsGlobal).toHaveBeenCalledWith(https)
     })
 
     it('should return the same object when x-ray is disabled (running locally)', () => {
       process.env.AWS_SAM_LOCAL = 'true'
       xrayCaptureHttps()
 
-      expect(jest.mocked(AWSXRay).captureHTTPsGlobal).toHaveBeenCalledTimes(0)
+      expect(AWSXRay.captureHTTPsGlobal).toHaveBeenCalledTimes(0)
     })
   })
 })

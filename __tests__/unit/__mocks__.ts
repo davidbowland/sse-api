@@ -136,8 +136,10 @@ export const session: Session = {
   dividers: { 0: { label: conversationSteps[0].label } },
   expiration: 1743407368,
   history: [userMessage, assistantMessage],
+  incorrect_guesses: 0,
   newConversation: false,
   originalConfidence: 'agree',
+  question: 1,
 }
 
 export const newSession: Session = {
@@ -153,8 +155,10 @@ export const newSession: Session = {
   dividers: { 0: { label: conversationSteps[0].label } },
   expiration: 1742846971,
   history: [],
+  incorrect_guesses: 0,
   newConversation: true,
   originalConfidence: 'slightly agree',
+  question: 0,
 }
 
 // Claims

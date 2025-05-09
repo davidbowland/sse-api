@@ -64,6 +64,7 @@ export interface LLMRequest {
 }
 
 export interface LLMResponse {
+  correct?: boolean
   finished: boolean
   message: string
   reasons?: string[]
@@ -88,9 +89,11 @@ export interface Session {
   dividers: Dividers
   expiration: number
   history: ChatMessage[]
+  incorrect_guesses: number
   newConversation: boolean
   originalConfidence: string
   overrideStep?: ConversationStep
+  question: number
   storedMessage?: ChatMessage
 }
 

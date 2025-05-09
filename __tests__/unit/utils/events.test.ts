@@ -54,6 +54,15 @@ describe('events', () => {
 
       expect(() => extractClaimFromEvent(eventWithMalformedClaim)).toThrow()
     })
+
+    it('should error when claim content is empty', () => {
+      const eventWithEmptyClaim = {
+        ...event,
+        body: JSON.stringify({ claim: '' }),
+      }
+
+      expect(() => extractClaimFromEvent(eventWithEmptyClaim)).toThrow()
+    })
   })
 
   describe('extractConfidenceChangeRequest', () => {
@@ -110,12 +119,21 @@ describe('events', () => {
     })
 
     it('should error when the chat message is malformed', () => {
-      const eventWithMalformedRequest = {
+      const eventWithMalformedMessage = {
         ...event,
         body: JSON.stringify({}),
       }
 
-      expect(() => extractLlmRequestFromEvent(eventWithMalformedRequest)).toThrow()
+      expect(() => extractLlmRequestFromEvent(eventWithMalformedMessage)).toThrow()
+    })
+
+    it('should error when the chat contents is empty', () => {
+      const eventWithEmptyContents = {
+        ...event,
+        body: JSON.stringify({ content: '' }),
+      }
+
+      expect(() => extractLlmRequestFromEvent(eventWithEmptyContents)).toThrow()
     })
   })
 
@@ -146,6 +164,18 @@ describe('events', () => {
       }
 
       expect(() => extractSessionFromEvent(eventWithMalformedSession)).toThrow()
+    })
+
+    it('should error when the session claim is empty', () => {
+      const eventWithEmptyClaim = {
+        ...event,
+        body: JSON.stringify({
+          claim: '',
+          confidence: 'slightly agree',
+        }),
+      }
+
+      expect(() => extractSessionFromEvent(eventWithEmptyClaim)).toThrow()
     })
 
     it("doesn't allow late expiration", () => {
@@ -202,6 +232,14 @@ describe('events', () => {
       const eventWithMalformedRequest = {
         ...event,
         body: JSON.stringify({ foo: 'bar' }),
+      }
+      expect(() => extractSuggestClaimsRequestFromEvent(eventWithMalformedRequest)).toThrow()
+    })
+
+    it('should error when the SuggestRequest is empty', () => {
+      const eventWithMalformedRequest = {
+        ...event,
+        body: JSON.stringify({ language: '  ' }),
       }
       expect(() => extractSuggestClaimsRequestFromEvent(eventWithMalformedRequest)).toThrow()
     })

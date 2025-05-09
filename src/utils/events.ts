@@ -16,6 +16,8 @@ const ajv = new AJV({ allErrors: true })
 
 const getTimeInSeconds = () => Math.floor(Date.now() / 1000)
 
+const trim = (str: string) => str.replace(/^\s+|\r|\n|\s+$/g, '')
+
 // Claims
 
 const formatClaim = (body: any): Claim => {
@@ -29,8 +31,19 @@ const formatClaim = (body: any): Claim => {
   }
   if (ajv.validate(jsonTypeDefinition, body) === false) {
     throw new Error(JSON.stringify(ajv.errors))
+  } else if (trim(body.claim).length === 0) {
+    throw new Error(
+      JSON.stringify([
+        {
+          instancePath: '/claim',
+          keyword: 'value',
+          message: 'Claim must be non-empty text',
+          schemaPath: '/properties/claim/value',
+        },
+      ]),
+    )
   }
-  return { claim: body.claim, language: body.language ?? 'en-US' }
+  return { claim: trim(body.claim), language: body.language ?? 'en-US' }
 }
 
 export const extractClaimFromEvent = (event: APIGatewayProxyEventV2): Claim => formatClaim(parseEventBody(event))
@@ -66,9 +79,20 @@ const formatLlmRequest = (body: any): LLMRequest => {
   }
   if (ajv.validate(jsonTypeDefinition, body) === false) {
     throw new Error(JSON.stringify(ajv.errors))
+  } else if (trim(body.content).length === 0) {
+    throw new Error(
+      JSON.stringify([
+        {
+          instancePath: '/content',
+          keyword: 'value',
+          message: 'Content must be non-empty text',
+          schemaPath: '/properties/content/value',
+        },
+      ]),
+    )
   }
   return {
-    message: { content: body.content.trim().replace(/\r|\n/g, ''), role: 'user' },
+    message: { content: trim(body.content), role: 'user' },
   }
 }
 
@@ -95,6 +119,17 @@ const formatSession = (body: any): Session => {
 
   if (ajv.validate(jsonTypeDefinition, body) === false) {
     throw new Error(JSON.stringify(ajv.errors))
+  } else if (trim(body.claim).length === 0) {
+    throw new Error(
+      JSON.stringify([
+        {
+          instancePath: '/claim',
+          keyword: 'value',
+          message: 'Claim must be non-empty text',
+          schemaPath: '/properties/claim/value',
+        },
+      ]),
+    )
   } else if ((body.expiration ?? 0) > lastExpiration) {
     throw new Error(
       JSON.stringify([
@@ -108,9 +143,10 @@ const formatSession = (body: any): Session => {
       ]),
     )
   }
+
   return {
     context: {
-      claim: body.claim,
+      claim: trim(body.claim),
       confidence: body.confidence,
       generatedReasons: [],
       language: body.language ?? 'en-US',
@@ -121,8 +157,10 @@ const formatSession = (body: any): Session => {
     dividers: { 0: { label: conversationSteps[0].label } },
     expiration: body.expiration ?? lastExpiration,
     history: [],
+    incorrect_guesses: 0,
     newConversation: true,
     originalConfidence: body.confidence,
+    question: 0,
   }
 }
 
@@ -138,6 +176,17 @@ const formatSuggestClaimsRequest = (body: any): SuggestClaimsRequest => {
   }
   if (ajv.validate(jsonTypeDefinition, body) === false) {
     throw new Error(JSON.stringify(ajv.errors))
+  } else if (body.language && trim(body.language).length === 0) {
+    throw new Error(
+      JSON.stringify([
+        {
+          instancePath: '/language',
+          keyword: 'value',
+          message: 'Language must be non-empty text when present',
+          schemaPath: '/properties/language/value',
+        },
+      ]),
+    )
   }
   return { language: body.language ?? 'en-US' }
 }

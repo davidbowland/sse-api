@@ -32,7 +32,7 @@ describe('post-session', () => {
         ...status.CREATED,
         body: JSON.stringify({ sessionId }),
       })
-      expect(jest.mocked(dynamodb).setSessionById).toHaveBeenCalledWith(sessionId, newSession)
+      expect(dynamodb.setSessionById).toHaveBeenCalledWith(sessionId, newSession)
     })
 
     it('should return bad request on invalid session', async () => {

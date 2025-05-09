@@ -151,7 +151,7 @@ describe('bedrock', () => {
       const result = await parseJson(json, expectedFormat)
 
       expect(result).toEqual({ suggestions: invokeModelSuggestedClaims })
-      expect(jest.mocked(dynamodb).getPromptById).not.toHaveBeenCalled()
+      expect(dynamodb.getPromptById).not.toHaveBeenCalled()
       expect(mockSend).not.toHaveBeenCalled()
     })
 
@@ -160,7 +160,7 @@ describe('bedrock', () => {
       const result = await parseJson(json, expectedFormat)
 
       expect(result).toEqual({ suggestions: invokeModelSuggestedClaims })
-      expect(jest.mocked(dynamodb).getPromptById).toHaveBeenCalledWith('fix-json')
+      expect(dynamodb.getPromptById).toHaveBeenCalledWith('fix-json')
       expect(mockSend).toHaveBeenCalledWith({
         body: new TextEncoder().encode(
           JSON.stringify({
@@ -185,7 +185,7 @@ describe('bedrock', () => {
       const result = await parseJson(json, expectedFormat)
 
       expect(result).toBeUndefined()
-      expect(jest.mocked(dynamodb).getPromptById).toHaveBeenCalledWith('fix-json')
+      expect(dynamodb.getPromptById).toHaveBeenCalledWith('fix-json')
       expect(mockSend).toHaveBeenCalledWith({
         body: new TextEncoder().encode(
           JSON.stringify({

@@ -45,7 +45,7 @@ describe('post-change-confidence', () => {
         ...status.OK,
         body: JSON.stringify(expectedResponse),
       })
-      expect(jest.mocked(dynamodb).setSessionById).toHaveBeenCalledWith(sessionId, expectedSession)
+      expect(dynamodb.setSessionById).toHaveBeenCalledWith(sessionId, expectedSession)
     })
 
     it('should update the confidence of the session but NOT set the chat override during confidence change', async () => {
@@ -62,7 +62,7 @@ describe('post-change-confidence', () => {
         ...status.OK,
         body: JSON.stringify(expectedResponse),
       })
-      expect(jest.mocked(dynamodb).setSessionById).toHaveBeenCalledWith(sessionId, {
+      expect(dynamodb.setSessionById).toHaveBeenCalledWith(sessionId, {
         ...expectedSession,
         storedMessage: existingStoredMessage,
       })

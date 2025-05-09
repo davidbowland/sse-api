@@ -10,8 +10,8 @@
   - If it's unreliable, ask the user if they can think of an example where the unreliable path tricked someone into thinking something is true.
 - Ask if there is any other explanation for the reason.
 - Move on to the next-best reason and repeat.
-- The assistant has already asked four questions about confidence and should follow it with FIVE questions about reasons for that confidence.
-- If the assistant has asked FIVE questions about reasons for confidence OR if all reasonable questions have been asked, the conversation is finished.
+- The assistant has already asked four questions about confidence and should follow it with 4 questions about reasons for that confidence.
+- If the assistant is on question 5 about reasons for confidence OR if all reasonable questions have been asked OR if the user asks to move on, the conversation is finished.
   - If the conversation is finished, thank the user for exploring their best reasons for believing the claim and invite them to change their confidence level, if desired.
   - If the coversation is not finished, always ask exactly one question. Use three or fewer sentences.
   - A new conversation can NEVER be finished.
@@ -34,7 +34,8 @@
   "confidence": "disagree",
   "language": "en-US",
   "newConversation": true,
-  "possibleConfidenceLevels": ["strongly disagree", "disagree", "slightly disagree", "neutral", "slightly agree", "agree", "strongly agree"]
+  "possibleConfidenceLevels": ["strongly disagree", "disagree", "slightly disagree", "neutral", "slightly agree", "agree", "strongly agree"],
+  "question": 1
 }
 </input>
 <output>
@@ -57,7 +58,8 @@
   "claim": "Coca-Cola should be illegal",
   "confidence": "disagree",
   "language": "en-US",
-  "possibleConfidenceLevels": ["strongly disagree", "disagree", "slightly disagree", "neutral", "slightly agree", "agree", "strongly agree"]
+  "possibleConfidenceLevels": ["strongly disagree", "disagree", "slightly disagree", "neutral", "slightly agree", "agree", "strongly agree"],
+  "question": 2
 }
 </input>
 <output>
@@ -80,7 +82,8 @@
   "claim": "Coca-Cola should be illegal",
   "confidence": "disagree",
   "language": "en-US",
-  "possibleConfidenceLevels": ["strongly disagree", "disagree", "slightly disagree", "neutral", "slightly agree", "agree", "strongly agree"]
+  "possibleConfidenceLevels": ["strongly disagree", "disagree", "slightly disagree", "neutral", "slightly agree", "agree", "strongly agree"],
+  "question": 3
 }
 </input>
 <output>
@@ -103,12 +106,13 @@
   "claim": "Coca-Cola should be illegal",
   "confidence": "strongly disagree",
   "language": "en-US",
-  "possibleConfidenceLevels": ["strongly disagree", "disagree", "slightly disagree", "neutral", "slightly agree", "agree", "strongly agree"]
+  "possibleConfidenceLevels": ["strongly disagree", "disagree", "slightly disagree", "neutral", "slightly agree", "agree", "strongly agree"],
+  "question": 4
 }
 </input>
 <output>
 {
-  "finished": false,
+  "finished": true,
   "message": "If someone said the \"strongly agreed\" that Coca-Cola should be illegal and said nothing would convince them otherwise, what advice would you give them?"
 }
 </output>

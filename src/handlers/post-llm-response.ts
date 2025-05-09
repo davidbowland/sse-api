@@ -45,14 +45,20 @@ export const postLlmResponseHandler = async (event: APIGatewayProxyEventV2): Pro
           session.context.confidence === session.originalConfidence
             ? `Kept confidence at ${session.originalConfidence}`
             : `Changed confidence from ${session.originalConfidence} to ${session.context.confidence}`
+        const currentQuestion =
+          currentStepObject.value === 'guess reasons' || currentStepObject.value === 'confidence changed'
+            ? undefined
+            : session.question + 1
 
         const response: LLMResponse = (await parseJson(
           invokeModelMessage(prompt, [...session.history, llmRequest.message], {
             ...session.context,
             changedConfidence: currentStepObject.isFinalStep ? changedConfidence : undefined,
             confidence: currentStepObject.isFinalStep ? undefined : session.context.confidence,
+            incorrect_guesses: currentStepObject.value === 'guess reasons' ? session.incorrect_guesses : undefined,
             newConversation: session.newConversation,
             possibleConfidenceLevels: session.context.possibleConfidenceLevels.map((level) => level.label),
+            question: currentQuestion,
             storedMessage: session.storedMessage,
           }),
           PROMPT_OUTPUT_FORMAT,
@@ -77,10 +83,12 @@ export const postLlmResponseHandler = async (event: APIGatewayProxyEventV2): Pro
             dividers: getDividers(session, currentStepObject, nextStepObject, newHistory),
             newConversation: !session.overrideStep,
             overrideStep: undefined,
+            question: session.overrideStep ? session.question : 0,
             storedMessage: undefined,
           }
           : {
             newConversation: false,
+            question: currentQuestion === undefined ? session.question : currentQuestion,
           }
 
         const updatedSession: Session = {
@@ -91,6 +99,8 @@ export const postLlmResponseHandler = async (event: APIGatewayProxyEventV2): Pro
             generatedReasons: newGeneratedReasons,
           },
           history: newHistory,
+          incorrect_guesses:
+            currentStepObject.value === 'guess reasons' && !response.correct ? session.incorrect_guesses + 1 : 0,
         }
         await setSessionById(sessionId, updatedSession)
 
