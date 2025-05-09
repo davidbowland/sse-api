@@ -1,11 +1,11 @@
-import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from '../types'
+import { suggestClaimsPromptId } from '../config'
 import { invokeModel, parseJson } from '../services/bedrock'
-import { log, logError } from '../utils/logging'
-import { extractSuggestClaimsRequestFromEvent } from '../utils/events'
 import { getClaimSources } from '../services/claim-sources'
 import { getPromptById } from '../services/dynamodb'
+import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from '../types'
+import { extractSuggestClaimsRequestFromEvent } from '../utils/events'
+import { log, logError } from '../utils/logging'
 import status from '../utils/status'
-import { suggestClaimsPromptId } from '../config'
 
 const PROMPT_OUTPUT_FORMAT = '{"suggestions": [string]}'
 

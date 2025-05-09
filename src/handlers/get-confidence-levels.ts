@@ -1,5 +1,5 @@
-import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from '../types'
 import { confidenceLevels } from '../assets/confidence-levels'
+import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from '../types'
 import { log } from '../utils/logging'
 import status from '../utils/status'
 

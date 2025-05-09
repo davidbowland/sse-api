@@ -1,5 +1,5 @@
-import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from '../types'
 import { getSessionById } from '../services/dynamodb'
+import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from '../types'
 import { log } from '../utils/logging'
 import status from '../utils/status'
 

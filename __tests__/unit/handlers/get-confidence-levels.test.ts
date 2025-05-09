@@ -1,7 +1,7 @@
-import { APIGatewayProxyEventV2 } from '@types'
 import { confidenceLevels } from '@assets/confidence-levels'
 import eventJson from '@events/get-confidence-levels.json'
 import { getConfidenceLevelsHandler } from '@handlers/get-confidence-levels'
+import { APIGatewayProxyEventV2 } from '@types'
 import status from '@utils/status'
 
 jest.mock('@utils/logging')

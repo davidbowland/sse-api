@@ -1,11 +1,12 @@
-import * as bedrock from '@services/bedrock'
-import * as dynamodb from '@services/dynamodb'
-import * as events from '@utils/events'
-import { prompt, validationResult } from '../__mocks__'
-import { APIGatewayProxyEventV2 } from '@types'
 import eventJson from '@events/post-validate-claim.json'
 import { postValidateClaimHandler } from '@handlers/post-validate-claim'
+import * as bedrock from '@services/bedrock'
+import * as dynamodb from '@services/dynamodb'
+import { APIGatewayProxyEventV2 } from '@types'
+import * as events from '@utils/events'
 import status from '@utils/status'
+
+import { prompt, validationResult } from '../__mocks__'
 
 jest.mock('@services/bedrock')
 jest.mock('@services/dynamodb')

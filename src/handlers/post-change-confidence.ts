@@ -1,8 +1,8 @@
-import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, Session } from '../types'
-import { getSessionById, setSessionById } from '../services/dynamodb'
-import { log, logError } from '../utils/logging'
 import { confidenceChangedStep } from '../assets/conversation-steps'
+import { getSessionById, setSessionById } from '../services/dynamodb'
+import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, Session } from '../types'
 import { extractConfidenceChangeRequest } from '../utils/events'
+import { log, logError } from '../utils/logging'
 import status from '../utils/status'
 
 export const postChangeConfidenceHandler = async (

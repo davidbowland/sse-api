@@ -1,6 +1,7 @@
 import AWSXRay from 'aws-xray-sdk-core'
-import { debugLogging } from '../config'
 import https from 'https'
+
+import { debugLogging } from '../config'
 
 export const extractRequestError = (message: string): { errors?: any; message?: string } => {
   try {

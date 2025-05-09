@@ -1,11 +1,12 @@
-import * as dynamodb from '@services/dynamodb'
-import * as events from '@utils/events'
-import { APIGatewayProxyEventV2, ChatMessage, Session } from '@types'
-import { confidenceChangeRequest, session, sessionId } from '../__mocks__'
 import { confidenceChangedStep } from '@assets/conversation-steps'
 import eventJson from '@events/post-change-confidence.json'
 import { postChangeConfidenceHandler } from '@handlers/post-change-confidence'
+import * as dynamodb from '@services/dynamodb'
+import { APIGatewayProxyEventV2, ChatMessage, Session } from '@types'
+import * as events from '@utils/events'
 import status from '@utils/status'
+
+import { confidenceChangeRequest, session, sessionId } from '../__mocks__'
 
 jest.mock('@services/dynamodb')
 jest.mock('@utils/events')

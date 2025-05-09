@@ -1,9 +1,10 @@
-import * as dynamodb from '@services/dynamodb'
-import { APIGatewayProxyEventV2 } from '@types'
 import eventJson from '@events/get-session.json'
 import { getSessionHandler } from '@handlers/get-session'
-import { session } from '../__mocks__'
+import * as dynamodb from '@services/dynamodb'
+import { APIGatewayProxyEventV2 } from '@types'
 import status from '@utils/status'
+
+import { session } from '../__mocks__'
 
 jest.mock('@services/dynamodb')
 jest.mock('@utils/logging')

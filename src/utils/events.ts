@@ -1,3 +1,8 @@
+import AJV from 'ajv/dist/jtd'
+
+import { confidenceLevels, confidenceLevelsOrdered } from '../assets/confidence-levels'
+import { conversationSteps } from '../assets/conversation-steps'
+import { sessionExpireHours } from '../config'
 import {
   APIGatewayProxyEventV2,
   Claim,
@@ -6,10 +11,6 @@ import {
   Session,
   SuggestClaimsRequest,
 } from '../types'
-import { confidenceLevels, confidenceLevelsOrdered } from '../assets/confidence-levels'
-import AJV from 'ajv/dist/jtd'
-import { conversationSteps } from '../assets/conversation-steps'
-import { sessionExpireHours } from '../config'
 
 const ajv = new AJV({ allErrors: true })
 

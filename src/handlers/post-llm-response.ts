@@ -1,3 +1,6 @@
+import { responsePromptId } from '../config'
+import { invokeModelMessage, parseJson } from '../services/bedrock'
+import { getPromptById, getSessionById, setSessionById } from '../services/dynamodb'
 import {
   APIGatewayProxyEventV2,
   APIGatewayProxyResultV2,
@@ -6,11 +9,8 @@ import {
   LLMResponse,
   Session,
 } from '../types'
-import { getPromptById, getSessionById, setSessionById } from '../services/dynamodb'
-import { invokeModelMessage, parseJson } from '../services/bedrock'
-import { log, logError } from '../utils/logging'
 import { extractLlmRequestFromEvent } from '../utils/events'
-import { responsePromptId } from '../config'
+import { log, logError } from '../utils/logging'
 import status from '../utils/status'
 
 const PROMPT_OUTPUT_FORMAT = '{"finished": false, "message": string, "reasons": [string]}'

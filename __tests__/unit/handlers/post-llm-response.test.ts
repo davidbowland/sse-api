@@ -1,7 +1,11 @@
+import eventJson from '@events/post-llm-response.json'
+import { postLlmResponseHandler } from '@handlers/post-llm-response'
 import * as bedrock from '@services/bedrock'
 import * as dynamodb from '@services/dynamodb'
-import * as events from '@utils/events'
 import { APIGatewayProxyEventV2, ChatMessage, Session } from '@types'
+import * as events from '@utils/events'
+import status from '@utils/status'
+
 import {
   assistantMessage,
   llmRequest,
@@ -12,9 +16,6 @@ import {
   sessionId,
   userMessage,
 } from '../__mocks__'
-import eventJson from '@events/post-llm-response.json'
-import { postLlmResponseHandler } from '@handlers/post-llm-response'
-import status from '@utils/status'
 
 jest.mock('@services/bedrock')
 jest.mock('@services/dynamodb')

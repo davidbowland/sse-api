@@ -1,4 +1,6 @@
 /* eslint sort-keys:0 */
+import { confidenceLevels } from '@assets/confidence-levels'
+import { conversationSteps } from '@assets/conversation-steps'
 import {
   ChatMessage,
   ConfidenceChangeRequest,
@@ -10,8 +12,6 @@ import {
   Session,
   SessionId,
 } from '@types'
-import { confidenceLevels } from '@assets/confidence-levels'
-import { conversationSteps } from '@assets/conversation-steps'
 
 // Bedrock
 

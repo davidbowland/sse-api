@@ -1,10 +1,10 @@
-import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from '../types'
-import { invokeModel, parseJson } from '../services/bedrock'
-import { log, logError } from '../utils/logging'
-import { extractClaimFromEvent } from '../utils/events'
-import { getPromptById } from '../services/dynamodb'
-import status from '../utils/status'
 import { validateClaimPromptId } from '../config'
+import { invokeModel, parseJson } from '../services/bedrock'
+import { getPromptById } from '../services/dynamodb'
+import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from '../types'
+import { extractClaimFromEvent } from '../utils/events'
+import { log, logError } from '../utils/logging'
+import status from '../utils/status'
 
 const PROMPT_OUTPUT_FORMAT = '{"inappropriate":boolean,"isTruthClaim":boolean,"suggestions": [string]}'
 

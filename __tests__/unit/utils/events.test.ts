@@ -1,3 +1,10 @@
+import { confidenceLevelsOrdered } from '@assets/confidence-levels'
+import changeConfidenceJson from '@events/post-change-confidence.json'
+import llmResponseEventJson from '@events/post-llm-response.json'
+import createEventJson from '@events/post-session.json'
+import suggestClaimsEventJson from '@events/post-suggest-claims.json'
+import validateEventJson from '@events/post-validate-claim.json'
+import { APIGatewayProxyEventV2 } from '@types'
 import {
   extractClaimFromEvent,
   extractConfidenceChangeRequest,
@@ -5,14 +12,8 @@ import {
   extractSessionFromEvent,
   extractSuggestClaimsRequestFromEvent,
 } from '@utils/events'
+
 import { llmRequest, newSession } from '../__mocks__'
-import { APIGatewayProxyEventV2 } from '@types'
-import changeConfidenceJson from '@events/post-change-confidence.json'
-import { confidenceLevelsOrdered } from '@assets/confidence-levels'
-import createEventJson from '@events/post-session.json'
-import llmResponseEventJson from '@events/post-llm-response.json'
-import suggestClaimsEventJson from '@events/post-suggest-claims.json'
-import validateEventJson from '@events/post-validate-claim.json'
 
 describe('events', () => {
   const epochTime = 1742760571384
