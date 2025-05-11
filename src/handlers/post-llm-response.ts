@@ -83,7 +83,7 @@ export const postLlmResponseHandler = async (event: APIGatewayProxyEventV2): Pro
             dividers: getDividers(session, currentStepObject, nextStepObject, newHistory),
             newConversation: !session.overrideStep,
             overrideStep: undefined,
-            question: session.overrideStep ? session.question : 0,
+            question: session.overrideStep ? session.question : Math.max(0, session.question - 1),
             storedMessage: undefined,
           }
           : {

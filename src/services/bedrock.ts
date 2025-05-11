@@ -23,7 +23,7 @@ export const invokeModelMessage = async (prompt: Prompt, history: ChatMessage[],
     temperature: prompt.config.temperature,
     top_k: prompt.config.topK,
   }
-  logDebug('Invoking model', {
+  log('Invoking model', {
     history1: history.slice(0, 10),
     history2: history.slice(10, 20),
     history3: history.slice(20),
@@ -36,8 +36,8 @@ export const invokeModelMessage = async (prompt: Prompt, history: ChatMessage[],
   })
   const response = await runtimeClient.send(command)
   const modelResponse = JSON.parse(new TextDecoder().decode(response.body))
-  logDebug('Model response', { modelResponse, text: modelResponse.content[0].text })
-  return modelResponse.content[0].text
+  log('Model response', { modelResponse, text: modelResponse.content[0].text })
+  return modelResponse.content[0].text.replace(/\s*<thinking>.*?<\/thinking>\s*/s, '')
 }
 
 export const parseJson = async (input: Promise<string>, targetFormat: string): Promise<any> => {

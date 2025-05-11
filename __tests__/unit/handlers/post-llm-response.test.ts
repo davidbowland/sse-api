@@ -186,6 +186,26 @@ describe('post-llm-response', () => {
       expect(result).toEqual({ ...status.OK, body: JSON.stringify(newConversationResponse) })
     })
 
+    it('goes back one question when moving on', async () => {
+      const finishedLlmResponse = { ...llmResponse, finished: true }
+      const sessionNewConversation = { ...questionSession, currentStep: 'probe confidence', question: 2 }
+      jest.mocked(bedrock).invokeModelMessage.mockResolvedValueOnce(finishedLlmResponse)
+      jest.mocked(dynamodb).getSessionById.mockResolvedValueOnce(sessionNewConversation)
+      const expectedSession = {
+        ...updatedSession,
+        context: {
+          ...session.context,
+        },
+        currentStep: 'probe reasons',
+        dividers: { '0': { label: 'Introduction' }, '4': { label: 'Reasons' } },
+        newConversation: true,
+        question: 1,
+      }
+      await postLlmResponseHandler(event)
+
+      expect(dynamodb.setSessionById).toHaveBeenCalledWith(sessionId, expectedSession)
+    })
+
     it("doesn't move on from final step", async () => {
       const finishedLlmResponse = { ...llmResponse, finished: true }
       const sessionNewConversation = { ...questionSession, currentStep: 'end' }
