@@ -34,7 +34,8 @@ describe('bedrock', () => {
     })
 
     it('should invoke the correct model based on the prompt', async () => {
-      const result = JSON.parse(await invokeModel(prompt, data))
+      const { modelResponse } = await invokeModel(prompt, data)
+      const result = JSON.parse(modelResponse)
 
       expect(result).toEqual({ suggestions: invokeModelSuggestedClaims })
       expect(mockSend).toHaveBeenCalledWith({
@@ -60,7 +61,8 @@ describe('bedrock', () => {
         ...prompt,
         contents: 'My context should go here: ${context}',
       }
-      const result = JSON.parse(await invokeModel(promptWithContext, data, { foo: 'bar' }))
+      const { modelResponse } = await invokeModel(promptWithContext, data, { foo: 'bar' })
+      const result = JSON.parse(modelResponse)
 
       expect(result).toEqual({ suggestions: invokeModelSuggestedClaims })
       expect(mockSend).toHaveBeenCalledWith({
@@ -90,7 +92,8 @@ describe('bedrock', () => {
     })
 
     it('should invoke the correct model based on the prompt', async () => {
-      const result = JSON.parse(await invokeModelMessage(prompt, history))
+      const { modelResponse } = await await invokeModelMessage(prompt, history)
+      const result = JSON.parse(modelResponse)
       expect(result).toEqual({ suggestions: invokeModelSuggestedClaims })
       expect(mockSend).toHaveBeenCalledWith({
         body: new TextEncoder().encode(
@@ -112,7 +115,8 @@ describe('bedrock', () => {
         ...prompt,
         contents: 'My data should go here: ${data}',
       }
-      const result = JSON.parse(await invokeModelMessage(promptWithData, history, { foo: 'bar' }))
+      const { modelResponse } = await await invokeModelMessage(promptWithData, history, { foo: 'bar' })
+      const result = JSON.parse(modelResponse)
       expect(result).toEqual({ suggestions: invokeModelSuggestedClaims })
       expect(mockSend).toHaveBeenCalledWith({
         body: new TextEncoder().encode(
@@ -147,8 +151,7 @@ describe('bedrock', () => {
     })
 
     it('should parse the json without invoking the LLM', async () => {
-      const json = Promise.resolve(jsonString)
-      const result = await parseJson(json, expectedFormat)
+      const result = await parseJson(jsonString, expectedFormat)
 
       expect(result).toEqual({ suggestions: invokeModelSuggestedClaims })
       expect(dynamodb.getPromptById).not.toHaveBeenCalled()
@@ -156,8 +159,7 @@ describe('bedrock', () => {
     })
 
     it('should invoke the LLM if the initial json is invalid', async () => {
-      const json = Promise.resolve('invalid json')
-      const result = await parseJson(json, expectedFormat)
+      const result = await parseJson('invalid json', expectedFormat)
 
       expect(result).toEqual({ suggestions: invokeModelSuggestedClaims })
       expect(dynamodb.getPromptById).toHaveBeenCalledWith('fix-json')
@@ -180,9 +182,8 @@ describe('bedrock', () => {
     })
 
     it("should return undefined if the json is invalid and LLM can't fix it", async () => {
-      const json = Promise.resolve('invalid json')
       mockSend.mockResolvedValueOnce(invokeModelInvalidResponse)
-      const result = await parseJson(json, expectedFormat)
+      const result = await parseJson('invalid json', expectedFormat)
 
       expect(result).toBeUndefined()
       expect(dynamodb.getPromptById).toHaveBeenCalledWith('fix-json')

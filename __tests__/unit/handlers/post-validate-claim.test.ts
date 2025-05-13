@@ -19,8 +19,10 @@ describe('post-validate-claim', () => {
   const claim = 'Brisket is the best meat'
 
   beforeAll(() => {
-    jest.mocked(bedrock).invokeModel.mockResolvedValue(validationResult)
-    jest.mocked(bedrock).parseJson.mockImplementation((json) => json)
+    jest
+      .mocked(bedrock)
+      .invokeModel.mockResolvedValue({ modelResponse: JSON.stringify(validationResult), thoughtProcess: 'I think so' })
+    jest.mocked(bedrock).parseJson.mockImplementation((json) => Promise.resolve(JSON.parse(json)))
     jest.mocked(dynamodb).getPromptById.mockResolvedValue(prompt)
     jest.mocked(events).extractClaimFromEvent.mockReturnValue({ claim, language: 'en-US' })
   })
@@ -56,8 +58,8 @@ describe('post-validate-claim', () => {
       expect(result).toEqual(expect.objectContaining(status.INTERNAL_SERVER_ERROR))
     })
 
-    it('returns INTERNAL_SERVER_ERROR when invokeModel returns undefined', async () => {
-      jest.mocked(bedrock).invokeModel.mockResolvedValueOnce(undefined)
+    it('returns INTERNAL_SERVER_ERROR when parseJson returns undefined', async () => {
+      jest.mocked(bedrock).parseJson.mockResolvedValueOnce(undefined)
       const result = await postValidateClaimHandler(event)
 
       expect(result).toEqual(expect.objectContaining(status.INTERNAL_SERVER_ERROR))

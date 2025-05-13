@@ -43,12 +43,15 @@ describe('post-llm-response', () => {
     dividers: { '0': { label: 'Introduction' } },
     history: updatedSession.history,
     newConversation: false,
+    thinking: { 0: 'I made that crap up', 4: 'nonsense' },
   }
   const expectedConfidenceLevels = session.context.possibleConfidenceLevels.map((level) => level.label)
 
   beforeAll(() => {
-    jest.mocked(bedrock).invokeModelMessage.mockResolvedValue(llmResponse)
-    jest.mocked(bedrock).parseJson.mockImplementation((json) => json)
+    jest
+      .mocked(bedrock)
+      .invokeModelMessage.mockResolvedValue({ modelResponse: JSON.stringify(llmResponse), thoughtProcess: 'nonsense' })
+    jest.mocked(bedrock).parseJson.mockResolvedValue(llmResponse)
     jest.mocked(dynamodb).getPromptById.mockResolvedValue(prompt)
     jest.mocked(dynamodb).getSessionById.mockResolvedValue(questionSession)
     jest.mocked(events).extractLlmRequestFromEvent.mockReturnValue(llmRequest)
@@ -81,7 +84,13 @@ describe('post-llm-response', () => {
     it('passes connect arguments to LLM on final step when confidence changed', async () => {
       const finishedLlmResponse = { ...llmResponse, finished: true }
       const sessionNewConversation = { ...session, currentStep: 'end' }
-      jest.mocked(bedrock).invokeModelMessage.mockResolvedValueOnce(finishedLlmResponse)
+      jest
+        .mocked(bedrock)
+        .invokeModelMessage.mockResolvedValueOnce({
+          modelResponse: JSON.stringify(finishedLlmResponse),
+          thoughtProcess: 'nonsense',
+        })
+      jest.mocked(bedrock).parseJson.mockResolvedValueOnce(finishedLlmResponse)
       jest.mocked(dynamodb).getSessionById.mockResolvedValueOnce(sessionNewConversation)
       await postLlmResponseHandler(event)
 
@@ -105,7 +114,13 @@ describe('post-llm-response', () => {
         currentStep: 'end',
         originalConfidence: 'disagree',
       }
-      jest.mocked(bedrock).invokeModelMessage.mockResolvedValueOnce(finishedLlmResponse)
+      jest
+        .mocked(bedrock)
+        .invokeModelMessage.mockResolvedValueOnce({
+          modelResponse: JSON.stringify(finishedLlmResponse),
+          thoughtProcess: 'nonsense',
+        })
+      jest.mocked(bedrock).parseJson.mockResolvedValueOnce(finishedLlmResponse)
       jest.mocked(dynamodb).getSessionById.mockResolvedValueOnce(sessionNewConversation)
       await postLlmResponseHandler(event)
 
@@ -141,16 +156,18 @@ describe('post-llm-response', () => {
       expect(result).toEqual({ ...status.OK, body: JSON.stringify(expectedResponse) })
     })
 
-    it('returns only adds the assistant response to history for new conversations', async () => {
+    it('adds the assistant response to history for new conversations', async () => {
       const sessionNewConversation = { ...questionSession, newConversation: true }
       jest.mocked(dynamodb).getSessionById.mockResolvedValueOnce(sessionNewConversation)
       const expectedSession = {
         ...updatedSession,
         history: [...session.history, newAssistantMessage],
+        thinking: { 0: 'I made that crap up', 3: 'nonsense', 4: 'nonsense' },
       }
       const newConversationResponse = {
         ...expectedResponse,
         history: expectedSession.history,
+        thinking: { 0: 'I made that crap up', 3: 'nonsense', 4: 'nonsense' },
       }
       const result = await postLlmResponseHandler(event)
 
@@ -161,7 +178,13 @@ describe('post-llm-response', () => {
     it('moves on to next step', async () => {
       const finishedLlmResponse = { ...llmResponse, finished: true }
       const sessionNewConversation = { ...questionSession, currentStep: 'probe confidence' }
-      jest.mocked(bedrock).invokeModelMessage.mockResolvedValueOnce(finishedLlmResponse)
+      jest
+        .mocked(bedrock)
+        .invokeModelMessage.mockResolvedValueOnce({
+          modelResponse: JSON.stringify(finishedLlmResponse),
+          thoughtProcess: 'nonsense',
+        })
+      jest.mocked(bedrock).parseJson.mockResolvedValueOnce(finishedLlmResponse)
       jest.mocked(dynamodb).getSessionById.mockResolvedValueOnce(sessionNewConversation)
       const expectedSession = {
         ...updatedSession,
@@ -189,7 +212,13 @@ describe('post-llm-response', () => {
     it('goes back one question when moving on', async () => {
       const finishedLlmResponse = { ...llmResponse, finished: true }
       const sessionNewConversation = { ...questionSession, currentStep: 'probe confidence', question: 2 }
-      jest.mocked(bedrock).invokeModelMessage.mockResolvedValueOnce(finishedLlmResponse)
+      jest
+        .mocked(bedrock)
+        .invokeModelMessage.mockResolvedValueOnce({
+          modelResponse: JSON.stringify(finishedLlmResponse),
+          thoughtProcess: 'nonsense',
+        })
+      jest.mocked(bedrock).parseJson.mockResolvedValueOnce(finishedLlmResponse)
       jest.mocked(dynamodb).getSessionById.mockResolvedValueOnce(sessionNewConversation)
       const expectedSession = {
         ...updatedSession,
@@ -209,7 +238,13 @@ describe('post-llm-response', () => {
     it("doesn't move on from final step", async () => {
       const finishedLlmResponse = { ...llmResponse, finished: true }
       const sessionNewConversation = { ...questionSession, currentStep: 'end' }
-      jest.mocked(bedrock).invokeModelMessage.mockResolvedValueOnce(finishedLlmResponse)
+      jest
+        .mocked(bedrock)
+        .invokeModelMessage.mockResolvedValueOnce({
+          modelResponse: JSON.stringify(finishedLlmResponse),
+          thoughtProcess: 'nonsense',
+        })
+      jest.mocked(bedrock).parseJson.mockResolvedValueOnce(finishedLlmResponse)
       jest.mocked(dynamodb).getSessionById.mockResolvedValueOnce(sessionNewConversation)
       const expectedSession = {
         ...updatedSession,
@@ -246,7 +281,7 @@ describe('post-llm-response', () => {
       })
     })
 
-    it('add correct divider when override finishes', async () => {
+    it('adds the correct divider when override finishes', async () => {
       const finishedLlmResponse = { ...llmResponse, finished: true }
       const newMessage: ChatMessage = { content: 'Sup?', role: 'assistant' }
       const sessionWithMessage = {
@@ -258,7 +293,13 @@ describe('post-llm-response', () => {
         },
         storedMessage: newMessage,
       }
-      jest.mocked(bedrock).invokeModelMessage.mockResolvedValueOnce(finishedLlmResponse)
+      jest
+        .mocked(bedrock)
+        .invokeModelMessage.mockResolvedValueOnce({
+          modelResponse: JSON.stringify(finishedLlmResponse),
+          thoughtProcess: 'nonsense',
+        })
+      jest.mocked(bedrock).parseJson.mockResolvedValueOnce(finishedLlmResponse)
       jest.mocked(dynamodb).getSessionById.mockResolvedValueOnce(sessionWithMessage)
       const expectedSession = {
         ...updatedSession,
@@ -278,6 +319,19 @@ describe('post-llm-response', () => {
 
       expect(dynamodb.setSessionById).toHaveBeenCalledWith(sessionId, expectedSession)
       expect(result).toEqual({ ...status.OK, body: JSON.stringify(newConversationResponse) })
+    })
+
+    it('still completes with thoughtProcess undefined', async () => {
+      jest
+        .mocked(bedrock)
+        .invokeModelMessage.mockResolvedValueOnce({
+          modelResponse: JSON.stringify(llmResponse),
+          thoughtProcess: undefined,
+        })
+      const result = await postLlmResponseHandler(event)
+
+      expect(dynamodb.setSessionById).toHaveBeenCalledWith(sessionId, updatedSession)
+      expect(result).toEqual({ ...status.OK, body: JSON.stringify(expectedResponse) })
     })
 
     it('returns BAD_REQUEST when the event is invalid', async () => {
@@ -320,7 +374,7 @@ describe('post-llm-response', () => {
         history: [...session.history, userMessage, assistantErrorMessage],
         newConversation: false,
       }
-      jest.mocked(bedrock).invokeModelMessage.mockResolvedValueOnce(undefined)
+      jest.mocked(bedrock).parseJson.mockResolvedValueOnce(undefined)
       const result = await postLlmResponseHandler(event)
 
       expect(result).toEqual({ ...status.OK, body: JSON.stringify(expectedErrorResponse) })

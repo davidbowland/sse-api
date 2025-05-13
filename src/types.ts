@@ -68,6 +68,7 @@ export interface LLMResponse {
   finished: boolean
   message: string
   reasons?: string[]
+  thinking?: string
 }
 
 // Sessions
@@ -95,6 +96,9 @@ export interface Session {
   overrideStep?: ConversationStep
   question: number
   storedMessage?: ChatMessage
+  thinking: {
+    [key: number]: string
+  }
 }
 
 // Suggest claims

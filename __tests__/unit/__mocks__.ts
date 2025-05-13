@@ -140,6 +140,7 @@ export const session: Session = {
   newConversation: false,
   originalConfidence: 'agree',
   question: 1,
+  thinking: { 0: 'I made that crap up', 4: 'nonsense' },
 }
 
 export const newSession: Session = {
@@ -159,6 +160,7 @@ export const newSession: Session = {
   newConversation: true,
   originalConfidence: 'slightly agree',
   question: 0,
+  thinking: {},
 }
 
 // Claims

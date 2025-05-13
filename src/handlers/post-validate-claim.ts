@@ -16,11 +16,12 @@ export const postValidateClaimHandler = async (
     const { claim, language } = extractClaimFromEvent(event)
     try {
       const prompt = await getPromptById(validateClaimPromptId)
-      const validation = await parseJson(invokeModel(prompt, claim, { language }), PROMPT_OUTPUT_FORMAT)
+      const { modelResponse, thoughtProcess } = await invokeModel(prompt, claim, { language })
+      const validation = await parseJson(modelResponse, PROMPT_OUTPUT_FORMAT)
       if (validation === undefined) {
         return status.INTERNAL_SERVER_ERROR
       }
-      log('Claim validation complete', { claim, validation })
+      log('Claim validation complete', { claim, thoughtProcess, validation })
 
       return { ...status.OK, body: JSON.stringify(validation) }
     } catch (error: any) {

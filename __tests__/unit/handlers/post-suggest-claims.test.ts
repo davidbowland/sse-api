@@ -19,8 +19,13 @@ describe('post-suggest-claims', () => {
   const event = eventJson as unknown as APIGatewayProxyEventV2
 
   beforeAll(() => {
-    jest.mocked(bedrock).invokeModel.mockResolvedValue({ suggestions: invokeModelSuggestedClaims })
-    jest.mocked(bedrock).parseJson.mockImplementation((json) => json)
+    jest
+      .mocked(bedrock)
+      .invokeModel.mockResolvedValue({
+        modelResponse: JSON.stringify({ suggestions: invokeModelSuggestedClaims }),
+        thoughtProcess: "I'm not sure",
+      })
+    jest.mocked(bedrock).parseJson.mockResolvedValue({ suggestions: invokeModelSuggestedClaims })
     jest.mocked(claimSourcesService).getClaimSources.mockResolvedValue(claimSources)
     jest.mocked(dynamodb).getPromptById.mockResolvedValue(prompt)
     jest.mocked(events).extractSuggestClaimsRequestFromEvent.mockReturnValue({ language: 'en-US' })
@@ -64,8 +69,8 @@ describe('post-suggest-claims', () => {
       expect(result).toEqual(expect.objectContaining(status.INTERNAL_SERVER_ERROR))
     })
 
-    it('returns INTERNAL_SERVER_ERROR when invokeModel returns undefined', async () => {
-      jest.mocked(bedrock).invokeModel.mockResolvedValueOnce(undefined)
+    it('returns INTERNAL_SERVER_ERROR when parseJson returns undefined', async () => {
+      jest.mocked(bedrock).parseJson.mockResolvedValueOnce(undefined)
       const result = await postSuggestClaimsHandler(event)
 
       expect(result).toEqual(expect.objectContaining(status.INTERNAL_SERVER_ERROR))

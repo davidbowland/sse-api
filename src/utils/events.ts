@@ -161,6 +161,7 @@ const formatSession = (body: any): Session => {
     newConversation: true,
     originalConfidence: body.confidence,
     question: 0,
+    thinking: {},
   }
 }
 

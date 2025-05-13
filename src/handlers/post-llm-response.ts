@@ -50,8 +50,10 @@ export const postLlmResponseHandler = async (event: APIGatewayProxyEventV2): Pro
             ? undefined
             : session.question + 1
 
-        const response: LLMResponse = (await parseJson(
-          invokeModelMessage(prompt, [...session.history, llmRequest.message], {
+        const { modelResponse, thoughtProcess } = await invokeModelMessage(
+          prompt,
+          [...session.history, llmRequest.message],
+          {
             ...session.context,
             changedConfidence: currentStepObject.isFinalStep ? changedConfidence : undefined,
             confidence: currentStepObject.isFinalStep ? undefined : session.context.confidence,
@@ -60,9 +62,9 @@ export const postLlmResponseHandler = async (event: APIGatewayProxyEventV2): Pro
             possibleConfidenceLevels: session.context.possibleConfidenceLevels.map((level) => level.label),
             question: currentQuestion,
             storedMessage: session.storedMessage,
-          }),
-          PROMPT_OUTPUT_FORMAT,
-        )) ?? {
+          },
+        )
+        const response: LLMResponse = (await parseJson(modelResponse, PROMPT_OUTPUT_FORMAT)) ?? {
           finished: false,
           message: "I'm sorry, but I had trouble generating a response. Would you please rephrase your last message?",
         }
@@ -101,6 +103,7 @@ export const postLlmResponseHandler = async (event: APIGatewayProxyEventV2): Pro
           history: newHistory,
           incorrect_guesses:
             currentStepObject.value === 'guess reasons' && !response.correct ? session.incorrect_guesses + 1 : 0,
+          thinking: thoughtProcess ? { ...session.thinking, [newHistory.length]: thoughtProcess } : session.thinking,
         }
         await setSessionById(sessionId, updatedSession)
 
@@ -112,6 +115,7 @@ export const postLlmResponseHandler = async (event: APIGatewayProxyEventV2): Pro
             history: updatedSession.history,
             newConversation: updatedSession.newConversation,
             overrideStep: updatedSession.overrideStep,
+            thinking: updatedSession.thinking,
           }),
         }
       } catch (error: any) {

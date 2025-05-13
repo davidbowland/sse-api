@@ -18,14 +18,12 @@ export const postSuggestClaimsHandler = async (
     try {
       const claimSources = await getClaimSources()
       const prompt = await getPromptById(suggestClaimsPromptId)
-      const response = await parseJson(
-        invokeModel(prompt, claimSources.join('\n'), suggestClaimsRequest),
-        PROMPT_OUTPUT_FORMAT,
-      )
+      const { modelResponse, thoughtProcess } = await invokeModel(prompt, claimSources.join('\n'), suggestClaimsRequest)
+      const response = await parseJson(modelResponse, PROMPT_OUTPUT_FORMAT)
       if (response === undefined) {
         return status.INTERNAL_SERVER_ERROR
       }
-      log('Generated claims', { claimSources, suggestions: response.suggestions })
+      log('Generated claims', { claimSources, suggestions: response.suggestions, thoughtProcess })
 
       return { ...status.OK, body: JSON.stringify({ claims: response.suggestions }) }
     } catch (error: any) {
