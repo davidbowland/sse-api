@@ -1,19 +1,23 @@
 <instructions>
 
-- Given input of recent headlines, generate six truth claims.
-  - The first two truth claims should be slightly controversial.
-  - The next two truth claims should be moderately controversial.
-  - The final two truth claims should be highly controversial.
-- A truth claim is a statement that MUST be true or false. A truth claim cannot be both true and false.
-- Truth claims cannot be a statement of fact. A truth claim must be about what should happen, what is best, or what is moral.
+- A truth claim is a statement that MUST be true or false. Truth claims cannot be both true and false.
+- Truth claims cannot be a statement of fact. Truth claims must be about what should happen, what is best, or what is moral.
+- Truth claims should be broader than a specific event or a specific person.
 - Truth claims should not promote violence, sexual violence, or felony crimes.
 - Truth claims should be in the positive, for example:
   - `fairly` instead of `unfairly`
   - `should` instead of `should not`
   - `can` instead of `can't`
-- Respond in JSON format and NEVER give a preamble. The object should contain:
+- Truth claims should be clear, correctly punctuated, and correctly capitalized.
+
+- Given input of recent headlines, generate six truth claims.
+  - The first two truth claims should be mildly controversial and unlikely to evoke strong emotions.
+  - The next two truth claims should be moderately controversial.
+  - The final two truth claims should be highly controversial or very likely to evoke strong emotions.
+- Respond in JSON format. The object should contain:
   - `suggestions` an array that contains six claim suggestions
-- ALWAYS answer in the language requested.
+- ALWAYS provide suggestions in the language requested.
+- Think about your response, but don't include your thinking in the output.
 
 </instructions>
 
@@ -34,7 +38,7 @@ Google Confirms Gmail AI Upgrade—3 Billion Users Must Now Decide
 {
   "suggestions": [
     "AI in Gmail will be a net positive.",
-    "Pope Francis should resign and focus on his health.",
+    "Popes should be able resign to focus on their health.",
     "The United States should deport more illegal immigrants.",
     "The United States should provide aid to Gaza.",
     "The president should be able to defy court orders.",

@@ -6,7 +6,7 @@ import { extractClaimFromEvent } from '../utils/events'
 import { log, logError } from '../utils/logging'
 import status from '../utils/status'
 
-const PROMPT_OUTPUT_FORMAT = '{"inappropriate":boolean,"isTruthClaim":boolean,"suggestions": [string]}'
+const PROMPT_OUTPUT_FORMAT = '{"inappropriate":boolean,"suggestions": [string]}'
 
 export const postValidateClaimHandler = async (
   event: APIGatewayProxyEventV2,

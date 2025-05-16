@@ -207,7 +207,6 @@ export const llmResponse: LLMResponse = {
 
 export const validationResult = {
   inappropriate: false,
-  isTruthClaim: true,
   suggestions: [
     'Military intervention causes more harm than good.',
     'The world would be more peaceful with less US military intervention.',

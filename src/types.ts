@@ -107,6 +107,5 @@ export interface SuggestClaimsRequest {
 
 export interface ValidationResponse {
   inappropriate: boolean
-  isTruthClaim: boolean
   suggestions: string[]
 }
