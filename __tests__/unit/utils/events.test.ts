@@ -1,3 +1,4 @@
+import { llmRequest, newSession } from '../__mocks__'
 import { confidenceLevelsOrdered } from '@assets/confidence-levels'
 import changeConfidenceJson from '@events/post-change-confidence.json'
 import llmResponseEventJson from '@events/post-llm-response.json'
@@ -12,8 +13,6 @@ import {
   extractSessionFromEvent,
   extractSuggestClaimsRequestFromEvent,
 } from '@utils/events'
-
-import { llmRequest, newSession } from '../__mocks__'
 
 describe('events', () => {
   const epochTime = 1742760571384

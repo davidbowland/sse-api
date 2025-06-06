@@ -1,6 +1,5 @@
-import { getPromptById, getSessionById, setSessionById } from '@services/dynamodb'
-
 import { prompt, promptConfig, promptId, session, sessionId } from '../__mocks__'
+import { getPromptById, getSessionById, setSessionById } from '@services/dynamodb'
 
 const mockSend = jest.fn()
 jest.mock('@aws-sdk/client-dynamodb', () => ({

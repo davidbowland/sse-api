@@ -1,3 +1,4 @@
+import { claimSources, invokeModelSuggestedClaims, prompt } from '../__mocks__'
 import eventJson from '@events/post-suggest-claims.json'
 import { postSuggestClaimsHandler } from '@handlers/post-suggest-claims'
 import * as bedrock from '@services/bedrock'
@@ -6,8 +7,6 @@ import * as dynamodb from '@services/dynamodb'
 import { APIGatewayProxyEventV2 } from '@types'
 import * as events from '@utils/events'
 import status from '@utils/status'
-
-import { claimSources, invokeModelSuggestedClaims, prompt } from '../__mocks__'
 
 jest.mock('@services/bedrock')
 jest.mock('@services/dynamodb')

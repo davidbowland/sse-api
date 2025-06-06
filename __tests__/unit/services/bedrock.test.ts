@@ -1,6 +1,3 @@
-import { invokeModel, invokeModelMessage, parseJson } from '@services/bedrock'
-import * as dynamodb from '@services/dynamodb'
-
 import {
   assistantMessage,
   invokeModelInvalidResponse,
@@ -10,6 +7,8 @@ import {
   prompt,
   userMessage,
 } from '../__mocks__'
+import { invokeModel, invokeModelMessage, parseJson } from '@services/bedrock'
+import * as dynamodb from '@services/dynamodb'
 
 const mockSend = jest.fn()
 jest.mock('@aws-sdk/client-bedrock-runtime', () => ({

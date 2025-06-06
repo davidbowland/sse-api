@@ -1,3 +1,4 @@
+import { newSession, sessionId } from '../__mocks__'
 import eventJson from '@events/post-session.json'
 import { postSessionHandler } from '@handlers/post-session'
 import * as dynamodb from '@services/dynamodb'
@@ -5,8 +6,6 @@ import { APIGatewayProxyEventV2 } from '@types'
 import * as events from '@utils/events'
 import * as idGenerator from '@utils/id-generator'
 import status from '@utils/status'
-
-import { newSession, sessionId } from '../__mocks__'
 
 jest.mock('@services/dynamodb')
 jest.mock('@utils/id-generator')

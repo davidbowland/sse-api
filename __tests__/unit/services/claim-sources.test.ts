@@ -1,7 +1,7 @@
-import { getClaimSources } from '@services/claim-sources'
 import axios from 'axios'
 
 import { claimSources, claimSourcesRaw } from '../__mocks__'
+import { getClaimSources } from '@services/claim-sources'
 
 jest.mock('axios')
 

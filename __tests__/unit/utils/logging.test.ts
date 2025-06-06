@@ -1,7 +1,8 @@
 import { DynamoDB } from '@aws-sdk/client-dynamodb'
-import { extractRequestError, log, logError, xrayCapture, xrayCaptureHttps } from '@utils/logging'
 import * as AWSXRay from 'aws-xray-sdk-core'
 import https from 'https'
+
+import { extractRequestError, log, logError, xrayCapture, xrayCaptureHttps } from '@utils/logging'
 
 jest.mock('aws-xray-sdk-core')
 
