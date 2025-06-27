@@ -3,7 +3,7 @@ import { idMaxLength, idMinLength } from '../config'
 // Don't allow vowells, digits that look like vowells, or ambiguous characters
 const allowedCharacters = '256789bcdfghjmnpqrstvwxz'
 
-type GetById = (id: string) => any
+type GetById = (id: string) => Promise<unknown>
 
 const valueToId = (value: number): string => {
   const digit = allowedCharacters.charAt(value % allowedCharacters.length)
@@ -14,7 +14,7 @@ const idExists = async (id: string, getById: GetById): Promise<boolean> => {
   try {
     await getById(id)
     return true
-  } catch (error: any) {
+  } catch (error: unknown) {
     return false
   }
 }

@@ -6,8 +6,8 @@ const isValidTitle = (title: string): boolean => title.indexOf(' ') > 0
 
 export const getClaimSources = async () => {
   const result = await axios.get(suggestClaimsUrl)
-  const titles = Array.from(result.data.matchAll(/\\"title\\":\\"(.*?)\\"/g))
-  const sources = titles.reduce((acc: Set<string>, match: any) => {
+  const titles: RegExpMatchArray[] = Array.from(result.data.matchAll(/\\"title\\":\\"(.*?)\\"/g))
+  const sources = titles.reduce((acc: Set<string>, match: RegExpMatchArray) => {
     const title = match[1]
     if (isValidTitle(title)) {
       acc.add(title)

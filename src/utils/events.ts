@@ -20,7 +20,12 @@ const trim = (str: string) => str.replace(/^\s+|\r|\n|\s+$/g, '')
 
 // Claims
 
-const formatClaim = (body: any): Claim => {
+interface ClaimBody {
+  claim: string
+  language?: string
+}
+
+const formatClaim = (body: ClaimBody): Claim => {
   const jsonTypeDefinition = {
     optionalProperties: {
       language: { type: 'string' },
@@ -46,11 +51,19 @@ const formatClaim = (body: any): Claim => {
   return { claim: trim(body.claim), language: body.language ?? 'en-US' }
 }
 
-export const extractClaimFromEvent = (event: APIGatewayProxyEventV2): Claim => formatClaim(parseEventBody(event))
+export const extractClaimFromEvent = (event: APIGatewayProxyEventV2): Claim =>
+  formatClaim(parseEventBody(event) as ClaimBody)
 
 // Change confidence
 
-const formatConfidenceChangeRequest = (body: any, confidenceLevels: string[]): ConfidenceChangeRequest => {
+export interface ConfidenceChangeRequestBody {
+  confidence: string
+}
+
+const formatConfidenceChangeRequest = (
+  body: ConfidenceChangeRequestBody,
+  confidenceLevels: string[],
+): ConfidenceChangeRequest => {
   const jsonTypeDefinition = {
     properties: {
       confidence: {
@@ -67,11 +80,16 @@ const formatConfidenceChangeRequest = (body: any, confidenceLevels: string[]): C
 export const extractConfidenceChangeRequest = (
   event: APIGatewayProxyEventV2,
   confidenceLevels: string[],
-): ConfidenceChangeRequest => formatConfidenceChangeRequest(parseEventBody(event), confidenceLevels)
+): ConfidenceChangeRequest =>
+  formatConfidenceChangeRequest(parseEventBody(event) as ConfidenceChangeRequestBody, confidenceLevels)
 
 // LLM request
 
-const formatLlmRequest = (body: any): LLMRequest => {
+interface LLMRequestBody {
+  content: string
+}
+
+const formatLlmRequest = (body: LLMRequestBody): LLMRequest => {
   const jsonTypeDefinition = {
     properties: {
       content: { type: 'string' },
@@ -97,11 +115,18 @@ const formatLlmRequest = (body: any): LLMRequest => {
 }
 
 export const extractLlmRequestFromEvent = (event: APIGatewayProxyEventV2): LLMRequest =>
-  formatLlmRequest(parseEventBody(event))
+  formatLlmRequest(parseEventBody(event) as LLMRequestBody)
 
 // Sessions
 
-const formatSession = (body: any): Session => {
+interface SessionBody {
+  claim: string
+  confidence: string
+  expiration?: number
+  language?: string
+}
+
+const formatSession = (body: SessionBody): Session => {
   const jsonTypeDefinition = {
     optionalProperties: {
       expiration: { type: 'float64' },
@@ -164,11 +189,16 @@ const formatSession = (body: any): Session => {
   }
 }
 
-export const extractSessionFromEvent = (event: APIGatewayProxyEventV2): Session => formatSession(parseEventBody(event))
+export const extractSessionFromEvent = (event: APIGatewayProxyEventV2): Session =>
+  formatSession(parseEventBody(event) as SessionBody)
 
 // Suggest claims request
 
-const formatSuggestClaimsRequest = (body: any): SuggestClaimsRequest => {
+interface SuggestClaimsRequestBody {
+  language?: string
+}
+
+const formatSuggestClaimsRequest = (body: SuggestClaimsRequestBody): SuggestClaimsRequest => {
   const jsonTypeDefinition = {
     optionalProperties: {
       language: { type: 'string' },
@@ -192,11 +222,11 @@ const formatSuggestClaimsRequest = (body: any): SuggestClaimsRequest => {
 }
 
 export const extractSuggestClaimsRequestFromEvent = (event: APIGatewayProxyEventV2): SuggestClaimsRequest =>
-  formatSuggestClaimsRequest(parseEventBody(event))
+  formatSuggestClaimsRequest(parseEventBody(event) as SuggestClaimsRequestBody)
 
 // Events
 
-const parseEventBody = (event: APIGatewayProxyEventV2): any =>
+const parseEventBody = (event: APIGatewayProxyEventV2): unknown =>
   JSON.parse(
     event.isBase64Encoded && event.body ? Buffer.from(event.body, 'base64').toString('utf8') : (event.body as string),
   )

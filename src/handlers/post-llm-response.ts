@@ -29,7 +29,9 @@ const getDividers = (
   return { ...session.dividers, [history.length]: { label: nextStepObject?.label } }
 }
 
-export const postLlmResponseHandler = async (event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2<any>> => {
+export const postLlmResponseHandler = async (
+  event: APIGatewayProxyEventV2,
+): Promise<APIGatewayProxyResultV2<unknown>> => {
   log('Received event', { ...event, body: undefined })
   const sessionId = event.pathParameters?.sessionId as string
   try {

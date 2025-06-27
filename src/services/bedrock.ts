@@ -6,14 +6,18 @@ import { getPromptById } from './dynamodb'
 
 const runtimeClient = new BedrockRuntimeClient({ region: 'us-east-1' })
 
-export const invokeModel = async (prompt: any, data: string, context?: any): Promise<any> => {
+export const invokeModel = async (prompt: Prompt, data: string, context?: Record<string, any>): Promise<string> => {
   const promptWithContext = context
     ? { ...prompt, contents: prompt.contents.replace('${context}', JSON.stringify(context)) }
     : prompt
   return invokeModelMessage(promptWithContext, [{ content: data, role: 'user' }])
 }
 
-export const invokeModelMessage = async (prompt: Prompt, history: ChatMessage[], data?: any): Promise<any> => {
+export const invokeModelMessage = async (
+  prompt: Prompt,
+  history: ChatMessage[],
+  data?: Record<string, unknown>,
+): Promise<string> => {
   const messageContent = data ? prompt.contents.replace('${data}', JSON.stringify(data)) : prompt.contents
   logDebug('Invoking model', { data, messageContent, prompt })
   const messageBody = {
@@ -40,11 +44,11 @@ export const invokeModelMessage = async (prompt: Prompt, history: ChatMessage[],
   return modelResponse.content[0].text.replace(/\s*<thinking>.*?<\/thinking>\s*/s, '')
 }
 
-export const parseJson = async (input: Promise<string>, targetFormat: string): Promise<any> => {
+export const parseJson = async <T>(input: Promise<string>, targetFormat: string): Promise<T | undefined> => {
   const jsonString = await input
   try {
     return JSON.parse(jsonString)
-  } catch (error: any) {
+  } catch (error: unknown) {
     log('Error parsing json', { json: jsonString })
     const fixJsonPrompt = await getPromptById('fix-json')
     const data = [
@@ -58,7 +62,7 @@ export const parseJson = async (input: Promise<string>, targetFormat: string): P
     const fixedJsonString = await invokeModel(fixJsonPrompt, data)
     try {
       return JSON.parse(fixedJsonString)
-    } catch (fixedError: any) {
+    } catch (fixedError: unknown) {
       log('Error parsing fixed json', { json: fixedJsonString })
       return undefined
     }

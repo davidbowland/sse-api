@@ -7,7 +7,7 @@ import status from '../utils/status'
 
 export const postChangeConfidenceHandler = async (
   event: APIGatewayProxyEventV2,
-): Promise<APIGatewayProxyResultV2<any>> => {
+): Promise<APIGatewayProxyResultV2<unknown>> => {
   log('Received event', { ...event, body: undefined })
   const sessionId = event.pathParameters?.sessionId as string
   try {
@@ -38,14 +38,17 @@ export const postChangeConfidenceHandler = async (
             overrideStep: updatedSession.overrideStep,
           }),
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         logError(error)
         return status.INTERNAL_SERVER_ERROR
       }
-    } catch (error: any) {
-      return { ...status.BAD_REQUEST, body: JSON.stringify({ message: error.message }) }
+    } catch (error: unknown) {
+      return {
+        ...status.BAD_REQUEST,
+        body: JSON.stringify({ message: error instanceof Error ? error.message : String(error) }),
+      }
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     return status.NOT_FOUND
   }
 }

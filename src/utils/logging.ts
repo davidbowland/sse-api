@@ -3,19 +3,19 @@ import https from 'https'
 
 import { debugLogging } from '../config'
 
-export const extractRequestError = (message: string): { errors?: any; message?: string } => {
+export const extractRequestError = (message: string): { errors?: unknown; message?: string } => {
   try {
     return { errors: JSON.parse(message) }
-  } catch (e: any) {
+  } catch (e: unknown) {
     return { message }
   }
 }
 
-export const log = (...args: any[]): unknown => console.log(...args)
+export const log = (...args: unknown[]): unknown => console.log(...args)
 
-export const logDebug = (...args: any[]): unknown => (debugLogging ? console.log(...args) : undefined)
+export const logDebug = (...args: unknown[]): unknown => (debugLogging ? console.log(...args) : undefined)
 
-export const logError = (...args: any[]): unknown => console.error(...args)
+export const logError = (...args: unknown[]): unknown => console.error(...args)
 
 export const xrayCapture = (x: any): any => (process.env.AWS_SAM_LOCAL === 'true' ? x : AWSXRay.captureAWSv3Client(x))
 
