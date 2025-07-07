@@ -25,4 +25,4 @@ export SUGGEST_CLAIMS_COUNT=20
 export SUGGEST_CLAIMS_PROMPT_ID=suggest-claims
 # export SUGGEST_CLAIMS_URL=!Ref SuggestClaimsUrl
 export VALIDATE_CLAIM_PROMPT_ID=validate-claim
-sam local start-api --region=us-east-2 --force-image-build --parameter-overrides "Environment=test SuggestClaimsUrl=${SUGGEST_CLAIMS_URL}" --log-file local.log
+sam local start-api --region=us-east-1 --force-image-build --parameter-overrides "Environment=test SuggestClaimsUrl=${SUGGEST_CLAIMS_URL}" --log-file local.log

@@ -19,7 +19,7 @@ TESTING_CLOUDFORMATION_EXECUTION_ROLE="arn:aws:iam::$AWS_ACCOUNT_ID:role/sse-clo
 TESTING_STACK_NAME=sse-api-test
 sam deploy --stack-name ${TESTING_STACK_NAME} \
            --capabilities CAPABILITY_IAM \
-           --region us-east-2 \
+           --region us-east-1 \
            --s3-bucket ${TESTING_ARTIFACTS_BUCKET} \
            --s3-prefix ${TESTING_STACK_NAME} \
            --no-fail-on-empty-changeset \
