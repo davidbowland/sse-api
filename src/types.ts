@@ -1,5 +1,4 @@
 export * from 'aws-lambda'
-export { Operation as PatchOperation } from 'fast-json-patch'
 
 // Chatting
 
