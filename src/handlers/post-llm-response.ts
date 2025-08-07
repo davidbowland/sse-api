@@ -1,5 +1,5 @@
 import { responsePromptId } from '../config'
-import { invokeModelMessage, parseJson } from '../services/bedrock'
+import { invokeModelMessage } from '../services/bedrock'
 import { getPromptById, getSessionById, setSessionById } from '../services/dynamodb'
 import {
   APIGatewayProxyEventV2,
@@ -12,8 +12,6 @@ import {
 import { extractLlmRequestFromEvent } from '../utils/events'
 import { log, logError } from '../utils/logging'
 import status from '../utils/status'
-
-const PROMPT_OUTPUT_FORMAT = '{"finished": false, "message": string, "reasons": [string]}'
 
 const getDividers = (
   session: Session,
@@ -52,22 +50,27 @@ export const postLlmResponseHandler = async (
             ? undefined
             : session.question + 1
 
-        const response: LLMResponse = (await parseJson(
-          invokeModelMessage(prompt, [...session.history, llmRequest.message], {
-            ...session.context,
-            changedConfidence: currentStepObject.isFinalStep ? changedConfidence : undefined,
-            confidence: currentStepObject.isFinalStep ? undefined : session.context.confidence,
-            incorrect_guesses: currentStepObject.value === 'guess reasons' ? session.incorrect_guesses : undefined,
-            newConversation: session.newConversation,
-            possibleConfidenceLevels: session.context.possibleConfidenceLevels.map((level) => level.label),
-            question: currentQuestion,
-            storedMessage: session.storedMessage,
-          }),
-          PROMPT_OUTPUT_FORMAT,
-        )) ?? {
-          finished: false,
-          message: "I'm sorry, but I had trouble generating a response. Would you please rephrase your last message?",
+        const llmContext = {
+          ...session.context,
+          changedConfidence: currentStepObject.isFinalStep ? changedConfidence : undefined,
+          confidence: currentStepObject.isFinalStep ? undefined : session.context.confidence,
+          incorrect_guesses: currentStepObject.value === 'guess reasons' ? session.incorrect_guesses : undefined,
+          newConversation: session.newConversation,
+          possibleConfidenceLevels: session.context.possibleConfidenceLevels.map((level) => level.label),
+          question: currentQuestion,
+          storedMessage: session.storedMessage,
         }
+        const response = await invokeModelMessage<LLMResponse>(
+          prompt,
+          [...session.history, llmRequest.message],
+          llmContext,
+        ).catch((error: unknown) => {
+          logError(error)
+          return {
+            finished: false,
+            message: "I'm sorry, I had trouble generating a response. Would you please rephrase your last message?",
+          } as LLMResponse
+        })
 
         const assistantMessage = { content: response.message, role: 'assistant' } as ChatMessage
         const newMessages = session.newConversation ? [assistantMessage] : [llmRequest.message, assistantMessage]
@@ -116,14 +119,14 @@ export const postLlmResponseHandler = async (
             overrideStep: updatedSession.overrideStep,
           }),
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         logError(error)
         return status.INTERNAL_SERVER_ERROR
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       return status.NOT_FOUND
     }
-  } catch (error: any) {
-    return { ...status.BAD_REQUEST, body: JSON.stringify({ message: error.message }) }
+  } catch (error: unknown) {
+    return { ...status.BAD_REQUEST, body: JSON.stringify({ message: (error as Error).message }) }
   }
 }

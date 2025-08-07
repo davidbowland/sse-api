@@ -19,7 +19,6 @@ describe('post-validate-claim', () => {
 
   beforeAll(() => {
     jest.mocked(bedrock).invokeModel.mockResolvedValue(validationResult)
-    jest.mocked(bedrock).parseJson.mockImplementation((json) => json)
     jest.mocked(dynamodb).getPromptById.mockResolvedValue(prompt)
     jest.mocked(events).extractClaimFromEvent.mockReturnValue({ claim, language: 'en-US' })
   })
@@ -50,13 +49,6 @@ describe('post-validate-claim', () => {
 
     it('returns INTERNAL_SERVER_ERROR when invokeModel rejects', async () => {
       jest.mocked(bedrock).invokeModel.mockRejectedValueOnce(new Error('Rejected'))
-      const result = await postValidateClaimHandler(event)
-
-      expect(result).toEqual(expect.objectContaining(status.INTERNAL_SERVER_ERROR))
-    })
-
-    it('returns INTERNAL_SERVER_ERROR when invokeModel returns undefined', async () => {
-      jest.mocked(bedrock).invokeModel.mockResolvedValueOnce(undefined)
       const result = await postValidateClaimHandler(event)
 
       expect(result).toEqual(expect.objectContaining(status.INTERNAL_SERVER_ERROR))

@@ -47,7 +47,6 @@ describe('post-llm-response', () => {
 
   beforeAll(() => {
     jest.mocked(bedrock).invokeModelMessage.mockResolvedValue(llmResponse)
-    jest.mocked(bedrock).parseJson.mockImplementation((json) => json)
     jest.mocked(dynamodb).getPromptById.mockResolvedValue(prompt)
     jest.mocked(dynamodb).getSessionById.mockResolvedValue(questionSession)
     jest.mocked(events).extractLlmRequestFromEvent.mockReturnValue(llmRequest)
@@ -302,16 +301,9 @@ describe('post-llm-response', () => {
       expect(result).toEqual(status.INTERNAL_SERVER_ERROR)
     })
 
-    it('returns INTERNAL_SERVER_ERROR when the LLM rejects', async () => {
-      jest.mocked(bedrock).invokeModelMessage.mockRejectedValueOnce(new Error('Rejected'))
-      const result = await postLlmResponseHandler(event)
-
-      expect(result).toEqual(status.INTERNAL_SERVER_ERROR)
-    })
-
-    it('returns OK with message when the LLM returns undefined', async () => {
+    it('returns OK with message when the LLM throws an error', async () => {
       const assistantErrorMessage = {
-        content: "I'm sorry, but I had trouble generating a response. Would you please rephrase your last message?",
+        content: "I'm sorry, I had trouble generating a response. Would you please rephrase your last message?",
         role: 'assistant',
       }
       const expectedErrorResponse = {
@@ -319,7 +311,7 @@ describe('post-llm-response', () => {
         history: [...session.history, userMessage, assistantErrorMessage],
         newConversation: false,
       }
-      jest.mocked(bedrock).invokeModelMessage.mockResolvedValueOnce(undefined)
+      jest.mocked(bedrock).invokeModelMessage.mockRejectedValueOnce(new Error('JSON parse error'))
       const result = await postLlmResponseHandler(event)
 
       expect(result).toEqual({ ...status.OK, body: JSON.stringify(expectedErrorResponse) })

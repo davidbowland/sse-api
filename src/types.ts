@@ -102,6 +102,10 @@ export interface SuggestClaimsRequest {
   language: string
 }
 
+export interface SuggestClaimsResponse {
+  suggestions: string[]
+}
+
 // Validation
 
 export interface ValidationResponse {
