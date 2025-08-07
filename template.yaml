@@ -208,12 +208,23 @@ Resources:
         - AWSLambdaBasicExecutionRole
         - DynamoDBCrudPolicy:
             TableName: !Ref SessionTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref PromptTable
+        # Allow invoking a model in Bedrock
+        - Version: 2012-10-17
+          Statement:
+            - Action:
+                - 'bedrock:InvokeModel*'
+              Effect: Allow
+              Resource: '*'
       Environment:
         Variables:
+          DYNAMODB_PROMPT_TABLE_NAME: !Ref PromptTable
           DYNAMODB_SESSION_TABLE_NAME: !Ref SessionTable
           ID_MAX_LENGTH: 16
           ID_MIN_LENGTH: 6
           SESSION_EXPIRE_HOURS: 36
+          VALIDATE_CLAIM_PROMPT_ID: validate-claim
       Events:
         Api:
           Type: HttpApi
@@ -225,7 +236,7 @@ Resources:
         'created-by': 'sse-api'
         'created-for': 'sse'
         'environment': !Ref Environment
-      Timeout: 15
+      Timeout: 35
       Tracing: Active
     Metadata:
       BuildMethod: esbuild

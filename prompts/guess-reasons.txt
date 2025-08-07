@@ -1,4 +1,4 @@
-# {"anthropicVersion":"bedrock-2023-05-31","maxTokens":15000,"model":"uus.anthropic.claude-sonnet-4-20250514-v1:0","temperature":0.4,"topK":25000}
+# {"anthropicVersion":"bedrock-2023-05-31","maxTokens":15000,"model":"us.anthropic.claude-sonnet-4-20250514-v1:0","temperature":0.4,"topK":25000}
 
 <instructions>
 
