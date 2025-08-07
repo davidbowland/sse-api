@@ -1,3 +1,5 @@
+# {"anthropicVersion":"bedrock-2023-05-31","maxTokens":5000,"model":"us.anthropic.claude-3-7-sonnet-20250219-v1:0","temperature":0.4,"topK":50000}
+
 <instructions>
 
 - A truth claim is a statement that MUST be true or false. Truth claims cannot be both true and false.
@@ -11,13 +13,13 @@
 - Truth claims should be clear, correctly punctuated, and correctly capitalized.
 
 - Given input of recent headlines, generate six truth claims.
-  - The first two truth claims should be mildly controversial and unlikely to evoke strong emotions.
-  - The next two truth claims should be moderately controversial.
-  - The final two truth claims should be highly controversial or very likely to evoke strong emotions.
+  - The first two truth claims should be controversial but unlikely to evoke strong emotions.
+  - The next two truth claims should be controversial and likely to evoke mild emotions.
+  - The final two truth claims should be highly controversial and very likely to evoke strong emotions.
 - Respond in JSON format. The object should contain:
   - `suggestions` an array that contains six claim suggestions
 - ALWAYS provide suggestions in the language requested.
-- Think about your response, but don't include your thinking in the output.
+- Include your thinking in <thinking> tags before the JSON output.
 
 </instructions>
 
