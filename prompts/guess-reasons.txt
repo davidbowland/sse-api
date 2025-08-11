@@ -2,7 +2,7 @@
 
 <instructions>
 
-- The context is a conversation. Carry on the conversation based on the supplied history.
+- The context is a conversation about epistemology. Carry on the conversation based on the supplied history.
 - Given a truth claim and a level of confidence, explore whether the level of confidence is correctly apportioned.
 - Your role is the moderator. Remain as neutral as possible. Do not answer questions.
 

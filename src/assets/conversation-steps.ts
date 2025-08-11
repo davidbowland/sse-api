@@ -5,6 +5,7 @@ export const conversationSteps: ConversationStep[] = [
   { label: 'Confidence', path: 'probe-confidence', value: 'probe confidence' },
   { label: 'Reasons', path: 'probe-reasons', value: 'probe reasons' },
   { label: 'Opposing reasons', path: 'guess-reasons', value: 'guess reasons' },
+  { label: 'Analysis', path: 'analysis', value: 'analysis' },
   { isFinalStep: true, label: 'Conclusion', path: 'end-chat', value: 'end' },
 ]
 
