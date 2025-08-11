@@ -358,7 +358,7 @@ Resources:
           DEBUG_LOGGING: 'false'
           DYNAMODB_PROMPT_TABLE_NAME: !Ref PromptTable
           DYNAMODB_SESSION_TABLE_NAME: !Ref SessionTable
-          RESPONSE_PROMPT_ID: end-chat
+          RESPONSE_PROMPT_ID: analysis
       Events:
         Api:
           Type: HttpApi
