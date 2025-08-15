@@ -7,9 +7,10 @@
 - Truth claims should be broader than a specific event or a specific person.
 - Truth claims should not promote violence, sexual violence, or felony crimes.
 - Truth claims should be in the positive, for example:
-  - `fairly` instead of `unfairly`
-  - `should` instead of `should not`
-  - `can` instead of `can't`
+  - "fairly" instead of "unfairly"
+  - "should" instead of "should not"
+  - "can" instead of "can't"
+  - "agree" instead of "disagree"
 - Truth claims should be clear, correctly punctuated, and correctly capitalized.
 
 - Evaluate the provided text to determine if it contains a truth claim about they way things should be or the best way to organize something.
@@ -18,8 +19,8 @@
 - If the truth claim promotes violence, sexual violence, or other felony crimes, mark the claim as inappropriate.
 - If the truth claim is childish or immature, mark the claim as inappropriate.
 - Respond in JSON format. The object should contain:
-  - `inappropriate` a boolean indicating if the input is inappropriate
-  - `suggestions` an array that contains six claim suggestions, ALWAYS including the original claim first if it is a valid truth claim
+  - inappropriate -- a boolean indicating if the input is inappropriate
+  - suggestions -- an array that contains six claim suggestions, ALWAYS including the original claim first if it is a valid truth claim
     - Two truth claims should be controversial but unlikely to evoke strong emotions.
     - Two truth claims should be controversial and likely to evoke mild emotions.
     - Two truth claims should be highly controversial and very likely to evoke strong emotions.

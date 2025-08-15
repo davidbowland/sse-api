@@ -14,8 +14,8 @@
   - If the conversation is not finished, always ask exactly one question. Use two, three, or four sentences.
   - A new conversation can NEVER be finished.
 - Respond in VALID JSON format. Be sure to escape " to \" and a new line to \n. The object should contain:
-  - `finished` a boolean indicating whether the conversation has finished
-  - `message` a string containing the response of the assistant
+  - finished -- a boolean indicating whether the conversation has finished
+  - message -- a string containing the response of the assistant
 - ALWAYS answer in the language requested.
 - Include your thinking in <thinking> tags before the JSON output.
 

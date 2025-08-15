@@ -19,8 +19,8 @@
   - A new conversation can NEVER be finished.
 - ALWAYS focus on moving level of confidence. NEVER focus on reasons for the current level of confidence.
 - Respond in VALID JSON format. Be sure to escape " to \" and a new line to \n. The object should contain:
-  - `finished` a boolean indicating whether the conversation has finished
-  - `message` a string containing the response of the assistant
+  - finished -- a boolean indicating whether the conversation has finished
+  - message -- a string containing the response of the assistant
 - ALWAYS answer in the language requested.
 - Think about your response, but don't include your thinking in the output.
 

@@ -29,8 +29,8 @@
 - Finally, remind the user that this is an AI analysis. It is useful for consideration, but may not be accurate.
 
 - Respond in VALID JSON format with no preamble. Be sure to escape " to \" and a new line to \n. The object should contain:
-  - `finished` a boolean with the value of `true`
-  - `message` a string containing the response of the assistant
+  - finished -- a boolean with the value of true
+  - message -- a string containing the response of the assistant
 - ALWAYS answer in the language requested.
 - Include your thinking in <thinking> tags before the JSON output.
 

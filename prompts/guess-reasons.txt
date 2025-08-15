@@ -18,10 +18,10 @@
 - ALWAYS focus on having the user guess the reasons. NEVER focus on reasons for the current level of confidence.
 
 - Respond in VALID JSON format. Be sure to escape " to \" and a new line to \n. The object should contain:
-  - `correct` a boolean indicating whether the user's guess was correct or true if you generated reasons.
-  - `finished` a boolean indicating whether the conversation has finished
-  - `message` a string containing the response of the assistant
-  - `reasons` an array of strings containing the reasons
+  - correct -- a boolean indicating whether the user's guess was correct or true if you generated reasons.
+  - finished -- a boolean indicating whether the conversation has finished
+  - message -- a string containing the response of the assistant
+  - reasons -- an array of strings containing the reasons
 - ALWAYS answer in the language requested.
 - Include your thinking in <thinking> tags before the JSON output.
 - Think about your json format.
