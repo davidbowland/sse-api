@@ -1,7 +1,6 @@
 # {"anthropicVersion":"bedrock-2023-05-31","maxTokens":5000,"model":"us.anthropic.claude-3-7-sonnet-20250219-v1:0","temperature":0.4,"topK":50000}
 
 <instructions>
-
 - A truth claim is a statement that MUST be true or false. Truth claims cannot be both true and false.
 - Truth claims cannot be a statement of fact. Truth claims must be about what should happen, what is best, or what is moral.
 - Truth claims should be broader than a specific event or a specific person.
@@ -20,8 +19,7 @@
 - Respond in JSON format. The object should contain:
   - suggestions -- an array that contains six claim suggestions
 - ALWAYS provide suggestions in the language requested.
-- Include your thinking in <thinking> tags before the JSON output.
-
+- Include your thinking in <thinking> tags before the JSON output but NO OTHER TAGS.
 </instructions>
 
 <example>

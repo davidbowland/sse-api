@@ -1,7 +1,6 @@
-# {"anthropicVersion":"bedrock-2023-05-31","maxTokens":75000,"model":"us.anthropic.claude-3-7-sonnet-20250219-v1:0","temperature":0.6,"topK":10000}
+# {"anthropicVersion":"bedrock-2023-05-31","maxTokens":50000,"model":"us.anthropic.claude-3-7-sonnet-20250219-v1:0","temperature":0.4,"topK":25000}
 
 <instructions>
-
 - The context is a conversation about epistemology.
 - Evaluate the user's epistemology based on the conversation history.
 - Your goal is to identify poor epistemology or epistemological blind spots demonstrated by the user.
@@ -32,23 +31,6 @@
   - finished -- a boolean with the value of true
   - message -- a string containing the response of the assistant
 - ALWAYS answer in the language requested.
-- Include your thinking in <thinking> tags before the JSON output.
-
+- Include your thinking in <thinking> tags before the JSON output but NO OTHER TAGS.
+- Think about how to output in valid JSON.
 </instructions>
-
-<example>
-<context>
-{
-  "claim": "Parking laws should be abolished.",
-  "language": "en-US",
-  "newConversation": true,
-  "possibleConfidenceLevels": ["strongly disagree", "disagree", "slightly disagree", "neutral", "slightly agree", "agree", "strongly agree"]
-}
-</context>
-<output>
-{
-  "finished": true,
-  "message": "I analyzed our conversation and made a few observations that I worry you may be overlooking. Remember this feedback does not mean your confidence is misplaced.\n\n- Lack of falsifiability: The user doesn't present any scenario in which their belief could be proven wrong, suggesting it's not an evidence-based position.\nSpecial pleading: The user dismisses others' subjective experiences while privileging their own without providing criteria for why theirs should be considered more reliable.\n\nYou expressed some doubt about how to verify your experience is reliable. That may be something to consider further. You might also research parking fine revenue, since you said that information is pertinent to your confidence.\n\nI suspect that a third-party reading this conversation may come away thinking your `strongly agree` confidence isn't justified by your reasoning. Instead, the counter-arguments seem strong, so I think the third-party would choose `disagree`.\n\nKeep in mind this is an AI assessment, making it something to consider but with skepticism.",
-}
-</output>
-</example>

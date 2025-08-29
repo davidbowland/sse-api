@@ -37,10 +37,8 @@ describe('bedrock', () => {
           JSON.stringify({
             anthropic_version: 'bedrock-2023-05-31',
             max_tokens: 256,
-            messages: [
-              { content: prompt.contents, role: 'user' },
-              { content: data, role: 'user' },
-            ],
+            messages: [{ content: data, role: 'user' }],
+            system: prompt.contents,
             temperature: 0.5,
             top_k: 250,
           }),
@@ -63,10 +61,8 @@ describe('bedrock', () => {
           JSON.stringify({
             anthropic_version: 'bedrock-2023-05-31',
             max_tokens: 256,
-            messages: [
-              { content: 'My context should go here: {"foo":"bar"}', role: 'user' },
-              { content: data, role: 'user' },
-            ],
+            messages: [{ content: data, role: 'user' }],
+            system: 'My context should go here: {"foo":"bar"}',
             temperature: 0.5,
             top_k: 250,
           }),
@@ -92,7 +88,8 @@ describe('bedrock', () => {
           JSON.stringify({
             anthropic_version: 'bedrock-2023-05-31',
             max_tokens: 256,
-            messages: [{ content: prompt.contents, role: 'user' }, ...history],
+            messages: [...history],
+            system: prompt.contents,
             temperature: 0.5,
             top_k: 250,
           }),
@@ -114,7 +111,8 @@ describe('bedrock', () => {
           JSON.stringify({
             anthropic_version: 'bedrock-2023-05-31',
             max_tokens: 256,
-            messages: [{ content: 'My data should go here: {"foo":"bar"}', role: 'user' }, ...history],
+            messages: [...history],
+            system: 'My data should go here: {"foo":"bar"}',
             temperature: 0.5,
             top_k: 250,
           }),
