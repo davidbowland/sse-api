@@ -1,6 +1,6 @@
 import { idMaxLength, idMinLength } from '../config'
 
-// Don't allow vowells, digits that look like vowells, or ambiguous characters
+// Don't allow vowels, digits that look like vowels, or ambiguous characters
 const allowedCharacters = '256789bcdfghjmnpqrstvwxz'
 
 type GetById = (id: string) => Promise<unknown>

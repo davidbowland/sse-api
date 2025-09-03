@@ -32,7 +32,7 @@ describe('post-suggest-claims', () => {
       expect(JSON.parse(result.body)).toEqual({ claims: invokeModelSuggestedClaims })
     })
 
-    it('returns BAD_REQEUST when extractSuggestClaimsRequestFromEvent throws', async () => {
+    it('returns BAD_REQUEST when extractSuggestClaimsRequestFromEvent throws', async () => {
       jest.mocked(events).extractSuggestClaimsRequestFromEvent.mockImplementationOnce(() => {
         throw new Error('Bad request')
       })
