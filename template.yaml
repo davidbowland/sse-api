@@ -106,7 +106,7 @@ Resources:
       BuildMethod: esbuild
       BuildProperties:
         Minify: true
-        Target: 'es2020'
+        Target: 'es2023'
         Sourcemap: true
         EntryPoints:
           - src/handlers/get-confidence-levels.ts
@@ -168,7 +168,7 @@ Resources:
       BuildMethod: esbuild
       BuildProperties:
         Minify: true
-        Target: 'es2020'
+        Target: 'es2023'
         Sourcemap: true
         EntryPoints:
           - src/handlers/post-change-confidence.ts
@@ -242,7 +242,7 @@ Resources:
       BuildMethod: esbuild
       BuildProperties:
         Minify: true
-        Target: 'es2020'
+        Target: 'es2023'
         Sourcemap: true
         EntryPoints:
           - src/handlers/post-session.ts
@@ -302,7 +302,7 @@ Resources:
       BuildMethod: esbuild
       BuildProperties:
         Minify: true
-        Target: 'es2020'
+        Target: 'es2023'
         Sourcemap: true
         EntryPoints:
           - src/handlers/get-session.ts
@@ -376,7 +376,7 @@ Resources:
       BuildMethod: esbuild
       BuildProperties:
         Minify: true
-        Target: 'es2020'
+        Target: 'es2023'
         Sourcemap: true
         EntryPoints:
           - src/handlers/post-llm-response.ts
@@ -448,7 +448,7 @@ Resources:
       BuildMethod: esbuild
       BuildProperties:
         Minify: true
-        Target: 'es2020'
+        Target: 'es2023'
         Sourcemap: true
         EntryPoints:
           - src/handlers/post-llm-response.ts
@@ -520,7 +520,7 @@ Resources:
       BuildMethod: esbuild
       BuildProperties:
         Minify: true
-        Target: 'es2020'
+        Target: 'es2023'
         Sourcemap: true
         EntryPoints:
           - src/handlers/post-llm-response.ts
@@ -592,7 +592,7 @@ Resources:
       BuildMethod: esbuild
       BuildProperties:
         Minify: true
-        Target: 'es2020'
+        Target: 'es2023'
         Sourcemap: true
         EntryPoints:
           - src/handlers/post-llm-response.ts
@@ -664,7 +664,7 @@ Resources:
       BuildMethod: esbuild
       BuildProperties:
         Minify: true
-        Target: 'es2020'
+        Target: 'es2023'
         Sourcemap: true
         EntryPoints:
           - src/handlers/post-llm-response.ts
@@ -736,7 +736,7 @@ Resources:
       BuildMethod: esbuild
       BuildProperties:
         Minify: true
-        Target: 'es2020'
+        Target: 'es2023'
         Sourcemap: true
         EntryPoints:
           - src/handlers/post-llm-response.ts
@@ -808,7 +808,7 @@ Resources:
       BuildMethod: esbuild
       BuildProperties:
         Minify: true
-        Target: 'es2020'
+        Target: 'es2023'
         Sourcemap: true
         EntryPoints:
           - src/handlers/post-llm-response.ts
@@ -880,7 +880,7 @@ Resources:
       BuildMethod: esbuild
       BuildProperties:
         Minify: true
-        Target: 'es2020'
+        Target: 'es2023'
         Sourcemap: true
         EntryPoints:
           - src/handlers/post-suggest-claims.ts
@@ -950,7 +950,7 @@ Resources:
       BuildMethod: esbuild
       BuildProperties:
         Minify: true
-        Target: 'es2020'
+        Target: 'es2023'
         Sourcemap: true
         EntryPoints:
           - src/handlers/post-validate-claim.ts
