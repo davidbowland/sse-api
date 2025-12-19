@@ -1,11 +1,11 @@
 {
   "version": "2.0",
-  "routeKey": "POST /validate-claim",
-  "rawPath": "/v1/validate-claim",
+  "routeKey": "POST /sessions/{sessionId}/transcribe-streaming",
+  "rawPath": "/v1/sessions/8675309/transcribe-streaming",
   "rawQueryString": "",
   "headers": {
     "accept": "application/json",
-    "content-length": "48",
+    "content-length": "65",
     "content-type": "application/json",
     "host": "sse-api.dbowland.com",
     "user-agent": "Mozilla/5.0",
@@ -20,17 +20,20 @@
     "domainPrefix": "sse-api",
     "http": {
       "method": "POST",
-      "path": "/v1/validate-claim",
+      "path": "/v1/sessions/8675309/transcribe-streaming",
       "protocol": "HTTP/1.1",
       "sourceIp": "192.168.1.1",
       "userAgent": "Mozilla/5.0"
     },
     "requestId": "abc123def456",
-    "routeKey": "POST /validate-claim",
+    "routeKey": "POST /sessions/{sessionId}/transcribe-streaming",
     "stage": "v1",
     "time": "01/Jan/2024:00:00:00 +0000",
     "timeEpoch": 1704067200000
   },
-  "body": "{\"claim\":\"Chickpeas are neither chicks nor peas.\"}",
+  "pathParameters": {
+    "sessionId": "8675309"
+  },
+  "body": "{\"languageCode\":\"en-US\",\"sampleRate\":16000,\"mediaFormat\":\"pcm\"}",
   "isBase64Encoded": false
 }

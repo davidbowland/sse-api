@@ -835,6 +835,76 @@ Resources:
       FilterPattern: '[timestamp, uuid, level="ERROR", message]'
       LogGroupName: !Ref PostStartChatLogGroup
 
+  # Transcribe streaming
+
+  PostTranscribeStreamingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/post-transcribe-streaming.postTranscribeStreamingHandler
+      Runtime: nodejs22.x
+      Architectures:
+        - x86_64
+      MemorySize: 1536
+      Description: Create streaming transcription session
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SessionTable
+        - Version: 2012-10-17
+          Statement:
+            - Action:
+                - 'transcribe:StartStreamTranscription'
+              Effect: Allow
+              Resource: '*'
+      Environment:
+        Variables:
+          DYNAMODB_SESSION_TABLE_NAME: !Ref SessionTable
+          TRANSCRIBE_REGION: !Ref AWS::Region
+          TRANSCRIBE_URL_EXPIRATION_SECONDS: 300
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /sessions/{sessionId}/transcribe-streams
+            Method: post
+      Tags:
+        'created-by': 'sse-api'
+        'created-for': 'sse'
+        'environment': !Ref Environment
+      Timeout: 15
+      Tracing: Active
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: 'es2023'
+        Sourcemap: true
+        EntryPoints:
+          - src/handlers/post-transcribe-streaming.ts
+
+  PostTranscribeStreamingLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${PostTranscribeStreamingFunction}
+      RetentionInDays: 30
+      Tags:
+        - Key: 'created-by'
+          Value: 'sse-api'
+        - Key: 'created-for'
+          Value: 'sse'
+        - Key: 'environment'
+          Value: !Ref Environment
+
+  PostTranscribeStreamingGroupSubscription:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !Sub
+        - 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Function}'
+        - Function: !FindInMap [EnvironmentMap, !Ref Environment, logStreamFunction]
+      FilterPattern: '[timestamp, uuid, level="ERROR", message]'
+      LogGroupName: !Ref PostTranscribeStreamingLogGroup
+
   # Suggest claims
 
   PostSuggestClaimsFunction:

@@ -10,6 +10,7 @@ import {
   LLMRequest,
   Session,
   SuggestClaimsRequest,
+  TranscribeStreamingRequest,
 } from '../types'
 
 const ajv = new AJV({ allErrors: true })
@@ -223,6 +224,35 @@ const formatSuggestClaimsRequest = (body: SuggestClaimsRequestBody): SuggestClai
 
 export const extractSuggestClaimsRequestFromEvent = (event: APIGatewayProxyEventV2): SuggestClaimsRequest =>
   formatSuggestClaimsRequest(parseEventBody(event) as SuggestClaimsRequestBody)
+
+// Transcribe streaming request
+
+interface TranscribeStreamingRequestBody {
+  languageCode?: string
+  sampleRate?: number
+  mediaFormat?: 'pcm' | 'ogg-opus' | 'flac'
+}
+
+const formatTranscribeStreamingRequest = (body: TranscribeStreamingRequestBody): TranscribeStreamingRequest => {
+  const jsonTypeDefinition = {
+    optionalProperties: {
+      languageCode: { type: 'string' },
+      mediaFormat: { enum: ['pcm', 'ogg-opus', 'flac'] },
+      sampleRate: { type: 'float64' },
+    },
+  }
+  if (ajv.validate(jsonTypeDefinition, body) === false) {
+    throw new Error(JSON.stringify(ajv.errors))
+  }
+  return {
+    languageCode: body.languageCode ? trim(body.languageCode) : undefined,
+    mediaFormat: body.mediaFormat,
+    sampleRate: body.sampleRate,
+  }
+}
+
+export const extractTranscribeStreamingRequestFromEvent = (event: APIGatewayProxyEventV2): TranscribeStreamingRequest =>
+  formatTranscribeStreamingRequest(parseEventBody(event) as TranscribeStreamingRequestBody)
 
 // Events
 

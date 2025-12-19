@@ -112,3 +112,31 @@ export interface ValidationResponse {
   inappropriate: boolean
   suggestions: string[]
 }
+
+// Transcribe
+
+export interface TranscribeStreamingRequest {
+  languageCode?: string
+  mediaFormat?: 'pcm' | 'ogg-opus' | 'flac'
+  sampleRate?: number
+}
+
+export interface TranscribeStreamingResponse {
+  expiresIn: number
+  languageCode: string
+  mediaFormat: string
+  sampleRate: number
+  sessionId: string
+  websocketUrl: string
+}
+
+export interface TranscribeSession {
+  createdAt: number
+  expiresAt: number
+  languageCode: string
+  mediaFormat: string
+  sampleRate: number
+  sessionId: string
+  status: 'active' | 'completed' | 'failed'
+  websocketUrl: string
+}

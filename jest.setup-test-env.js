@@ -23,3 +23,8 @@ process.env.RESPONSE_PROMPT_ID = 'probe-confidence-prompt'
 // Sessions
 
 process.env.SESSION_EXPIRE_HOURS = '24'
+
+// Transcribe
+
+process.env.TRANSCRIBE_REGION = 'us-east-1'
+process.env.TRANSCRIBE_URL_EXPIRATION_SECONDS = '3600'

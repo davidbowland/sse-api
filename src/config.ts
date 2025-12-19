@@ -34,3 +34,8 @@ export const debugLogging = (process.env.DEBUG_LOGGING as string) === 'true'
 // Sessions
 
 export const sessionExpireHours = parseInt(process.env.SESSION_EXPIRE_HOURS as string, 10)
+
+// Transcribe
+
+export const transcribeRegion = process.env.TRANSCRIBE_REGION as string
+export const transcribeUrlExpirationSeconds = parseInt(process.env.TRANSCRIBE_URL_EXPIRATION_SECONDS as string, 10)
