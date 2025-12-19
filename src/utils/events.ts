@@ -228,26 +228,60 @@ export const extractSuggestClaimsRequestFromEvent = (event: APIGatewayProxyEvent
 // Transcribe streaming request
 
 interface TranscribeStreamingRequestBody {
-  languageCode?: string
-  sampleRate?: number
-  mediaFormat?: 'pcm' | 'ogg-opus' | 'flac'
+  languageCode: string
+  sampleRate: number
+  mediaFormat: 'pcm' | 'ogg-opus' | 'flac'
 }
+
+const SUPPORTED_LANGUAGES = ['en-US', 'en-GB', 'es-US', 'fr-FR', 'de-DE', 'pt-BR', 'it-IT', 'ja-JP', 'ko-KR', 'zh-CN']
+const SUPPORTED_SAMPLE_RATES = [8000, 16000, 22050, 44100, 48000]
+const SUPPORTED_MEDIA_FORMATS = ['pcm', 'ogg-opus', 'flac']
 
 const formatTranscribeStreamingRequest = (body: TranscribeStreamingRequestBody): TranscribeStreamingRequest => {
   const jsonTypeDefinition = {
-    optionalProperties: {
+    properties: {
       languageCode: { type: 'string' },
-      mediaFormat: { enum: ['pcm', 'ogg-opus', 'flac'] },
+      mediaFormat: { enum: SUPPORTED_MEDIA_FORMATS },
       sampleRate: { type: 'float64' },
     },
   }
   if (ajv.validate(jsonTypeDefinition, body) === false) {
     throw new Error(JSON.stringify(ajv.errors))
   }
+
+  const languageCode = trim(body.languageCode)
+
+  if (!SUPPORTED_LANGUAGES.includes(languageCode)) {
+    throw new Error(
+      JSON.stringify([
+        {
+          instancePath: '/languageCode',
+          keyword: 'enum',
+          message: `Unsupported language code: ${languageCode}. Supported: ${SUPPORTED_LANGUAGES.join(', ')}`,
+          schemaPath: '/properties/languageCode/enum',
+        },
+      ]),
+    )
+  }
+
+  const sampleRate = body.sampleRate
+  if (!SUPPORTED_SAMPLE_RATES.includes(sampleRate)) {
+    throw new Error(
+      JSON.stringify([
+        {
+          instancePath: '/sampleRate',
+          keyword: 'enum',
+          message: `Unsupported sample rate: ${sampleRate}. Supported: ${SUPPORTED_SAMPLE_RATES.join(', ')}`,
+          schemaPath: '/properties/sampleRate/enum',
+        },
+      ]),
+    )
+  }
+
   return {
-    languageCode: body.languageCode ? trim(body.languageCode) : undefined,
+    languageCode,
     mediaFormat: body.mediaFormat,
-    sampleRate: body.sampleRate,
+    sampleRate,
   }
 }
 

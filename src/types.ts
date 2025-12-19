@@ -116,9 +116,9 @@ export interface ValidationResponse {
 // Transcribe
 
 export interface TranscribeStreamingRequest {
-  languageCode?: string
-  mediaFormat?: 'pcm' | 'ogg-opus' | 'flac'
-  sampleRate?: number
+  languageCode: string
+  mediaFormat: 'pcm' | 'ogg-opus' | 'flac'
+  sampleRate: number
 }
 
 export interface TranscribeStreamingResponse {
@@ -126,7 +126,6 @@ export interface TranscribeStreamingResponse {
   languageCode: string
   mediaFormat: string
   sampleRate: number
-  sessionId: string
   websocketUrl: string
 }
 
@@ -136,7 +135,6 @@ export interface TranscribeSession {
   languageCode: string
   mediaFormat: string
   sampleRate: number
-  sessionId: string
   status: 'active' | 'completed' | 'failed'
   websocketUrl: string
 }

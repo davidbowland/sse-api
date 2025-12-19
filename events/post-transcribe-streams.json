@@ -1,7 +1,7 @@
 {
   "version": "2.0",
-  "routeKey": "POST /sessions/{sessionId}/transcribe-streaming",
-  "rawPath": "/v1/sessions/8675309/transcribe-streaming",
+  "routeKey": "POST /sessions/{sessionId}/transcribe-streams",
+  "rawPath": "/v1/sessions/8675309/transcribe-streams",
   "rawQueryString": "",
   "headers": {
     "accept": "application/json",
@@ -20,13 +20,13 @@
     "domainPrefix": "sse-api",
     "http": {
       "method": "POST",
-      "path": "/v1/sessions/8675309/transcribe-streaming",
+      "path": "/v1/sessions/8675309/transcribe-streams",
       "protocol": "HTTP/1.1",
       "sourceIp": "192.168.1.1",
       "userAgent": "Mozilla/5.0"
     },
     "requestId": "abc123def456",
-    "routeKey": "POST /sessions/{sessionId}/transcribe-streaming",
+    "routeKey": "POST /sessions/{sessionId}/transcribe-streams",
     "stage": "v1",
     "time": "01/Jan/2024:00:00:00 +0000",
     "timeEpoch": 1704067200000

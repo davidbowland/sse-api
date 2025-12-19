@@ -837,10 +837,10 @@ Resources:
 
   # Transcribe streaming
 
-  PostTranscribeStreamingFunction:
+  PostTranscribeStreamsFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: src/handlers/post-transcribe-streaming.postTranscribeStreamingHandler
+      Handler: src/handlers/post-transcribe-streams.postTranscribeStreamsHandler
       Runtime: nodejs22.x
       Architectures:
         - x86_64
@@ -881,12 +881,12 @@ Resources:
         Target: 'es2023'
         Sourcemap: true
         EntryPoints:
-          - src/handlers/post-transcribe-streaming.ts
+          - src/handlers/post-transcribe-streams.ts
 
-  PostTranscribeStreamingLogGroup:
+  PostTranscribeStreamsLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/lambda/${PostTranscribeStreamingFunction}
+      LogGroupName: !Sub /aws/lambda/${PostTranscribeStreamsFunction}
       RetentionInDays: 30
       Tags:
         - Key: 'created-by'
@@ -896,14 +896,14 @@ Resources:
         - Key: 'environment'
           Value: !Ref Environment
 
-  PostTranscribeStreamingGroupSubscription:
+  PostTranscribeStreamsGroupSubscription:
     Type: AWS::Logs::SubscriptionFilter
     Properties:
       DestinationArn: !Sub
         - 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Function}'
         - Function: !FindInMap [EnvironmentMap, !Ref Environment, logStreamFunction]
       FilterPattern: '[timestamp, uuid, level="ERROR", message]'
-      LogGroupName: !Ref PostTranscribeStreamingLogGroup
+      LogGroupName: !Ref PostTranscribeStreamsLogGroup
 
   # Suggest claims
 

@@ -223,7 +223,6 @@ export const transcribeStreamingResponse = {
   languageCode: 'en-US',
   mediaFormat: 'pcm',
   sampleRate: 16000,
-  sessionId: 'stream123',
   websocketUrl:
     'wss://transcribestreaming.us-east-1.amazonaws.com:8443/stream-transcription-websocket?language-code=en-US&media-encoding=pcm&sample-rate=16000&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20240101T000000Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Signature=example',
 }
