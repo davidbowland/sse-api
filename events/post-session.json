@@ -1,9 +1,36 @@
 {
-  "body": "{\"claim\":\"Rhode Island is neither a road nor an island.\",\"confidence\":\"slightly agree\"}",
+  "version": "2.0",
+  "routeKey": "POST /sessions",
+  "rawPath": "/v1/sessions",
+  "rawQueryString": "",
+  "headers": {
+    "accept": "application/json",
+    "content-length": "88",
+    "content-type": "application/json",
+    "host": "sse-api.dbowland.com",
+    "user-agent": "Mozilla/5.0",
+    "x-forwarded-for": "192.168.1.1",
+    "x-forwarded-port": "443",
+    "x-forwarded-proto": "https"
+  },
   "requestContext": {
+    "accountId": "123456789012",
+    "apiId": "abcdef123",
+    "domainName": "sse-api.dbowland.com",
+    "domainPrefix": "sse-api",
     "http": {
       "method": "POST",
-      "path": "/v1/validate-claim"
-    }
-  }
+      "path": "/v1/sessions",
+      "protocol": "HTTP/1.1",
+      "sourceIp": "192.168.1.1",
+      "userAgent": "Mozilla/5.0"
+    },
+    "requestId": "abc123def456",
+    "routeKey": "POST /sessions",
+    "stage": "v1",
+    "time": "01/Jan/2024:00:00:00 +0000",
+    "timeEpoch": 1704067200000
+  },
+  "body": "{\"claim\":\"Rhode Island is neither a road nor an island.\",\"confidence\":\"slightly agree\"}",
+  "isBase64Encoded": false
 }
