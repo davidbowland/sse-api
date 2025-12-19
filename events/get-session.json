@@ -1,11 +1,36 @@
 {
+  "version": "2.0",
+  "routeKey": "GET /sessions/{sessionId}",
+  "rawPath": "/v1/sessions/8675309",
+  "rawQueryString": "",
+  "headers": {
+    "accept": "application/json",
+    "host": "sse-api.dbowland.com",
+    "user-agent": "Mozilla/5.0",
+    "x-forwarded-for": "192.168.1.1",
+    "x-forwarded-port": "443",
+    "x-forwarded-proto": "https"
+  },
+  "requestContext": {
+    "accountId": "123456789012",
+    "apiId": "abcdef123",
+    "domainName": "sse-api.dbowland.com",
+    "domainPrefix": "sse-api",
+    "http": {
+      "method": "GET",
+      "path": "/v1/sessions/8675309",
+      "protocol": "HTTP/1.1",
+      "sourceIp": "192.168.1.1",
+      "userAgent": "Mozilla/5.0"
+    },
+    "requestId": "abc123def456",
+    "routeKey": "GET /sessions/{sessionId}",
+    "stage": "v1",
+    "time": "01/Jan/2024:00:00:00 +0000",
+    "timeEpoch": 1704067200000
+  },
   "pathParameters": {
     "sessionId": "8675309"
   },
-  "requestContext": {
-    "http": {
-      "method": "GET",
-      "path": "/v1/sessions/8675309"
-    }
-  }
+  "isBase64Encoded": false
 }
