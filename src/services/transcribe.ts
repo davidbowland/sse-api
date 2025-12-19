@@ -13,23 +13,32 @@ export const createStreamingSession = async (
   sampleRate: number,
   mediaFormat: 'pcm' | 'ogg-opus' | 'flac',
 ): Promise<TranscribeStreamingResponse> => {
+  const credentials = await transcribeClient.config.credentials()
   const signer = new SignatureV4MultiRegion({
-    credentials: transcribeClient.config.credentials,
+    credentials,
     region: transcribeRegion,
     service: 'transcribe',
     sha256: Sha256,
   })
 
   const endpoint = `wss://transcribestreaming.${transcribeRegion}.amazonaws.com:8443/stream-transcription-websocket`
+  const amzDate = new Date().toISOString().replace(/[:-]|\.\d{3}/g, '')
+  const credentialScope = `${amzDate.slice(0, 8)}/${transcribeRegion}/transcribe/aws4_request`
+
   const queryParams = new URLSearchParams({
     'language-code': languageCode,
     'media-encoding': mediaFormat,
-    'sample-rate': sampleRate.toString(),
+    'sample-rate': `${sampleRate}`,
     'X-Amz-Algorithm': 'AWS4-HMAC-SHA256',
-    'X-Amz-Date': new Date().toISOString().replace(/[:-]|\.\d{3}/g, ''),
-    'X-Amz-Expires': transcribeUrlExpirationSeconds.toString(),
+    'X-Amz-Credential': `${credentials.accessKeyId}/${credentialScope}`,
+    'X-Amz-Date': amzDate,
+    'X-Amz-Expires': `${transcribeUrlExpirationSeconds}`,
     'X-Amz-SignedHeaders': 'host',
   })
+
+  if (credentials.sessionToken) {
+    queryParams.set('X-Amz-Security-Token', credentials.sessionToken)
+  }
 
   const request = {
     headers: {
@@ -43,7 +52,12 @@ export const createStreamingSession = async (
   }
 
   const signedRequest = await signer.sign(request)
-  const websocketUrl = `${endpoint}?${queryParams.toString()}&X-Amz-Signature=${signedRequest.headers?.['X-Amz-Signature'] || ''}`
+  const authHeader = signedRequest.headers?.['authorization'] || ''
+  const signatureMatch = authHeader.match(/Signature=([a-f0-9]+)/)
+  const signature = signatureMatch ? signatureMatch[1] : ''
+
+  queryParams.set('X-Amz-Signature', signature)
+  const websocketUrl = `${endpoint}?${queryParams.toString()}`
 
   return {
     expiresIn: transcribeUrlExpirationSeconds,

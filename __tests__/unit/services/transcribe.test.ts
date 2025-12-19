@@ -10,7 +10,11 @@ jest.mock('@aws-sdk/signature-v4-multi-region', () => ({
 jest.mock('@aws-sdk/client-transcribe-streaming', () => ({
   TranscribeStreamingClient: jest.fn(() => ({
     config: {
-      credentials: { accessKeyId: 'test', secretAccessKey: 'test' },
+      credentials: jest.fn().mockResolvedValue({
+        accessKeyId: 'test',
+        secretAccessKey: 'test',
+        sessionToken: 'test-token',
+      }),
     },
   })),
 }))
@@ -23,7 +27,10 @@ describe('transcribe', () => {
   describe('createStreamingSession', () => {
     beforeAll(() => {
       mockSign.mockResolvedValue({
-        headers: { 'X-Amz-Signature': 'example' },
+        headers: {
+          authorization:
+            'AWS4-HMAC-SHA256 Credential=test/20240101/us-east-1/transcribe/aws4_request, SignedHeaders=host, Signature=abcdef123456',
+        },
       })
     })
 
