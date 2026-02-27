@@ -87,6 +87,12 @@ jobs:
             --role-arn ${TESTING_CLOUDFORMATION_EXECUTION_ROLE} \
             --parameter-overrides "Environment=test SuggestClaimsUrl=${SUGGEST_CLAIMS_URL}"
 
+      - name: Install packages for prompt deployment
+        run: npm ci
+
+      - name: Deploy prompts to testing
+        run: npm run deploy-prompts sse-api-prompts-test
+
   build-and-package:
     name: Build and package lambda
     if: github.ref == 'refs/heads/master'
@@ -198,6 +204,17 @@ jobs:
             --role-arn ${TESTING_CLOUDFORMATION_EXECUTION_ROLE} \
             --parameter-overrides "Environment=test SuggestClaimsUrl=${SUGGEST_CLAIMS_URL}"
 
+      - name: Install Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+
+      - name: Install packages for prompt deployment
+        run: npm ci
+
+      - name: Deploy prompts to testing
+        run: npm run deploy-prompts sse-api-prompts-test
+
   deploy-prod:
     name: Deploy to production
     if: github.ref == 'refs/heads/master'
@@ -238,6 +255,17 @@ jobs:
             --no-fail-on-empty-changeset \
             --role-arn ${PROD_CLOUDFORMATION_EXECUTION_ROLE} \
             --parameter-overrides "SuggestClaimsUrl=${SUGGEST_CLAIMS_URL}"
+
+      - name: Install Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+
+      - name: Install packages for prompt deployment
+        run: npm ci
+
+      - name: Deploy prompts to production
+        run: npm run deploy-prompts sse-api-prompts
 
   bump:
     name: Bump the version number and tag the commit
