@@ -48,5 +48,10 @@ Thumbs.db
 *.mov
 *.wmv
 
+.claude/
 .kiro/specs/
+.superpowers/
 .vscode
+.worktrees/
+docs/
+tsconfig.tsbuildinfo
