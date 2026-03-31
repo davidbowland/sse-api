@@ -19,7 +19,7 @@
 - Respond in JSON format. The object should contain:
   - suggestions -- an array that contains six claim suggestions
 - ALWAYS provide suggestions in the language requested.
-- Include your thinking in <thinking> tags before the JSON output but NO OTHER TAGS.
+- Respond with ONLY valid JSON. Do not include any other text or tags.
 </instructions>
 
 <example>

@@ -20,7 +20,8 @@ export const invokeModel = async <T = unknown>(
 
 const getMessageHistory = (history: ChatMessage[]): ChatMessage[] => history.slice(-MAX_MESSAGE_HISTORY_COUNT)
 
-const stripCodeFences = (input: string): string => input.replace(/^\s*```(?:json)?\s*|\s*```\s*$/gs, '').trim()
+const stripWrapping = (input: string): string =>
+  input.replace(/^\s*<thinking>[\s\S]*?<\/thinking>\s*|\s*```(?:json)?\s*|\s*```\s*$/gs, '').trim()
 
 export const invokeModelMessage = async <T = unknown>(
   prompt: Prompt,
@@ -64,5 +65,5 @@ export const invokeModelMessage = async <T = unknown>(
     throw new Error('Bedrock response contained no text block')
   }
   log('Model response', { modelResponse, text: textBlock.text })
-  return JSON.parse(stripCodeFences(textBlock.text))
+  return JSON.parse(stripWrapping(textBlock.text))
 }

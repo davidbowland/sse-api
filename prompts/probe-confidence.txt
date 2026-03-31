@@ -21,7 +21,7 @@
   - finished -- a boolean indicating whether the conversation has finished
   - message -- a string containing the response of the assistant
 - ALWAYS answer in the language requested.
-- Include your thinking in <thinking> tags before the JSON output but NO OTHER TAGS.
+- Respond with ONLY valid JSON. Do not include any other text or tags.
 </instructions>
 
 <example>
