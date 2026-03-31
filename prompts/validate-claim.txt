@@ -2,13 +2,13 @@
 
 <instructions>
 - A truth claim is a statement that MUST be true or false. Truth claims cannot be both true and false.
-- Truth claims cannot be a statement of fact. Truth claims must be about what should happen, what is best, or what is moral.
+- Truth claims cannot be a statement of fact. Truth claims must be about what should happen, what is best, what ought to happen, or what is moral.
+  - Use words like should / ought / best / fair rather than can / do
 - Truth claims should be broader than a specific event or a specific person.
 - Truth claims should not promote violence, sexual violence, or felony crimes.
 - Truth claims should be in the positive, for example:
-  - "fairly" instead of "unfairly"
+  - "fair" instead of "unfair"
   - "should" instead of "should not"
-  - "can" instead of "can't"
   - "agree" instead of "disagree"
 - Truth claims should be clear, correctly punctuated, and correctly capitalized.
 
