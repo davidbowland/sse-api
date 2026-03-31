@@ -166,6 +166,37 @@ export const invokeModelThinkingResponse = {
   body: new TextEncoder().encode(JSON.stringify(invokeModelThinkingResponseData)),
 }
 
+export const invokeModelNoTextBlockResponseData = {
+  id: 'msg_bdrk_no_text_01',
+  type: 'message',
+  role: 'assistant',
+  model: 'us.anthropic.claude-sonnet-4-6',
+  content: [
+    {
+      type: 'thinking',
+      thinking: 'I am thinking...',
+    },
+  ],
+  stop_reason: 'max_tokens',
+  stop_sequence: null,
+  usage: { input_tokens: 100, output_tokens: 40000 },
+}
+
+export const invokeModelNoTextBlockResponse = {
+  $metadata: {
+    attempts: 1,
+    cfId: undefined,
+    extendedRequestId: undefined,
+    httpStatusCode: 200,
+    requestId: 'fragglerock-no-text',
+    retryDelay: 0,
+    statusCode: 200,
+    success: true,
+    totalRetryDelay: 0,
+  },
+  body: new TextEncoder().encode(JSON.stringify(invokeModelNoTextBlockResponseData)),
+}
+
 // Sessions
 
 export const sessionId: SessionId = '8675309'

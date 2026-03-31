@@ -1,5 +1,6 @@
 import {
   assistantMessage,
+  invokeModelNoTextBlockResponse,
   invokeModelSuggestedClaims,
   invokeModelSuggestedClaimsResponse,
   invokeModelThinkingResponse,
@@ -138,6 +139,14 @@ describe('bedrock', () => {
       expect(sentBody.messages).toHaveLength(30)
       expect(sentBody.messages[0].content).toBe('message 5')
       expect(sentBody.messages[29].content).toBe('message 34')
+    })
+
+    it('should throw when response contains no text block', async () => {
+      mockSend.mockResolvedValue(invokeModelNoTextBlockResponse)
+
+      await expect(invokeModelMessage(prompt, [userMessage])).rejects.toThrow(
+        'Bedrock response contained no text block',
+      )
     })
 
     describe('with thinking config', () => {
