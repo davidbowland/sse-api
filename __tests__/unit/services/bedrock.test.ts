@@ -133,20 +133,17 @@ describe('bedrock', () => {
 
       await invokeModelMessage(prompt, longHistory)
 
-      const sentBody = JSON.parse(new TextDecoder().decode(mockSend.mock.calls[mockSend.mock.calls.length - 1][0].body))
+      const lastBody = mockSend.mock.calls.at(-1)[0].body
+      const sentBody = JSON.parse(new TextDecoder().decode(lastBody))
       expect(sentBody.messages).toHaveLength(30)
       expect(sentBody.messages[0].content).toBe('message 5')
       expect(sentBody.messages[29].content).toBe('message 34')
     })
 
     describe('with thinking config', () => {
-      const history = [assistantMessage, userMessage]
-
-      beforeAll(() => {
-        mockSend.mockResolvedValue(invokeModelThinkingResponse)
-      })
-
       it('should send thinking block instead of temperature and top_k', async () => {
+        mockSend.mockResolvedValue(invokeModelThinkingResponse)
+
         const result = await invokeModelMessage(promptWithThinking, history)
 
         expect(result).toEqual({ suggestions: ['Claim A', 'Claim B'] })
