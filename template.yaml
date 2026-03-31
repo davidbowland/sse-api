@@ -214,7 +214,10 @@ Resources:
         - Version: 2012-10-17
           Statement:
             - Action:
-                - 'bedrock:InvokeModel*'
+                - 'aws-marketplace:Subscribe'
+                - 'aws-marketplace:ViewSubscriptions'
+                - 'bedrock:Invoke*'
+                - 'bedrock:List*'
               Effect: Allow
               Resource: '*'
       Environment:
@@ -350,7 +353,10 @@ Resources:
         - Version: 2012-10-17
           Statement:
             - Action:
-                - 'bedrock:InvokeModel*'
+                - 'aws-marketplace:Subscribe'
+                - 'aws-marketplace:ViewSubscriptions'
+                - 'bedrock:Invoke*'
+                - 'bedrock:List*'
               Effect: Allow
               Resource: '*'
       Environment:
@@ -422,7 +428,10 @@ Resources:
         - Version: 2012-10-17
           Statement:
             - Action:
-                - 'bedrock:InvokeModel*'
+                - 'aws-marketplace:Subscribe'
+                - 'aws-marketplace:ViewSubscriptions'
+                - 'bedrock:Invoke*'
+                - 'bedrock:List*'
               Effect: Allow
               Resource: '*'
       Environment:
@@ -494,7 +503,10 @@ Resources:
         - Version: 2012-10-17
           Statement:
             - Action:
-                - 'bedrock:InvokeModel*'
+                - 'aws-marketplace:Subscribe'
+                - 'aws-marketplace:ViewSubscriptions'
+                - 'bedrock:Invoke*'
+                - 'bedrock:List*'
               Effect: Allow
               Resource: '*'
       Environment:
@@ -566,7 +578,10 @@ Resources:
         - Version: 2012-10-17
           Statement:
             - Action:
-                - 'bedrock:InvokeModel*'
+                - 'aws-marketplace:Subscribe'
+                - 'aws-marketplace:ViewSubscriptions'
+                - 'bedrock:Invoke*'
+                - 'bedrock:List*'
               Effect: Allow
               Resource: '*'
       Environment:
@@ -638,7 +653,10 @@ Resources:
         - Version: 2012-10-17
           Statement:
             - Action:
-                - 'bedrock:InvokeModel*'
+                - 'aws-marketplace:Subscribe'
+                - 'aws-marketplace:ViewSubscriptions'
+                - 'bedrock:Invoke*'
+                - 'bedrock:List*'
               Effect: Allow
               Resource: '*'
       Environment:
@@ -710,7 +728,10 @@ Resources:
         - Version: 2012-10-17
           Statement:
             - Action:
-                - 'bedrock:InvokeModel*'
+                - 'aws-marketplace:Subscribe'
+                - 'aws-marketplace:ViewSubscriptions'
+                - 'bedrock:Invoke*'
+                - 'bedrock:List*'
               Effect: Allow
               Resource: '*'
       Environment:
@@ -782,7 +803,10 @@ Resources:
         - Version: 2012-10-17
           Statement:
             - Action:
-                - 'bedrock:InvokeModel*'
+                - 'aws-marketplace:Subscribe'
+                - 'aws-marketplace:ViewSubscriptions'
+                - 'bedrock:Invoke*'
+                - 'bedrock:List*'
               Effect: Allow
               Resource: '*'
       Environment:
@@ -854,7 +878,10 @@ Resources:
         - Version: 2012-10-17
           Statement:
             - Action:
-                - 'bedrock:InvokeModel*'
+                - 'aws-marketplace:Subscribe'
+                - 'aws-marketplace:ViewSubscriptions'
+                - 'bedrock:Invoke*'
+                - 'bedrock:List*'
               Effect: Allow
               Resource: '*'
       Environment:
@@ -926,7 +953,10 @@ Resources:
         - Version: 2012-10-17
           Statement:
             - Action:
-                - 'bedrock:InvokeModel*'
+                - 'aws-marketplace:Subscribe'
+                - 'aws-marketplace:ViewSubscriptions'
+                - 'bedrock:Invoke*'
+                - 'bedrock:List*'
               Effect: Allow
               Resource: '*'
       Environment:
