@@ -1,4 +1,4 @@
-# {"anthropicVersion":"bedrock-2023-05-31","maxTokens":1500,"model":"us.anthropic.claude-3-7-sonnet-20250219-v1:0","temperature":0.4,"topK":50000}
+# {"anthropicVersion":"bedrock-2023-05-31","maxTokens":1500,"model":"us.anthropic.claude-haiku-4-5-20251001-v1:0","temperature":0.4,"topK":50000}
 
 <instructions>
 - A truth claim is a statement that MUST be true or false. Truth claims cannot be both true and false.
