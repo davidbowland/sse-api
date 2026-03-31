@@ -143,22 +143,12 @@ export const invokeModelThinkingResponseData = {
     },
     {
       type: 'text',
-      text:
-        '{\n' +
-        '  "suggestions": [\n' +
-        '    "Voter ID requirements strengthen democracy.",\n' +
-        '    "Museums in federal agencies are a waste of taxpayer money.",\n' +
-        '    "Universities should lose federal funding over antisemitism.",\n' +
-        '    "The president should have the power to serve unlimited terms.",\n' +
-        '    "The US should implement a 100% tariff on all foreign goods.",\n' +
-        '    "Congress should abolish collective bargaining for federal employees."\n' +
-        '  ]\n' +
-        '}',
+      text: '{"suggestions":["Claim A","Claim B"]}',
     },
   ],
   stop_reason: 'end_turn',
   stop_sequence: null,
-  usage: { input_tokens: 3398, output_tokens: 99 },
+  usage: { input_tokens: 3398, output_tokens: 10 },
 }
 
 export const invokeModelThinkingResponse = {
