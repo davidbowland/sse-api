@@ -49,6 +49,7 @@ export const invokeModelMessage = async <T = unknown>(
     messages1: messageBody.messages.slice(0, 10),
     messages2: messageBody.messages.slice(10, 20),
     messages3: messageBody.messages.slice(20),
+    model: prompt.config.model,
   })
   const command = new InvokeModelCommand({
     body: new TextEncoder().encode(JSON.stringify(messageBody)), // new Uint8Array(), // e.g. Buffer.from("") or new TextEncoder().encode("")
