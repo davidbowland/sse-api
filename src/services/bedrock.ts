@@ -58,6 +58,10 @@ export const invokeModelMessage = async <T = unknown>(
   const response = await runtimeClient.send(command)
   const modelResponse = JSON.parse(new TextDecoder().decode(response.body))
   const textBlock = modelResponse.content.find((b: { type: string }) => b.type === 'text')
+  if (!textBlock) {
+    log('Model response missing text block', { modelResponse })
+    throw new Error('Bedrock response contained no text block')
+  }
   log('Model response', { modelResponse, text: textBlock.text })
   return JSON.parse(stripCodeFences(textBlock.text))
 }
