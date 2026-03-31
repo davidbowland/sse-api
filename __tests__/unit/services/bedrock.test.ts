@@ -2,7 +2,9 @@ import {
   assistantMessage,
   invokeModelSuggestedClaims,
   invokeModelSuggestedClaimsResponse,
+  invokeModelThinkingResponse,
   prompt,
+  promptWithThinking,
   userMessage,
 } from '../__mocks__'
 import { invokeModel, invokeModelMessage } from '@services/bedrock'
@@ -119,6 +121,48 @@ describe('bedrock', () => {
         ),
         contentType: 'application/json',
         modelId: 'the-best-ai:1.0',
+      })
+    })
+
+    it('should truncate history to the last 30 messages preserving all roles', async () => {
+      mockSend.mockResolvedValue(invokeModelSuggestedClaimsResponse)
+      const longHistory = Array.from({ length: 35 }, (_, i) => ({
+        content: `message ${i}`,
+        role: (i % 2 === 0 ? 'user' : 'assistant') as 'user' | 'assistant',
+      }))
+
+      await invokeModelMessage(prompt, longHistory)
+
+      const sentBody = JSON.parse(new TextDecoder().decode(mockSend.mock.calls[mockSend.mock.calls.length - 1][0].body))
+      expect(sentBody.messages).toHaveLength(30)
+      expect(sentBody.messages[0].content).toBe('message 5')
+      expect(sentBody.messages[29].content).toBe('message 34')
+    })
+
+    describe('with thinking config', () => {
+      const history = [assistantMessage, userMessage]
+
+      beforeAll(() => {
+        mockSend.mockResolvedValue(invokeModelThinkingResponse)
+      })
+
+      it('should send thinking block instead of temperature and top_k', async () => {
+        const result = await invokeModelMessage(promptWithThinking, history)
+
+        expect(result).toEqual({ suggestions: ['Claim A', 'Claim B'] })
+        expect(mockSend).toHaveBeenCalledWith({
+          body: new TextEncoder().encode(
+            JSON.stringify({
+              anthropic_version: 'bedrock-2023-05-31',
+              max_tokens: 50000,
+              messages: [...history],
+              system: promptWithThinking.contents,
+              thinking: { type: 'enabled', budget_tokens: 40000 },
+            }),
+          ),
+          contentType: 'application/json',
+          modelId: 'us.anthropic.claude-sonnet-4-6',
+        })
       })
     })
   })
