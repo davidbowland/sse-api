@@ -5,8 +5,7 @@ import { log, logDebug } from '../utils/logging'
 
 const runtimeClient = new BedrockRuntimeClient({ region: 'us-east-1' })
 
-const MAX_MESSAGE_HISTORY_COUNT = 25
-const MAX_RECENT_MESSAGE_COUNT = 10
+const MAX_MESSAGE_HISTORY_COUNT = 30
 
 export const invokeModel = async <T = unknown>(
   prompt: Prompt,
@@ -19,14 +18,9 @@ export const invokeModel = async <T = unknown>(
   return invokeModelMessage<T>(promptWithContext, [{ content: data, role: 'user' }])
 }
 
-const getMessageHistory = (history: ChatMessage[]): ChatMessage[] => {
-  if (history.length <= MAX_RECENT_MESSAGE_COUNT) {
-    return history
-  }
-  const recentMessages = history.slice(-MAX_RECENT_MESSAGE_COUNT)
-  const userMessages = history.slice(0, -MAX_RECENT_MESSAGE_COUNT).filter((msg: ChatMessage) => msg.role === 'user')
-  return userMessages.concat(recentMessages).slice(-MAX_MESSAGE_HISTORY_COUNT)
-}
+const getMessageHistory = (history: ChatMessage[]): ChatMessage[] => history.slice(-MAX_MESSAGE_HISTORY_COUNT)
+
+const stripCodeFences = (input: string): string => input.replace(/^\s*```(?:json)?\s*|\s*```\s*$/gs, '').trim()
 
 export const invokeModelMessage = async <T = unknown>(
   prompt: Prompt,
@@ -36,13 +30,16 @@ export const invokeModelMessage = async <T = unknown>(
   const systemContent = data ? prompt.contents.replace('${data}', JSON.stringify(data)) : prompt.contents
   logDebug('Invoking model', { data, prompt, systemContent })
 
+  const thinkingConfig = prompt.config.thinkingBudgetTokens
+    ? { thinking: { type: 'enabled', budget_tokens: prompt.config.thinkingBudgetTokens } }
+    : { temperature: prompt.config.temperature, top_k: prompt.config.topK }
+
   const messageBody = {
     anthropic_version: prompt.config.anthropicVersion,
     max_tokens: prompt.config.maxTokens,
     messages: getMessageHistory(history),
     system: systemContent,
-    temperature: prompt.config.temperature,
-    top_k: prompt.config.topK,
+    ...thinkingConfig,
   }
   log('Invoking model', {
     history1: history.slice(0, 10),
@@ -60,8 +57,7 @@ export const invokeModelMessage = async <T = unknown>(
   })
   const response = await runtimeClient.send(command)
   const modelResponse = JSON.parse(new TextDecoder().decode(response.body))
-  log('Model response', { modelResponse, text: modelResponse.content[0].text })
-  return JSON.parse(
-    modelResponse.content[0].text.replace(/(^\s*<thinking>.*?<\/thinking>\s*|^\s*|\s*`(json)?\s*|\s*$)/gs, ''),
-  )
+  const textBlock = modelResponse.content.find((b: { type: string }) => b.type === 'text')
+  log('Model response', { modelResponse, text: textBlock.text })
+  return JSON.parse(stripCodeFences(textBlock.text))
 }
