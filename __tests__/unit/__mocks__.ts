@@ -119,6 +119,63 @@ export const prompt: Prompt = {
   contents: 'You are a helpful assistant. ${data}',
 }
 
+export const promptConfigWithThinking: PromptConfig = {
+  anthropicVersion: 'bedrock-2023-05-31',
+  maxTokens: 50000,
+  model: 'us.anthropic.claude-sonnet-4-6',
+  thinkingBudgetTokens: 40000,
+}
+
+export const promptWithThinking: Prompt = {
+  config: promptConfigWithThinking,
+  contents: 'You are a helpful assistant. ${data}',
+}
+
+export const invokeModelThinkingResponseData = {
+  id: 'msg_bdrk_thinking_01',
+  type: 'message',
+  role: 'assistant',
+  model: 'us.anthropic.claude-sonnet-4-6',
+  content: [
+    {
+      type: 'thinking',
+      thinking: 'Let me consider the instructions carefully before responding.',
+    },
+    {
+      type: 'text',
+      text:
+        '{\n' +
+        '  "suggestions": [\n' +
+        '    "Voter ID requirements strengthen democracy.",\n' +
+        '    "Museums in federal agencies are a waste of taxpayer money.",\n' +
+        '    "Universities should lose federal funding over antisemitism.",\n' +
+        '    "The president should have the power to serve unlimited terms.",\n' +
+        '    "The US should implement a 100% tariff on all foreign goods.",\n' +
+        '    "Congress should abolish collective bargaining for federal employees."\n' +
+        '  ]\n' +
+        '}',
+    },
+  ],
+  stop_reason: 'end_turn',
+  stop_sequence: null,
+  usage: { input_tokens: 3398, output_tokens: 99 },
+}
+
+export const invokeModelThinkingResponse = {
+  $metadata: {
+    attempts: 1,
+    cfId: undefined,
+    extendedRequestId: undefined,
+    httpStatusCode: 200,
+    requestId: 'fragglerock-thinking',
+    retryDelay: 0,
+    statusCode: 200,
+    success: true,
+    totalRetryDelay: 0,
+  },
+  body: new TextEncoder().encode(JSON.stringify(invokeModelThinkingResponseData)),
+}
+
 // Sessions
 
 export const sessionId: SessionId = '8675309'
