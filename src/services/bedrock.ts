@@ -1,6 +1,6 @@
 import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime'
 
-import { ChatMessage, Prompt } from '../types'
+import { LLMMessage, Prompt } from '../types'
 import { log, logDebug } from '../utils/logging'
 
 const runtimeClient = new BedrockRuntimeClient({ region: 'us-east-1' })
@@ -18,14 +18,14 @@ export const invokeModel = async <T = unknown>(
   return invokeModelMessage<T>(promptWithContext, [{ content: data, role: 'user' }])
 }
 
-const getMessageHistory = (history: ChatMessage[]): ChatMessage[] => history.slice(-MAX_MESSAGE_HISTORY_COUNT)
+const getMessageHistory = (history: LLMMessage[]): LLMMessage[] => history.slice(-MAX_MESSAGE_HISTORY_COUNT)
 
 const stripWrapping = (input: string): string =>
   input.replace(/^\s*<thinking>[\s\S]*?<\/thinking>\s*|\s*```(?:json)?\s*|\s*```\s*$/gs, '').trim()
 
 export const invokeModelMessage = async <T = unknown>(
   prompt: Prompt,
-  history: ChatMessage[],
+  history: LLMMessage[],
   data?: Record<string, unknown>,
 ): Promise<T> => {
   const systemContent = data ? prompt.contents.replace('${data}', JSON.stringify(data)) : prompt.contents
@@ -38,7 +38,10 @@ export const invokeModelMessage = async <T = unknown>(
   const messageBody = {
     anthropic_version: prompt.config.anthropicVersion,
     max_tokens: prompt.config.maxTokens,
-    messages: getMessageHistory(history),
+    messages: getMessageHistory(history).map((msg) => ({
+      role: msg.role,
+      content: msg.role === 'assistant' ? JSON.stringify(msg.content) : msg.content,
+    })),
     system: systemContent,
     ...thinkingConfig,
   }

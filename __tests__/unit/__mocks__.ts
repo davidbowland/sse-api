@@ -2,6 +2,7 @@
 import { confidenceLevels } from '@assets/confidence-levels'
 import { conversationSteps } from '@assets/conversation-steps'
 import {
+  AssistantMessage,
   ChatMessage,
   ConfidenceChangeRequest,
   LLMRequest,
@@ -11,6 +12,7 @@ import {
   PromptId,
   Session,
   SessionId,
+  UserMessage,
 } from '@types'
 
 // Bedrock
@@ -281,6 +283,10 @@ export const llmResponse: LLMResponse = {
     'US military spending should be reduced.',
   ],
 }
+
+export const assistantLlmResponse: LLMResponse = { finished: false, message: 'Whatchu mean?' }
+export const assistantLlmMessage: AssistantMessage = { content: assistantLlmResponse, role: 'assistant' }
+export const userLlmMessage: UserMessage = { content: userMessage.content, role: 'user' }
 
 // Validation
 
