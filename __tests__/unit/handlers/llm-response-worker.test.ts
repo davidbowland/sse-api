@@ -2,7 +2,7 @@ import { llmResponse, newAssistantMessage, prompt, session, sessionId, userMessa
 import { llmResponseWorkerHandler } from '@handlers/llm-response-worker'
 import * as bedrock from '@services/bedrock'
 import * as dynamodb from '@services/dynamodb'
-import { AssistantMessage, Session, UserMessage } from '@types'
+import { AssistantMessage, ChatMessage, Session, UserMessage } from '@types'
 
 jest.mock('@services/bedrock')
 jest.mock('@services/dynamodb')
