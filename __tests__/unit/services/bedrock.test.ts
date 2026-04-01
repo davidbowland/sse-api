@@ -144,7 +144,7 @@ describe('bedrock', () => {
       })
     })
 
-    it('should truncate history to the last 30 messages preserving all roles', async () => {
+    it('should truncate history to the last 30 messages', async () => {
       mockSend.mockResolvedValue(invokeModelSuggestedClaimsResponse)
       const longHistory: LLMMessage[] = Array.from({ length: 35 }, (_, i) => ({
         content: `message ${i}`,
