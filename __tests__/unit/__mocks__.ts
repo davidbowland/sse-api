@@ -234,6 +234,7 @@ export const newSession: Session = {
   expiration: 1742846971,
   history: [],
   incorrect_guesses: 0,
+  llmHistory: [],
   newConversation: true,
   originalConfidence: 'slightly agree',
   question: 0,

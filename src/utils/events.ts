@@ -183,6 +183,7 @@ const formatSession = (body: SessionBody): Session => {
     expiration: body.expiration ?? lastExpiration,
     history: [],
     incorrect_guesses: 0,
+    llmHistory: [],
     newConversation: true,
     originalConfidence: body.confidence,
     question: 0,

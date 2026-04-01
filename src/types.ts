@@ -70,6 +70,18 @@ export interface LLMResponse {
   reasons?: string[]
 }
 
+export interface UserMessage {
+  content: string
+  role: 'user'
+}
+
+export interface AssistantMessage {
+  content: LLMResponse
+  role: 'assistant'
+}
+
+export type LLMMessage = UserMessage | AssistantMessage
+
 // Sessions
 
 export type SessionId = string
@@ -90,6 +102,7 @@ export interface Session {
   expiration: number
   history: ChatMessage[]
   incorrect_guesses: number
+  llmHistory: LLMMessage[]
   newConversation: boolean
   originalConfidence: string
   overrideStep?: ConversationStep
