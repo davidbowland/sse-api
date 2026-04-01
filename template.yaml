@@ -334,6 +334,73 @@ Resources:
 
   # LLM invocation
 
+  LlmResponseWorkerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/llm-response-worker.llmResponseWorkerHandler
+      Runtime: nodejs22.x
+      Architectures:
+        - x86_64
+      MemorySize: 1536
+      Description: Background worker that executes LLM calls asynchronously
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SessionTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref PromptTable
+        # Allow invoking a model in Bedrock
+        - Version: 2012-10-17
+          Statement:
+            - Action:
+                - 'aws-marketplace:Subscribe'
+                - 'aws-marketplace:ViewSubscriptions'
+                - 'bedrock:Invoke*'
+                - 'bedrock:List*'
+              Effect: Allow
+              Resource: '*'
+      Environment:
+        Variables:
+          DEBUG_LOGGING: 'false'
+          DYNAMODB_PROMPT_TABLE_NAME: !Ref PromptTable
+          DYNAMODB_SESSION_TABLE_NAME: !Ref SessionTable
+      Tags:
+        'created-by': 'sse-api'
+        'created-for': 'sse'
+        'environment': !Ref Environment
+      Timeout: 175
+      Tracing: Active
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: 'es2023'
+        Sourcemap: true
+        EntryPoints:
+          - src/handlers/llm-response-worker.ts
+
+  LlmResponseWorkerLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${LlmResponseWorkerFunction}
+      RetentionInDays: 30
+      Tags:
+        - Key: 'created-by'
+          Value: 'sse-api'
+        - Key: 'created-for'
+          Value: 'sse'
+        - Key: 'environment'
+          Value: !Ref Environment
+
+  LlmResponseWorkerGroupSubscription:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !Sub
+        - 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Function}'
+        - Function: !FindInMap [EnvironmentMap, !Ref Environment, logStreamFunction]
+      FilterPattern: '[timestamp, uuid, level="ERROR", message]'
+      LogGroupName: !Ref LlmResponseWorkerLogGroup
+
   PostAnalysisFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -359,12 +426,20 @@ Resources:
                 - 'bedrock:List*'
               Effect: Allow
               Resource: '*'
+        # Allow invoking the LLM worker Lambda
+        - Version: 2012-10-17
+          Statement:
+            - Action:
+                - 'lambda:InvokeFunction'
+              Effect: Allow
+              Resource: !GetAtt LlmResponseWorkerFunction.Arn
       Environment:
         Variables:
           DEBUG_LOGGING: 'false'
           DYNAMODB_PROMPT_TABLE_NAME: !Ref PromptTable
           DYNAMODB_SESSION_TABLE_NAME: !Ref SessionTable
           RESPONSE_PROMPT_ID: analysis
+          WORKER_FUNCTION_ARN: !GetAtt LlmResponseWorkerFunction.Arn
       Events:
         Api:
           Type: HttpApi
@@ -376,7 +451,7 @@ Resources:
         'created-by': 'sse-api'
         'created-for': 'sse'
         'environment': !Ref Environment
-      Timeout: 35
+      Timeout: 10
       Tracing: Active
     Metadata:
       BuildMethod: esbuild
@@ -434,12 +509,20 @@ Resources:
                 - 'bedrock:List*'
               Effect: Allow
               Resource: '*'
+        # Allow invoking the LLM worker Lambda
+        - Version: 2012-10-17
+          Statement:
+            - Action:
+                - 'lambda:InvokeFunction'
+              Effect: Allow
+              Resource: !GetAtt LlmResponseWorkerFunction.Arn
       Environment:
         Variables:
           DEBUG_LOGGING: 'false'
           DYNAMODB_PROMPT_TABLE_NAME: !Ref PromptTable
           DYNAMODB_SESSION_TABLE_NAME: !Ref SessionTable
           RESPONSE_PROMPT_ID: end-chat
+          WORKER_FUNCTION_ARN: !GetAtt LlmResponseWorkerFunction.Arn
       Events:
         Api:
           Type: HttpApi
@@ -451,7 +534,7 @@ Resources:
         'created-by': 'sse-api'
         'created-for': 'sse'
         'environment': !Ref Environment
-      Timeout: 35
+      Timeout: 10
       Tracing: Active
     Metadata:
       BuildMethod: esbuild
@@ -509,12 +592,20 @@ Resources:
                 - 'bedrock:List*'
               Effect: Allow
               Resource: '*'
+        # Allow invoking the LLM worker Lambda
+        - Version: 2012-10-17
+          Statement:
+            - Action:
+                - 'lambda:InvokeFunction'
+              Effect: Allow
+              Resource: !GetAtt LlmResponseWorkerFunction.Arn
       Environment:
         Variables:
           DEBUG_LOGGING: 'false'
           DYNAMODB_PROMPT_TABLE_NAME: !Ref PromptTable
           DYNAMODB_SESSION_TABLE_NAME: !Ref SessionTable
           RESPONSE_PROMPT_ID: guess-reasons
+          WORKER_FUNCTION_ARN: !GetAtt LlmResponseWorkerFunction.Arn
       Events:
         Api:
           Type: HttpApi
@@ -526,7 +617,7 @@ Resources:
         'created-by': 'sse-api'
         'created-for': 'sse'
         'environment': !Ref Environment
-      Timeout: 35
+      Timeout: 10
       Tracing: Active
     Metadata:
       BuildMethod: esbuild
@@ -584,12 +675,20 @@ Resources:
                 - 'bedrock:List*'
               Effect: Allow
               Resource: '*'
+        # Allow invoking the LLM worker Lambda
+        - Version: 2012-10-17
+          Statement:
+            - Action:
+                - 'lambda:InvokeFunction'
+              Effect: Allow
+              Resource: !GetAtt LlmResponseWorkerFunction.Arn
       Environment:
         Variables:
           DEBUG_LOGGING: 'false'
           DYNAMODB_PROMPT_TABLE_NAME: !Ref PromptTable
           DYNAMODB_SESSION_TABLE_NAME: !Ref SessionTable
           RESPONSE_PROMPT_ID: new-confidence
+          WORKER_FUNCTION_ARN: !GetAtt LlmResponseWorkerFunction.Arn
       Events:
         Api:
           Type: HttpApi
@@ -601,7 +700,7 @@ Resources:
         'created-by': 'sse-api'
         'created-for': 'sse'
         'environment': !Ref Environment
-      Timeout: 35
+      Timeout: 10
       Tracing: Active
     Metadata:
       BuildMethod: esbuild
@@ -659,12 +758,20 @@ Resources:
                 - 'bedrock:List*'
               Effect: Allow
               Resource: '*'
+        # Allow invoking the LLM worker Lambda
+        - Version: 2012-10-17
+          Statement:
+            - Action:
+                - 'lambda:InvokeFunction'
+              Effect: Allow
+              Resource: !GetAtt LlmResponseWorkerFunction.Arn
       Environment:
         Variables:
           DEBUG_LOGGING: 'false'
           DYNAMODB_PROMPT_TABLE_NAME: !Ref PromptTable
           DYNAMODB_SESSION_TABLE_NAME: !Ref SessionTable
           RESPONSE_PROMPT_ID: probe-confidence
+          WORKER_FUNCTION_ARN: !GetAtt LlmResponseWorkerFunction.Arn
       Events:
         Api:
           Type: HttpApi
@@ -676,7 +783,7 @@ Resources:
         'created-by': 'sse-api'
         'created-for': 'sse'
         'environment': !Ref Environment
-      Timeout: 35
+      Timeout: 10
       Tracing: Active
     Metadata:
       BuildMethod: esbuild
@@ -734,12 +841,20 @@ Resources:
                 - 'bedrock:List*'
               Effect: Allow
               Resource: '*'
+        # Allow invoking the LLM worker Lambda
+        - Version: 2012-10-17
+          Statement:
+            - Action:
+                - 'lambda:InvokeFunction'
+              Effect: Allow
+              Resource: !GetAtt LlmResponseWorkerFunction.Arn
       Environment:
         Variables:
           DEBUG_LOGGING: 'false'
           DYNAMODB_PROMPT_TABLE_NAME: !Ref PromptTable
           DYNAMODB_SESSION_TABLE_NAME: !Ref SessionTable
           RESPONSE_PROMPT_ID: probe-reasons
+          WORKER_FUNCTION_ARN: !GetAtt LlmResponseWorkerFunction.Arn
       Events:
         Api:
           Type: HttpApi
@@ -751,7 +866,7 @@ Resources:
         'created-by': 'sse-api'
         'created-for': 'sse'
         'environment': !Ref Environment
-      Timeout: 35
+      Timeout: 10
       Tracing: Active
     Metadata:
       BuildMethod: esbuild
@@ -809,12 +924,20 @@ Resources:
                 - 'bedrock:List*'
               Effect: Allow
               Resource: '*'
+        # Allow invoking the LLM worker Lambda
+        - Version: 2012-10-17
+          Statement:
+            - Action:
+                - 'lambda:InvokeFunction'
+              Effect: Allow
+              Resource: !GetAtt LlmResponseWorkerFunction.Arn
       Environment:
         Variables:
           DEBUG_LOGGING: 'false'
           DYNAMODB_PROMPT_TABLE_NAME: !Ref PromptTable
           DYNAMODB_SESSION_TABLE_NAME: !Ref SessionTable
           RESPONSE_PROMPT_ID: start-chat
+          WORKER_FUNCTION_ARN: !GetAtt LlmResponseWorkerFunction.Arn
       Events:
         Api:
           Type: HttpApi
@@ -826,7 +949,7 @@ Resources:
         'created-by': 'sse-api'
         'created-for': 'sse'
         'environment': !Ref Environment
-      Timeout: 35
+      Timeout: 10
       Tracing: Active
     Metadata:
       BuildMethod: esbuild
