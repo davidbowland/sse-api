@@ -27,6 +27,10 @@ export const idMinLength = parseInt(process.env.ID_MIN_LENGTH as string, 10)
 
 export const responsePromptId = process.env.RESPONSE_PROMPT_ID as string
 
+// Worker
+
+export const workerFunctionArn = process.env.WORKER_FUNCTION_ARN as string
+
 // Logging
 
 export const debugLogging = (process.env.DEBUG_LOGGING as string) === 'true'

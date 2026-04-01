@@ -103,6 +103,7 @@ export interface Session {
   history: ChatMessage[]
   incorrect_guesses: number
   llmHistory: LLMMessage[]
+  loadingTimeout?: number
   newConversation: boolean
   originalConfidence: string
   overrideStep?: ConversationStep
