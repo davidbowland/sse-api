@@ -199,6 +199,12 @@ export const invokeModelNoTextBlockResponse = {
   body: new TextEncoder().encode(JSON.stringify(invokeModelNoTextBlockResponseData)),
 }
 
+// LLM messages (defined before sessions because session references them)
+
+export const assistantLlmResponse: LLMResponse = { finished: false, message: 'Whatchu mean?' }
+export const assistantLlmMessage: AssistantMessage = { content: assistantLlmResponse, role: 'assistant' }
+export const userLlmMessage: UserMessage = { content: userMessage.content, role: 'user' }
+
 // Sessions
 
 export const sessionId: SessionId = '8675309'
@@ -217,6 +223,7 @@ export const session: Session = {
   expiration: 1743407368,
   history: [userMessage, assistantMessage],
   incorrect_guesses: 0,
+  llmHistory: [userLlmMessage, assistantLlmMessage],
   newConversation: false,
   originalConfidence: 'agree',
   question: 1,
@@ -283,10 +290,6 @@ export const llmResponse: LLMResponse = {
     'US military spending should be reduced.',
   ],
 }
-
-export const assistantLlmResponse: LLMResponse = { finished: false, message: 'Whatchu mean?' }
-export const assistantLlmMessage: AssistantMessage = { content: assistantLlmResponse, role: 'assistant' }
-export const userLlmMessage: UserMessage = { content: userMessage.content, role: 'user' }
 
 // Validation
 

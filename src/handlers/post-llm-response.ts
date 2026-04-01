@@ -4,10 +4,13 @@ import { getPromptById, getSessionById, setSessionById } from '../services/dynam
 import {
   APIGatewayProxyEventV2,
   APIGatewayProxyResultV2,
+  AssistantMessage,
   ChatMessage,
   ConversationStep,
+  LLMMessage,
   LLMResponse,
   Session,
+  UserMessage,
 } from '../types'
 import { extractLlmRequestFromEvent } from '../utils/events'
 import { log, logError } from '../utils/logging'
@@ -60,9 +63,15 @@ export const postLlmResponseHandler = async (
           question: currentQuestion,
           storedMessage: session.storedMessage,
         }
+        const currentLlmMessage: UserMessage = session.newConversation
+          ? {
+            content: `I ${session.context.confidence} with the claim "${session.context.claim}". Let's have a conversation about epistemology: ${currentStepObject.label}.`,
+            role: 'user',
+          }
+          : (llmRequest.message as UserMessage)
         const response = await invokeModelMessage<LLMResponse>(
           prompt,
-          [...session.history, llmRequest.message],
+          [...(session.llmHistory ?? []), currentLlmMessage],
           llmContext,
         ).catch((error: unknown) => {
           logError(error)
@@ -72,6 +81,11 @@ export const postLlmResponseHandler = async (
           } as LLMResponse
         })
 
+        const newLlmHistory: LLMMessage[] = [
+          ...(session.llmHistory ?? []),
+          currentLlmMessage,
+          { content: response, role: 'assistant' } as AssistantMessage,
+        ]
         const assistantMessage = { content: response.message, role: 'assistant' } as ChatMessage
         const newMessages = session.newConversation ? [assistantMessage] : [llmRequest.message, assistantMessage]
         const newHistory = [...session.history, ...newMessages]
@@ -104,6 +118,7 @@ export const postLlmResponseHandler = async (
             generatedReasons: newGeneratedReasons,
           },
           history: newHistory,
+          llmHistory: newLlmHistory,
           incorrect_guesses:
             currentStepObject.value === 'guess reasons' && !response.correct ? session.incorrect_guesses + 1 : 0,
         }

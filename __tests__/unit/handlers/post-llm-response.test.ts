@@ -1,18 +1,9 @@
-import {
-  assistantMessage,
-  llmRequest,
-  llmResponse,
-  newAssistantMessage,
-  prompt,
-  session,
-  sessionId,
-  userMessage,
-} from '../__mocks__'
+import { llmRequest, llmResponse, newAssistantMessage, prompt, session, sessionId, userMessage } from '../__mocks__'
 import eventJson from '@events/post-llm-response.json'
 import { postLlmResponseHandler } from '@handlers/post-llm-response'
 import * as bedrock from '@services/bedrock'
 import * as dynamodb from '@services/dynamodb'
-import { APIGatewayProxyEventV2, ChatMessage, Session } from '@types'
+import { APIGatewayProxyEventV2, AssistantMessage, ChatMessage, Session, UserMessage } from '@types'
 import * as events from '@utils/events'
 import status from '@utils/status'
 
@@ -35,6 +26,11 @@ describe('post-llm-response', () => {
       ...session.context,
     },
     history: [...session.history, userMessage, newAssistantMessage],
+    llmHistory: [
+      ...session.llmHistory,
+      userMessage as UserMessage,
+      { content: llmResponse, role: 'assistant' } as AssistantMessage,
+    ],
     question: session.question + 1,
   }
   const expectedResponse = {
@@ -53,6 +49,11 @@ describe('post-llm-response', () => {
   })
 
   describe('postLlmResponseHandler', () => {
+    const synthesizedMessage: UserMessage = {
+      content: 'I strongly agree with the claim "The Holy Roman Empire was neither Holy nor Roman nor an Empire.". Let\'s have a conversation about epistemology: Confidence.',
+      role: 'user',
+    }
+
     it('returns the response from the LLM', async () => {
       const result = await postLlmResponseHandler(event)
 
@@ -63,7 +64,7 @@ describe('post-llm-response', () => {
     it('passes connect arguments to LLM', async () => {
       await postLlmResponseHandler(event)
 
-      expect(bedrock.invokeModelMessage).toHaveBeenCalledWith(prompt, [userMessage, assistantMessage, userMessage], {
+      expect(bedrock.invokeModelMessage).toHaveBeenCalledWith(prompt, [...session.llmHistory, userMessage], {
         changedConfidence: undefined,
         claim: session.context.claim,
         confidence: session.context.confidence,
@@ -83,7 +84,7 @@ describe('post-llm-response', () => {
       jest.mocked(dynamodb).getSessionById.mockResolvedValueOnce(sessionNewConversation)
       await postLlmResponseHandler(event)
 
-      expect(bedrock.invokeModelMessage).toHaveBeenCalledWith(prompt, [userMessage, assistantMessage, userMessage], {
+      expect(bedrock.invokeModelMessage).toHaveBeenCalledWith(prompt, [...session.llmHistory, userMessage], {
         changedConfidence: 'Changed confidence from agree to strongly agree',
         claim: session.context.claim,
         generatedReasons: session.context.generatedReasons,
@@ -107,7 +108,7 @@ describe('post-llm-response', () => {
       jest.mocked(dynamodb).getSessionById.mockResolvedValueOnce(sessionNewConversation)
       await postLlmResponseHandler(event)
 
-      expect(bedrock.invokeModelMessage).toHaveBeenCalledWith(prompt, [userMessage, assistantMessage, userMessage], {
+      expect(bedrock.invokeModelMessage).toHaveBeenCalledWith(prompt, [...session.llmHistory, userMessage], {
         changedConfidence: 'Kept confidence at disagree',
         claim: session.context.claim,
         generatedReasons: session.context.generatedReasons,
@@ -145,6 +146,11 @@ describe('post-llm-response', () => {
       const expectedSession = {
         ...updatedSession,
         history: [...session.history, newAssistantMessage],
+        llmHistory: [
+          ...session.llmHistory,
+          synthesizedMessage,
+          { content: llmResponse, role: 'assistant' } as AssistantMessage,
+        ],
       }
       const newConversationResponse = {
         ...expectedResponse,
@@ -168,6 +174,11 @@ describe('post-llm-response', () => {
         },
         currentStep: 'probe reasons',
         dividers: { '0': { label: 'Introduction' }, '4': { label: 'Reasons' } },
+        llmHistory: [
+          ...session.llmHistory,
+          userMessage as UserMessage,
+          { content: finishedLlmResponse, role: 'assistant' } as AssistantMessage,
+        ],
         newConversation: true,
         question: 0,
       }
@@ -196,6 +207,11 @@ describe('post-llm-response', () => {
         },
         currentStep: 'probe reasons',
         dividers: { '0': { label: 'Introduction' }, '4': { label: 'Reasons' } },
+        llmHistory: [
+          ...session.llmHistory,
+          userMessage as UserMessage,
+          { content: finishedLlmResponse, role: 'assistant' } as AssistantMessage,
+        ],
         newConversation: true,
         question: 1,
       }
@@ -212,6 +228,11 @@ describe('post-llm-response', () => {
       const expectedSession = {
         ...updatedSession,
         currentStep: 'end',
+        llmHistory: [
+          ...session.llmHistory,
+          userMessage as UserMessage,
+          { content: finishedLlmResponse, role: 'assistant' } as AssistantMessage,
+        ],
         newConversation: true,
         question: 0,
       }
@@ -232,7 +253,7 @@ describe('post-llm-response', () => {
       jest.mocked(dynamodb).getSessionById.mockResolvedValueOnce(sessionGuessReasons)
       await postLlmResponseHandler(event)
 
-      expect(bedrock.invokeModelMessage).toHaveBeenCalledWith(prompt, [userMessage, assistantMessage, userMessage], {
+      expect(bedrock.invokeModelMessage).toHaveBeenCalledWith(prompt, [...session.llmHistory, userMessage], {
         claim: session.context.claim,
         confidence: session.context.confidence,
         generatedReasons: session.context.generatedReasons,
@@ -262,6 +283,11 @@ describe('post-llm-response', () => {
         ...updatedSession,
         currentStep: 'probe confidence',
         dividers: { '0': { label: 'Introduction' }, '4': { label: 'Confidence' } },
+        llmHistory: [
+          ...session.llmHistory,
+          userMessage as UserMessage,
+          { content: finishedLlmResponse, role: 'assistant' } as AssistantMessage,
+        ],
         newConversation: false,
         question: 1,
       }
@@ -276,6 +302,54 @@ describe('post-llm-response', () => {
 
       expect(dynamodb.setSessionById).toHaveBeenCalledWith(sessionId, expectedSession)
       expect(result).toEqual({ ...status.OK, body: JSON.stringify(newConversationResponse) })
+    })
+
+    it('uses llmHistory for the LLM call instead of history', async () => {
+      await postLlmResponseHandler(event)
+
+      expect(bedrock.invokeModelMessage).toHaveBeenCalledWith(
+        prompt,
+        [...session.llmHistory, userMessage],
+        expect.any(Object),
+      )
+    })
+
+    it('synthesizes a first user message into the LLM call when newConversation is true', async () => {
+      const sessionNewConversation = { ...questionSession, newConversation: true }
+      jest.mocked(dynamodb).getSessionById.mockResolvedValueOnce(sessionNewConversation)
+
+      await postLlmResponseHandler(event)
+
+      expect(bedrock.invokeModelMessage).toHaveBeenCalledWith(
+        prompt,
+        [...session.llmHistory, synthesizedMessage],
+        expect.any(Object),
+      )
+    })
+
+    it('saves both currentLlmMessage and LLMResponse to llmHistory after call', async () => {
+      await postLlmResponseHandler(event)
+
+      expect(dynamodb.setSessionById).toHaveBeenCalledWith(
+        sessionId,
+        expect.objectContaining({
+          llmHistory: [...session.llmHistory, userMessage, { content: llmResponse, role: 'assistant' }],
+        }),
+      )
+    })
+
+    it('saves synthesized message and LLMResponse to llmHistory for new conversations', async () => {
+      const sessionNewConversation = { ...questionSession, newConversation: true }
+      jest.mocked(dynamodb).getSessionById.mockResolvedValueOnce(sessionNewConversation)
+
+      await postLlmResponseHandler(event)
+
+      expect(dynamodb.setSessionById).toHaveBeenCalledWith(
+        sessionId,
+        expect.objectContaining({
+          llmHistory: [...session.llmHistory, synthesizedMessage, { content: llmResponse, role: 'assistant' }],
+        }),
+      )
     })
 
     it('returns BAD_REQUEST when the event is invalid', async () => {
