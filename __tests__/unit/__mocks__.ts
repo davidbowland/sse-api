@@ -2,6 +2,7 @@
 import { confidenceLevels } from '@assets/confidence-levels'
 import { conversationSteps } from '@assets/conversation-steps'
 import {
+  AssistantMessage,
   ChatMessage,
   ConfidenceChangeRequest,
   LLMRequest,
@@ -11,6 +12,7 @@ import {
   PromptId,
   Session,
   SessionId,
+  UserMessage,
 } from '@types'
 
 // Bedrock
@@ -119,6 +121,90 @@ export const prompt: Prompt = {
   contents: 'You are a helpful assistant. ${data}',
 }
 
+export const promptConfigWithThinking: PromptConfig = {
+  anthropicVersion: 'bedrock-2023-05-31',
+  maxTokens: 50000,
+  model: 'us.anthropic.claude-sonnet-4-6',
+  thinkingBudgetTokens: 40000,
+}
+
+export const promptWithThinking: Prompt = {
+  config: promptConfigWithThinking,
+  contents: 'You are a helpful assistant. ${data}',
+}
+
+export const invokeModelThinkingResponseData = {
+  id: 'msg_bdrk_thinking_01',
+  type: 'message',
+  role: 'assistant',
+  model: 'us.anthropic.claude-sonnet-4-6',
+  content: [
+    {
+      type: 'thinking',
+      thinking: 'Let me consider the instructions carefully before responding.',
+    },
+    {
+      type: 'text',
+      text: '{"suggestions":["Claim A","Claim B"]}',
+    },
+  ],
+  stop_reason: 'end_turn',
+  stop_sequence: null,
+  usage: { input_tokens: 3398, output_tokens: 10 },
+}
+
+export const invokeModelThinkingResponse = {
+  $metadata: {
+    attempts: 1,
+    cfId: undefined,
+    extendedRequestId: undefined,
+    httpStatusCode: 200,
+    requestId: 'fragglerock-thinking',
+    retryDelay: 0,
+    statusCode: 200,
+    success: true,
+    totalRetryDelay: 0,
+  },
+  body: new TextEncoder().encode(JSON.stringify(invokeModelThinkingResponseData)),
+}
+
+export const invokeModelNoTextBlockResponseData = {
+  id: 'msg_bdrk_no_text_01',
+  type: 'message',
+  role: 'assistant',
+  model: 'us.anthropic.claude-sonnet-4-6',
+  content: [
+    {
+      type: 'thinking',
+      thinking: 'I am thinking...',
+    },
+  ],
+  stop_reason: 'max_tokens',
+  stop_sequence: null,
+  usage: { input_tokens: 100, output_tokens: 40000 },
+}
+
+export const invokeModelNoTextBlockResponse = {
+  $metadata: {
+    attempts: 1,
+    cfId: undefined,
+    extendedRequestId: undefined,
+    httpStatusCode: 200,
+    requestId: 'fragglerock-no-text',
+    retryDelay: 0,
+    statusCode: 200,
+    success: true,
+    totalRetryDelay: 0,
+  },
+  body: new TextEncoder().encode(JSON.stringify(invokeModelNoTextBlockResponseData)),
+}
+
+// LLM messages (defined before sessions because session references them)
+
+export const assistantLlmResponse: LLMResponse = { finished: false, message: 'Whatchu mean?' }
+export const assistantLlmMessage: AssistantMessage = { content: assistantLlmResponse, role: 'assistant' }
+export const userLlmMessage: UserMessage = { content: userMessage.content, role: 'user' }
+
 // Sessions
 
 export const sessionId: SessionId = '8675309'
@@ -137,6 +223,7 @@ export const session: Session = {
   expiration: 1743407368,
   history: [userMessage, assistantMessage],
   incorrect_guesses: 0,
+  llmHistory: [userLlmMessage, assistantLlmMessage],
   newConversation: false,
   originalConfidence: 'agree',
   question: 1,
@@ -156,6 +243,7 @@ export const newSession: Session = {
   expiration: 1742846971,
   history: [],
   incorrect_guesses: 0,
+  llmHistory: [],
   newConversation: true,
   originalConfidence: 'slightly agree',
   question: 0,

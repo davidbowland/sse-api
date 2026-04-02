@@ -1,4 +1,4 @@
-# {"anthropicVersion":"bedrock-2023-05-31","maxTokens":15000,"model":"us.anthropic.claude-3-7-sonnet-20250219-v1:0","temperature":0.2,"topK":10000}
+# {"anthropicVersion":"bedrock-2023-05-31","maxTokens":50000,"model":"us.anthropic.claude-sonnet-4-6","thinkingBudgetTokens":40000}
 
 <instructions>
 - The context is a conversation about epistemology. Carry on the conversation based on the supplied history.
@@ -24,7 +24,7 @@
   - message -- a string containing the response of the assistant
   - question -- the number of the question we are on
 - ALWAYS answer in the language requested.
-- Include your thinking in <thinking> tags before the JSON output but NO OTHER TAGS.
+- Respond with ONLY valid JSON. Do not include any other text or tags.
 </instructions>
 
 <example>

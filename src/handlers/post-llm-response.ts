@@ -1,31 +1,10 @@
-import { responsePromptId } from '../config'
-import { invokeModelMessage } from '../services/bedrock'
-import { getPromptById, getSessionById, setSessionById } from '../services/dynamodb'
-import {
-  APIGatewayProxyEventV2,
-  APIGatewayProxyResultV2,
-  ChatMessage,
-  ConversationStep,
-  LLMResponse,
-  Session,
-} from '../types'
+import { workerFunctionArn, responsePromptId } from '../config'
+import { getSessionById, setSessionById } from '../services/dynamodb'
+import { invokeLambda } from '../services/lambda'
+import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, Session } from '../types'
 import { extractLlmRequestFromEvent } from '../utils/events'
 import { log, logError } from '../utils/logging'
 import status from '../utils/status'
-
-const getDividers = (
-  session: Session,
-  currentStepObject: ConversationStep,
-  nextStepObject: ConversationStep,
-  history: ChatMessage[],
-) => {
-  if (session.overrideStep) {
-    return { ...session.dividers, [history.length]: { label: currentStepObject?.label } }
-  } else if (currentStepObject.isFinalStep) {
-    return session.dividers
-  }
-  return { ...session.dividers, [history.length]: { label: nextStepObject?.label } }
-}
 
 export const postLlmResponseHandler = async (
   event: APIGatewayProxyEventV2,
@@ -37,86 +16,23 @@ export const postLlmResponseHandler = async (
     try {
       const session = await getSessionById(sessionId)
       try {
-        const prompt = await getPromptById(responsePromptId)
-        const currentStepIndex = session.conversationSteps.findIndex((step) => step.value === session.currentStep)
-        const currentStepObject = session.conversationSteps[currentStepIndex]
-        const nextStepObject = session.conversationSteps[currentStepIndex + 1]
-        const changedConfidence =
-          session.context.confidence === session.originalConfidence
-            ? `Kept confidence at ${session.originalConfidence}`
-            : `Changed confidence from ${session.originalConfidence} to ${session.context.confidence}`
-        const currentQuestion =
-          currentStepObject.value === 'guess reasons' || currentStepObject.value === 'confidence changed'
-            ? undefined
-            : session.question + 1
-
-        const llmContext = {
-          ...session.context,
-          changedConfidence: currentStepObject.isFinalStep ? changedConfidence : undefined,
-          confidence: currentStepObject.isFinalStep ? undefined : session.context.confidence,
-          incorrect_guesses: currentStepObject.value === 'guess reasons' ? session.incorrect_guesses : undefined,
-          newConversation: session.newConversation,
-          possibleConfidenceLevels: session.context.possibleConfidenceLevels.map((level) => level.label),
-          question: currentQuestion,
-          storedMessage: session.storedMessage,
-        }
-        const response = await invokeModelMessage<LLMResponse>(
-          prompt,
-          [...session.history, llmRequest.message],
-          llmContext,
-        ).catch((error: unknown) => {
-          logError(error)
-          return {
-            finished: false,
-            message: "I'm sorry, I had trouble generating a response. Would you please rephrase your last message?",
-          } as LLMResponse
-        })
-
-        const assistantMessage = { content: response.message, role: 'assistant' } as ChatMessage
-        const newMessages = session.newConversation ? [assistantMessage] : [llmRequest.message, assistantMessage]
-        const newHistory = [...session.history, ...newMessages]
-
-        const newGeneratedReasons =
-          session.context.generatedReasons.length === 0 && response.reasons
-            ? response.reasons
-            : session.context.generatedReasons
-
-        const finishedSession = response.finished
-          ? {
-            currentStep:
-                !session.overrideStep && !currentStepObject.isFinalStep ? nextStepObject.value : session.currentStep,
-            dividers: getDividers(session, currentStepObject, nextStepObject, newHistory),
-            newConversation: !session.overrideStep,
-            overrideStep: undefined,
-            question: session.overrideStep ? session.question : Math.max(0, session.question - 1),
-            storedMessage: undefined,
-          }
-          : {
-            newConversation: false,
-            question: currentQuestion === undefined ? session.question : currentQuestion,
-          }
-
-        const updatedSession: Session = {
-          ...session,
-          ...finishedSession,
-          context: {
-            ...session.context,
-            generatedReasons: newGeneratedReasons,
-          },
-          history: newHistory,
-          incorrect_guesses:
-            currentStepObject.value === 'guess reasons' && !response.correct ? session.incorrect_guesses + 1 : 0,
-        }
+        const loadingTimeout = Date.now() + 180_000
+        const updatedSession: Session = { ...session, loadingTimeout }
         await setSessionById(sessionId, updatedSession)
-
+        await invokeLambda(workerFunctionArn, {
+          promptId: responsePromptId,
+          sessionId,
+          userMessage: llmRequest.message,
+        })
         return {
           ...status.OK,
           body: JSON.stringify({
-            currentStep: updatedSession.currentStep,
-            dividers: updatedSession.dividers,
-            history: updatedSession.history,
-            newConversation: updatedSession.newConversation,
-            overrideStep: updatedSession.overrideStep,
+            currentStep: session.currentStep,
+            dividers: session.dividers,
+            history: session.history,
+            loadingTimeout,
+            newConversation: session.newConversation,
+            overrideStep: session.overrideStep,
           }),
         }
       } catch (error: unknown) {

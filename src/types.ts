@@ -47,8 +47,9 @@ export interface PromptConfig {
   anthropicVersion: string
   maxTokens: number
   model: string
-  temperature: number
-  topK: number
+  temperature?: number
+  topK?: number
+  thinkingBudgetTokens?: number
 }
 
 export interface Prompt {
@@ -68,6 +69,18 @@ export interface LLMResponse {
   message: string
   reasons?: string[]
 }
+
+export interface UserMessage {
+  content: string
+  role: 'user'
+}
+
+export interface AssistantMessage {
+  content: LLMResponse
+  role: 'assistant'
+}
+
+export type LLMMessage = UserMessage | AssistantMessage
 
 // Sessions
 
@@ -89,6 +102,8 @@ export interface Session {
   expiration: number
   history: ChatMessage[]
   incorrect_guesses: number
+  llmHistory: LLMMessage[]
+  loadingTimeout?: number
   newConversation: boolean
   originalConfidence: string
   overrideStep?: ConversationStep

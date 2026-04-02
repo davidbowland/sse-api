@@ -1,12 +1,11 @@
 import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime'
 
-import { ChatMessage, Prompt } from '../types'
+import { LLMMessage, Prompt } from '../types'
 import { log, logDebug } from '../utils/logging'
 
 const runtimeClient = new BedrockRuntimeClient({ region: 'us-east-1' })
 
-const MAX_MESSAGE_HISTORY_COUNT = 25
-const MAX_RECENT_MESSAGE_COUNT = 10
+const MAX_MESSAGE_HISTORY_COUNT = 30
 
 export const invokeModel = async <T = unknown>(
   prompt: Prompt,
@@ -19,30 +18,32 @@ export const invokeModel = async <T = unknown>(
   return invokeModelMessage<T>(promptWithContext, [{ content: data, role: 'user' }])
 }
 
-const getMessageHistory = (history: ChatMessage[]): ChatMessage[] => {
-  if (history.length <= MAX_RECENT_MESSAGE_COUNT) {
-    return history
-  }
-  const recentMessages = history.slice(-MAX_RECENT_MESSAGE_COUNT)
-  const userMessages = history.slice(0, -MAX_RECENT_MESSAGE_COUNT).filter((msg: ChatMessage) => msg.role === 'user')
-  return userMessages.concat(recentMessages).slice(-MAX_MESSAGE_HISTORY_COUNT)
-}
+const getMessageHistory = (history: LLMMessage[]): LLMMessage[] => history.slice(-MAX_MESSAGE_HISTORY_COUNT)
+
+const stripWrapping = (input: string): string =>
+  input.replace(/^\s*<thinking>[\s\S]*?<\/thinking>\s*|\s*```(?:json)?\s*|\s*```\s*$/gs, '').trim()
 
 export const invokeModelMessage = async <T = unknown>(
   prompt: Prompt,
-  history: ChatMessage[],
+  history: LLMMessage[],
   data?: Record<string, unknown>,
 ): Promise<T> => {
   const systemContent = data ? prompt.contents.replace('${data}', JSON.stringify(data)) : prompt.contents
   logDebug('Invoking model', { data, prompt, systemContent })
 
+  const thinkingConfig = prompt.config.thinkingBudgetTokens
+    ? { thinking: { type: 'enabled', budget_tokens: prompt.config.thinkingBudgetTokens } }
+    : { temperature: prompt.config.temperature, top_k: prompt.config.topK }
+
   const messageBody = {
     anthropic_version: prompt.config.anthropicVersion,
     max_tokens: prompt.config.maxTokens,
-    messages: getMessageHistory(history),
+    messages: getMessageHistory(history).map((msg) => ({
+      role: msg.role,
+      content: msg.role === 'assistant' ? JSON.stringify(msg.content) : msg.content,
+    })),
     system: systemContent,
-    temperature: prompt.config.temperature,
-    top_k: prompt.config.topK,
+    ...thinkingConfig,
   }
   log('Invoking model', {
     history1: history.slice(0, 10),
@@ -52,6 +53,7 @@ export const invokeModelMessage = async <T = unknown>(
     messages1: messageBody.messages.slice(0, 10),
     messages2: messageBody.messages.slice(10, 20),
     messages3: messageBody.messages.slice(20),
+    model: prompt.config.model,
   })
   const command = new InvokeModelCommand({
     body: new TextEncoder().encode(JSON.stringify(messageBody)), // new Uint8Array(), // e.g. Buffer.from("") or new TextEncoder().encode("")
@@ -60,8 +62,11 @@ export const invokeModelMessage = async <T = unknown>(
   })
   const response = await runtimeClient.send(command)
   const modelResponse = JSON.parse(new TextDecoder().decode(response.body))
-  log('Model response', { modelResponse, text: modelResponse.content[0].text })
-  return JSON.parse(
-    modelResponse.content[0].text.replace(/(^\s*<thinking>.*?<\/thinking>\s*|^\s*|\s*`(json)?\s*|\s*$)/gs, ''),
-  )
+  const textBlock = modelResponse.content.find((b: { type: string }) => b.type === 'text')
+  if (!textBlock) {
+    log('Model response missing text block', { modelResponse })
+    throw new Error('Bedrock response contained no text block')
+  }
+  log('Model response', { modelResponse, text: textBlock.text })
+  return JSON.parse(stripWrapping(textBlock.text))
 }
