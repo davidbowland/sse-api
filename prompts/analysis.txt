@@ -1,4 +1,4 @@
-# {"anthropicVersion":"bedrock-2023-05-31","maxTokens":50000,"model":"us.anthropic.claude-sonnet-4-6","thinkingBudgetTokens":40000}
+# {"anthropicVersion":"bedrock-2023-05-31","maxTokens":50000,"model":"us.anthropic.claude-sonnet-4-6","thinkingBudgetTokens":30000}
 
 <instructions>
 - The context is a conversation about epistemology.
