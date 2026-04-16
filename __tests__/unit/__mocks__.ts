@@ -17,7 +17,7 @@ import {
 
 // Bedrock
 
-export const invokeModelSuggestedClaims = [
+export const invokeModelSuggestClaims = [
   'Voter ID requirements strengthen democracy.',
   'Museums in federal agencies are a waste of taxpayer money.',
   'Universities should lose federal funding over antisemitism.',
@@ -26,7 +26,7 @@ export const invokeModelSuggestedClaims = [
   'Congress should abolish collective bargaining for federal employees.',
 ]
 
-export const invokeModelSuggestedClaimsResponseData = {
+export const invokeModelSuggestClaimsResponseData = {
   id: 'msg_bdrk_01YA7pmVfUZvZM9reruSimYT',
   type: 'message',
   role: 'assistant',
@@ -52,7 +52,7 @@ export const invokeModelSuggestedClaimsResponseData = {
   usage: { input_tokens: 3398, output_tokens: 99 },
 }
 
-export const invokeModelSuggestedClaimsResponse = {
+export const invokeModelSuggestClaimsResponse = {
   $metadata: {
     attempts: 1,
     cfId: undefined,
@@ -64,7 +64,7 @@ export const invokeModelSuggestedClaimsResponse = {
     success: true,
     totalRetryDelay: 0,
   },
-  body: new TextEncoder().encode(JSON.stringify(invokeModelSuggestedClaimsResponseData)),
+  body: new TextEncoder().encode(JSON.stringify(invokeModelSuggestClaimsResponseData)),
 }
 
 export const invokeModelInvalidResponseData = {

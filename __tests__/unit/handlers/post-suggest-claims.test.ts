@@ -1,16 +1,12 @@
-import { claimSources, invokeModelSuggestedClaims, prompt } from '../__mocks__'
+import { invokeModelSuggestClaims } from '../__mocks__'
 import eventJson from '@events/post-suggest-claims.json'
 import { postSuggestClaimsHandler } from '@handlers/post-suggest-claims'
-import * as bedrock from '@services/bedrock'
-import * as claimSourcesService from '@services/claim-sources'
-import * as dynamodb from '@services/dynamodb'
+import * as suggestClaimsService from '@services/suggest-claims'
 import { APIGatewayProxyEventV2 } from '@types'
 import * as events from '@utils/events'
 import status from '@utils/status'
 
-jest.mock('@services/bedrock')
-jest.mock('@services/dynamodb')
-jest.mock('@services/claim-sources')
+jest.mock('@services/suggest-claims')
 jest.mock('@utils/events')
 jest.mock('@utils/logging')
 
@@ -18,9 +14,7 @@ describe('post-suggest-claims', () => {
   const event = eventJson as unknown as APIGatewayProxyEventV2
 
   beforeAll(() => {
-    jest.mocked(bedrock).invokeModel.mockResolvedValue({ suggestions: invokeModelSuggestedClaims })
-    jest.mocked(claimSourcesService).getClaimSources.mockResolvedValue(claimSources)
-    jest.mocked(dynamodb).getPromptById.mockResolvedValue(prompt)
+    jest.mocked(suggestClaimsService).getCachedOrGenerateClaims.mockResolvedValue(invokeModelSuggestClaims)
     jest.mocked(events).extractSuggestClaimsRequestFromEvent.mockReturnValue({ language: 'en-US' })
   })
 
@@ -29,7 +23,13 @@ describe('post-suggest-claims', () => {
       const result: any = await postSuggestClaimsHandler(event)
 
       expect(result).toEqual(expect.objectContaining(status.OK))
-      expect(JSON.parse(result.body)).toEqual({ claims: invokeModelSuggestedClaims })
+      expect(JSON.parse(result.body)).toEqual({ claims: invokeModelSuggestClaims })
+    })
+
+    it('calls getCachedOrGenerateClaims with the correct language', async () => {
+      await postSuggestClaimsHandler(event)
+
+      expect(suggestClaimsService.getCachedOrGenerateClaims).toHaveBeenCalledWith('en-US')
     })
 
     it('returns BAD_REQUEST when extractSuggestClaimsRequestFromEvent throws', async () => {
@@ -41,22 +41,8 @@ describe('post-suggest-claims', () => {
       expect(result).toEqual(expect.objectContaining(status.BAD_REQUEST))
     })
 
-    it('returns INTERNAL_SERVER_ERROR when getClaimSources rejects', async () => {
-      jest.mocked(claimSourcesService).getClaimSources.mockRejectedValueOnce(new Error('Rejected'))
-      const result = await postSuggestClaimsHandler(event)
-
-      expect(result).toEqual(expect.objectContaining(status.INTERNAL_SERVER_ERROR))
-    })
-
-    it('returns INTERNAL_SERVER_ERROR when getPromptById rejects', async () => {
-      jest.mocked(dynamodb).getPromptById.mockRejectedValueOnce(new Error('Rejected'))
-      const result = await postSuggestClaimsHandler(event)
-
-      expect(result).toEqual(expect.objectContaining(status.INTERNAL_SERVER_ERROR))
-    })
-
-    it('returns INTERNAL_SERVER_ERROR when invokeModel rejects', async () => {
-      jest.mocked(bedrock).invokeModel.mockRejectedValueOnce(new Error('Rejected'))
+    it('returns INTERNAL_SERVER_ERROR when getCachedOrGenerateClaims rejects', async () => {
+      jest.mocked(suggestClaimsService).getCachedOrGenerateClaims.mockRejectedValueOnce(new Error('Rejected'))
       const result = await postSuggestClaimsHandler(event)
 
       expect(result).toEqual(expect.objectContaining(status.INTERNAL_SERVER_ERROR))

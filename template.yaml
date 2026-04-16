@@ -27,6 +27,7 @@ Mappings:
       project: sse
       promptTable: sse-api-prompts
       sessionTable: sse-api-sessions
+      suggestClaimsTable: sse-api-suggest-claims
       zoneId: Z072422417XWM8PIXXSFA
     test:
       certificate: 6a48cba7-feb9-4de5-8cbf-d383140fcdef
@@ -36,6 +37,7 @@ Mappings:
       project: sse-test
       promptTable: sse-api-prompts-test
       sessionTable: sse-api-sessions-test
+      suggestClaimsTable: sse-api-suggest-claims-test
       zoneId: Z01312547RGU1BYKIJXY
 
 Resources:
@@ -997,6 +999,8 @@ Resources:
         - AWSLambdaBasicExecutionRole
         - DynamoDBReadPolicy:
             TableName: !Ref PromptTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SuggestClaimsTable
         # Allow invoking a model in Bedrock
         - Version: 2012-10-17
           Statement:
@@ -1010,7 +1014,11 @@ Resources:
       Environment:
         Variables:
           DYNAMODB_PROMPT_TABLE_NAME: !Ref PromptTable
+          DYNAMODB_SUGGEST_CLAIMS_TABLE_NAME: !Ref SuggestClaimsTable
+          SUGGEST_CLAIMS_CACHE_HOURS: 4
           SUGGEST_CLAIMS_COUNT: 20
+          SUGGEST_CLAIMS_GENERATION_STALE_SECONDS: 180
+          SUGGEST_CLAIMS_POLL_DEADLINE_SECONDS: 30
           SUGGEST_CLAIMS_PROMPT_ID: suggest-claims
           SUGGEST_CLAIMS_URL: !Ref SuggestClaimsUrl
       Events:
@@ -1169,6 +1177,32 @@ Resources:
         AttributeName: Expiration
         Enabled: true
       TableName: !FindInMap [EnvironmentMap, !Ref Environment, sessionTable]
+      Tags:
+        - Key: 'created-by'
+          Value: 'sse-api'
+        - Key: 'created-for'
+          Value: 'sse'
+        - Key: 'environment'
+          Value: !Ref Environment
+
+  SuggestClaimsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: DateKey
+          AttributeType: S
+        - AttributeName: CreatedAt
+          AttributeType: N
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+        - AttributeName: DateKey
+          KeyType: HASH
+        - AttributeName: CreatedAt
+          KeyType: RANGE
+      TimeToLiveSpecification:
+        AttributeName: Expiration
+        Enabled: true
+      TableName: !FindInMap [EnvironmentMap, !Ref Environment, suggestClaimsTable]
       Tags:
         - Key: 'created-by'
           Value: 'sse-api'

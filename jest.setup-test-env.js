@@ -10,6 +10,13 @@ process.env.VALIDATE_CLAIM_PROMPT_ID = 'validate-claim-prompt'
 
 process.env.DYNAMODB_PROMPT_TABLE_NAME = 'prompt-table'
 process.env.DYNAMODB_SESSION_TABLE_NAME = 'session-table'
+process.env.DYNAMODB_SUGGEST_CLAIMS_TABLE_NAME = 'suggest-claims-table'
+
+// Suggest claims cache
+
+process.env.SUGGEST_CLAIMS_CACHE_HOURS = '4'
+process.env.SUGGEST_CLAIMS_GENERATION_STALE_SECONDS = '180'
+process.env.SUGGEST_CLAIMS_POLL_DEADLINE_SECONDS = '30'
 
 // IDs
 

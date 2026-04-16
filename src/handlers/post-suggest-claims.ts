@@ -1,8 +1,5 @@
-import { suggestClaimsPromptId } from '../config'
-import { invokeModel } from '../services/bedrock'
-import { getClaimSources } from '../services/claim-sources'
-import { getPromptById } from '../services/dynamodb'
-import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, SuggestClaimsResponse } from '../types'
+import { getCachedOrGenerateClaims } from '../services/suggest-claims'
+import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from '../types'
 import { extractSuggestClaimsRequestFromEvent } from '../utils/events'
 import { log, logError } from '../utils/logging'
 import status from '../utils/status'
@@ -14,16 +11,9 @@ export const postSuggestClaimsHandler = async (
   try {
     const suggestClaimsRequest = extractSuggestClaimsRequestFromEvent(event)
     try {
-      const claimSources = await getClaimSources()
-      const prompt = await getPromptById(suggestClaimsPromptId)
-      const response = await invokeModel<SuggestClaimsResponse>(
-        prompt,
-        claimSources.join('\n'),
-        suggestClaimsRequest as any,
-      )
-      log('Generated claims', { claimSources, suggestions: response.suggestions })
-
-      return { ...status.OK, body: JSON.stringify({ claims: response.suggestions }) }
+      const claims = await getCachedOrGenerateClaims(suggestClaimsRequest.language)
+      log('Returning claims', { claims })
+      return { ...status.OK, body: JSON.stringify({ claims }) }
     } catch (error: unknown) {
       logError(error)
       return status.INTERNAL_SERVER_ERROR

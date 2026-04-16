@@ -121,6 +121,13 @@ export interface SuggestClaimsResponse {
   suggestions: string[]
 }
 
+export interface SuggestClaimsRecord {
+  claims?: string[]
+  createdAt: number
+  generating?: boolean
+  language: string
+}
+
 // Validation
 
 export interface ValidationResponse {

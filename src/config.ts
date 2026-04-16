@@ -17,6 +17,16 @@ export const validateClaimPromptId = process.env.VALIDATE_CLAIM_PROMPT_ID as str
 
 export const dynamodbPromptTableName = process.env.DYNAMODB_PROMPT_TABLE_NAME as string
 export const dynamodbSessionTableName = process.env.DYNAMODB_SESSION_TABLE_NAME as string
+export const dynamodbSuggestClaimsTableName = process.env.DYNAMODB_SUGGEST_CLAIMS_TABLE_NAME as string
+
+// Suggest claims cache
+
+export const suggestClaimsCacheHours = parseInt(process.env.SUGGEST_CLAIMS_CACHE_HOURS as string, 10)
+export const suggestClaimsGenerationStaleSeconds = parseInt(
+  process.env.SUGGEST_CLAIMS_GENERATION_STALE_SECONDS as string,
+  10,
+)
+export const suggestClaimsPollDeadlineSeconds = parseInt(process.env.SUGGEST_CLAIMS_POLL_DEADLINE_SECONDS as string, 10)
 
 // IDs
 

@@ -2,8 +2,8 @@ import {
   assistantLlmMessage,
   assistantLlmResponse,
   invokeModelNoTextBlockResponse,
-  invokeModelSuggestedClaims,
-  invokeModelSuggestedClaimsResponse,
+  invokeModelSuggestClaims,
+  invokeModelSuggestClaimsResponse,
   invokeModelThinkingResponse,
   prompt,
   promptWithThinking,
@@ -30,13 +30,13 @@ describe('bedrock', () => {
 
   describe('invokeModel', () => {
     beforeAll(() => {
-      mockSend.mockResolvedValue(invokeModelSuggestedClaimsResponse)
+      mockSend.mockResolvedValue(invokeModelSuggestClaimsResponse)
     })
 
     it('should invoke the correct model based on the prompt', async () => {
       const result = await invokeModel(prompt, data)
 
-      expect(result).toEqual({ suggestions: invokeModelSuggestedClaims })
+      expect(result).toEqual({ suggestions: invokeModelSuggestClaims })
       expect(mockSend).toHaveBeenCalledWith({
         body: new TextEncoder().encode(
           JSON.stringify({
@@ -60,7 +60,7 @@ describe('bedrock', () => {
       }
       const result = await invokeModel(promptWithContext, data, { foo: 'bar' })
 
-      expect(result).toEqual({ suggestions: invokeModelSuggestedClaims })
+      expect(result).toEqual({ suggestions: invokeModelSuggestClaims })
       expect(mockSend).toHaveBeenCalledWith({
         body: new TextEncoder().encode(
           JSON.stringify({
@@ -86,12 +86,12 @@ describe('bedrock', () => {
     ]
 
     beforeAll(() => {
-      mockSend.mockResolvedValue(invokeModelSuggestedClaimsResponse)
+      mockSend.mockResolvedValue(invokeModelSuggestClaimsResponse)
     })
 
     it('should invoke the correct model based on the prompt', async () => {
       const result = await invokeModelMessage(prompt, history)
-      expect(result).toEqual({ suggestions: invokeModelSuggestedClaims })
+      expect(result).toEqual({ suggestions: invokeModelSuggestClaims })
       expect(mockSend).toHaveBeenCalledWith({
         body: new TextEncoder().encode(
           JSON.stringify({
@@ -109,7 +109,7 @@ describe('bedrock', () => {
     })
 
     it('should stringify assistant message content and pass user message content as-is', async () => {
-      mockSend.mockResolvedValue(invokeModelSuggestedClaimsResponse)
+      mockSend.mockResolvedValue(invokeModelSuggestClaimsResponse)
       const llmHistory: LLMMessage[] = [assistantLlmMessage, userLlmMessage]
       await invokeModelMessage(prompt, llmHistory)
 
@@ -127,7 +127,7 @@ describe('bedrock', () => {
         contents: 'My data should go here: ${data}',
       }
       const result = await invokeModelMessage(promptWithData, history, { foo: 'bar' })
-      expect(result).toEqual({ suggestions: invokeModelSuggestedClaims })
+      expect(result).toEqual({ suggestions: invokeModelSuggestClaims })
       expect(mockSend).toHaveBeenCalledWith({
         body: new TextEncoder().encode(
           JSON.stringify({
@@ -145,7 +145,7 @@ describe('bedrock', () => {
     })
 
     it('should truncate history to the last 30 messages', async () => {
-      mockSend.mockResolvedValue(invokeModelSuggestedClaimsResponse)
+      mockSend.mockResolvedValue(invokeModelSuggestClaimsResponse)
       const longHistory: LLMMessage[] = Array.from({ length: 35 }, (_, i) => ({
         content: `message ${i}`,
         role: 'user' as const,
