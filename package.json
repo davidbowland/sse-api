@@ -1,6 +1,6 @@
 {
   "name": "sse-api",
-  "version": "1.28.0",
+  "version": "1.29.0",
   "description": "Lambda for SSE API",
   "author": "David Bowland",
   "engines": {
