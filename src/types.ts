@@ -47,9 +47,7 @@ export interface PromptConfig {
   anthropicVersion: string
   maxTokens: number
   model: string
-  temperature?: number
-  topK?: number
-  thinkingBudgetTokens?: number
+  thinkingBudgetTokens: number
 }
 
 export interface Prompt {

@@ -30,8 +30,12 @@ export const invokeModelSuggestClaimsResponseData = {
   id: 'msg_bdrk_01YA7pmVfUZvZM9reruSimYT',
   type: 'message',
   role: 'assistant',
-  model: 'claude-3-5-sonnet-20241022',
+  model: 'us.anthropic.claude-sonnet-4-6',
   content: [
+    {
+      type: 'thinking',
+      thinking: 'Let me generate some politically diverse claims.',
+    },
     {
       type: 'text',
       text:
@@ -71,8 +75,12 @@ export const invokeModelInvalidResponseData = {
   id: 'msg_bdrk_01YA7pmVfUZvZM9reruSimYT',
   type: 'message',
   role: 'assistant',
-  model: 'claude-3-5-sonnet-20241022',
+  model: 'us.anthropic.claude-sonnet-4-6',
   content: [
+    {
+      type: 'thinking',
+      thinking: 'Processing the request...',
+    },
     {
       type: 'text',
       text: 'this-is-invalid-json',
@@ -108,28 +116,15 @@ export const userMessage: ChatMessage = { content: 'I think I saw a cat', role: 
 
 export const promptConfig: PromptConfig = {
   anthropicVersion: 'bedrock-2023-05-31',
-  maxTokens: 256,
-  model: 'the-best-ai:1.0',
-  temperature: 0.5,
-  topK: 250,
+  maxTokens: 50000,
+  model: 'us.anthropic.claude-sonnet-4-6',
+  thinkingBudgetTokens: 40000,
 }
 
 export const promptId: PromptId = '5253'
 
 export const prompt: Prompt = {
   config: promptConfig,
-  contents: 'You are a helpful assistant. ${data}',
-}
-
-export const promptConfigWithThinking: PromptConfig = {
-  anthropicVersion: 'bedrock-2023-05-31',
-  maxTokens: 50000,
-  model: 'us.anthropic.claude-sonnet-4-6',
-  thinkingBudgetTokens: 40000,
-}
-
-export const promptWithThinking: Prompt = {
-  config: promptConfigWithThinking,
   contents: 'You are a helpful assistant. ${data}',
 }
 

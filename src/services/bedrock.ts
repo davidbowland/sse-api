@@ -20,8 +20,10 @@ export const invokeModel = async <T = unknown>(
 
 const getMessageHistory = (history: LLMMessage[]): LLMMessage[] => history.slice(-MAX_MESSAGE_HISTORY_COUNT)
 
-const stripWrapping = (input: string): string =>
-  input.replace(/^\s*<thinking>[\s\S]*?<\/thinking>\s*|\s*```(?:json)?\s*|\s*```\s*$/gs, '').trim()
+const extractJson = (input: string): string => {
+  const cleaned = input.replace(/(^\s*|\s*```(?:json)?\s*|\s*$)/gs, '')
+  return cleaned.match(/{.*}/s)?.[0] ?? cleaned
+}
 
 export const invokeModelMessage = async <T = unknown>(
   prompt: Prompt,
@@ -31,10 +33,6 @@ export const invokeModelMessage = async <T = unknown>(
   const systemContent = data ? prompt.contents.replace('${data}', JSON.stringify(data)) : prompt.contents
   logDebug('Invoking model', { data, prompt, systemContent })
 
-  const thinkingConfig = prompt.config.thinkingBudgetTokens
-    ? { thinking: { type: 'enabled', budget_tokens: prompt.config.thinkingBudgetTokens } }
-    : { temperature: prompt.config.temperature, top_k: prompt.config.topK }
-
   const messageBody = {
     anthropic_version: prompt.config.anthropicVersion,
     max_tokens: prompt.config.maxTokens,
@@ -43,7 +41,7 @@ export const invokeModelMessage = async <T = unknown>(
       content: msg.role === 'assistant' ? JSON.stringify(msg.content) : msg.content,
     })),
     system: systemContent,
-    ...thinkingConfig,
+    thinking: { type: 'enabled', budget_tokens: prompt.config.thinkingBudgetTokens },
   }
   log('Invoking model', {
     history1: history.slice(0, 10),
@@ -56,7 +54,7 @@ export const invokeModelMessage = async <T = unknown>(
     model: prompt.config.model,
   })
   const command = new InvokeModelCommand({
-    body: new TextEncoder().encode(JSON.stringify(messageBody)), // new Uint8Array(), // e.g. Buffer.from("") or new TextEncoder().encode("")
+    body: new TextEncoder().encode(JSON.stringify(messageBody)),
     contentType: 'application/json',
     modelId: prompt.config.model,
   })
@@ -68,5 +66,5 @@ export const invokeModelMessage = async <T = unknown>(
     throw new Error('Bedrock response contained no text block')
   }
   log('Model response', { modelResponse, text: textBlock.text })
-  return JSON.parse(stripWrapping(textBlock.text))
+  return JSON.parse(extractJson(textBlock.text))
 }
