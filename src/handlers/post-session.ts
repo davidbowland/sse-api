@@ -2,6 +2,7 @@ import { validateClaimPromptId } from '../config'
 import { invokeModel } from '../services/bedrock'
 import { getPromptById, getSessionById, setSessionById } from '../services/dynamodb'
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, ValidationResponse } from '../types'
+import { extractAuthFromToken } from '../utils/auth'
 import { extractSessionFromEvent } from '../utils/events'
 import { getNextId } from '../utils/id-generator'
 import { log, logError } from '../utils/logging'
@@ -11,6 +12,13 @@ export const postSessionHandler = async (event: APIGatewayProxyEventV2): Promise
   log('Received event', { ...event, body: undefined })
   try {
     const session = extractSessionFromEvent(event)
+    const auth = await extractAuthFromToken(event)
+
+    // Token was provided but invalid — reject rather than silently degrade to anonymous
+    if (auth.tokenPresent && !auth.isAuthenticated) {
+      return { ...status.UNAUTHORIZED, body: JSON.stringify({ message: 'Invalid authentication token' }) }
+    }
+
     try {
       const prompt = await getPromptById(validateClaimPromptId)
       const validation = await invokeModel<ValidationResponse>(prompt, session.context.claim, {
@@ -22,8 +30,9 @@ export const postSessionHandler = async (event: APIGatewayProxyEventV2): Promise
         return { ...status.BAD_REQUEST, body: JSON.stringify({ message: 'Inappropriate claim content' }) }
       }
 
+      const sessionWithUser = auth.googleSub ? { ...session, userId: auth.googleSub } : session
       const sessionId = await getNextId(getSessionById)
-      await setSessionById(sessionId, session)
+      await setSessionById(sessionId, sessionWithUser)
 
       return { ...status.CREATED, body: JSON.stringify({ sessionId }) }
     } catch (error: unknown) {

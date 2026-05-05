@@ -1,5 +1,5 @@
 import { workerFunctionArn, responsePromptId } from '../config'
-import { getSessionById, setSessionById } from '../services/dynamodb'
+import { getSessionById, setSessionById, VersionConflictError } from '../services/dynamodb'
 import { invokeLambda } from '../services/lambda'
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, Session } from '../types'
 import { extractLlmRequestFromEvent } from '../utils/events'
@@ -36,6 +36,9 @@ export const postLlmResponseHandler = async (
           }),
         }
       } catch (error: unknown) {
+        if (error instanceof VersionConflictError) {
+          return status.CONFLICT
+        }
         logError(error)
         return status.INTERNAL_SERVER_ERROR
       }

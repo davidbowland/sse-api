@@ -4,13 +4,16 @@ import {
   getLatestSuggestClaims,
   getPromptById,
   getSessionById,
+  getSessionsByUserId,
   setGeneratingSuggestClaims,
   setSessionById,
   setSuggestClaims,
+  VersionConflictError,
 } from '@services/dynamodb'
 
 const mockSend = jest.fn()
 jest.mock('@aws-sdk/client-dynamodb', () => ({
+  ...jest.requireActual('@aws-sdk/client-dynamodb'),
   DeleteItemCommand: jest.fn().mockImplementation((x) => x),
   DynamoDB: jest.fn(() => ({
     send: (...args) => mockSend(...args),
@@ -48,11 +51,29 @@ describe('dynamodb', () => {
   describe('getSessionById', () => {
     beforeAll(() => {
       mockSend.mockResolvedValue({
-        Item: { Data: { S: JSON.stringify(session) } },
+        Item: {
+          Claim: { S: session.context.claim },
+          Confidence: { S: session.context.confidence },
+          ConversationSteps: { S: JSON.stringify(session.conversationSteps) },
+          CurrentStep: { S: session.currentStep },
+          Dividers: { S: JSON.stringify(session.dividers) },
+          Expiration: { N: `${session.expiration}` },
+          GeneratedReasons: { S: JSON.stringify(session.context.generatedReasons) },
+          History: { S: JSON.stringify(session.history) },
+          IncorrectGuesses: { N: `${session.incorrect_guesses}` },
+          Language: { S: session.context.language },
+          LlmHistory: { S: JSON.stringify(session.llmHistory) },
+          NewConversation: { BOOL: session.newConversation },
+          OriginalConfidence: { S: session.originalConfidence },
+          PossibleConfidenceLevels: { S: JSON.stringify(session.context.possibleConfidenceLevels) },
+          Question: { N: `${session.question}` },
+          SessionId: { S: sessionId },
+          Version: { N: `${session.version}` },
+        },
       })
     })
 
-    it('should call DynamoDB with the correct arguments', async () => {
+    it('should call DynamoDB with the correct arguments and reconstruct session', async () => {
       const result = await getSessionById(sessionId)
 
       expect(mockSend).toHaveBeenCalledWith({
@@ -66,23 +87,84 @@ describe('dynamodb', () => {
   })
 
   describe('setSessionById', () => {
-    it('should call DynamoDB with the correct arguments', async () => {
+    it('should write session fields as individual columns with version increment', async () => {
       await setSessionById(sessionId, session)
 
+      const call = mockSend.mock.calls[mockSend.mock.calls.length - 1][0]
+      expect(call.Item.Version).toEqual({ N: `${session.version + 1}` })
+      expect(call.Item.Claim).toEqual({ S: session.context.claim })
+      expect(call.Item.Confidence).toEqual({ S: session.context.confidence })
+      expect(call.Item.SessionId).toEqual({ S: sessionId })
+      expect(call.Item.UpdatedAt.N).toBeDefined()
+      expect(call.ConditionExpression).toBe('Version = :expectedVersion')
+      expect(call.ExpressionAttributeValues).toEqual({ ':expectedVersion': { N: `${session.version}` } })
+      expect(call.TableName).toBe('session-table')
+    })
+
+    it('should use attribute_not_exists for new sessions (version 0)', async () => {
+      const newSession = { ...session, version: 0 }
+      await setSessionById(sessionId, newSession)
+
+      const call = mockSend.mock.calls[mockSend.mock.calls.length - 1][0]
+      expect(call.Item.Version).toEqual({ N: '1' })
+      expect(call.ConditionExpression).toBe('attribute_not_exists(SessionId)')
+      expect(call.ExpressionAttributeValues).toBeUndefined()
+    })
+
+    it('should include UserId when session has userId', async () => {
+      const sessionWithUser = { ...session, userId: 'google-user-123' }
+      await setSessionById(sessionId, sessionWithUser)
+
+      const call = mockSend.mock.calls[mockSend.mock.calls.length - 1][0]
+      expect(call.Item.UserId).toEqual({ S: 'google-user-123' })
+    })
+
+    it('should throw VersionConflictError on conditional check failure', async () => {
+      const { ConditionalCheckFailedException } = jest.requireActual('@aws-sdk/client-dynamodb')
+      mockSend.mockRejectedValueOnce(new ConditionalCheckFailedException({ message: 'fail', $metadata: {} }))
+
+      await expect(setSessionById(sessionId, session)).rejects.toThrow(VersionConflictError)
+    })
+
+    it('should rethrow non-conflict errors', async () => {
+      mockSend.mockRejectedValueOnce(new Error('Network error'))
+
+      await expect(setSessionById(sessionId, session)).rejects.toThrow('Network error')
+    })
+  })
+
+  describe('getSessionsByUserId', () => {
+    it('should query the GSI and return session summaries', async () => {
+      mockSend.mockResolvedValueOnce({
+        Items: [
+          {
+            Claim: { S: 'Test claim' },
+            Confidence: { S: 'agree' },
+            SessionId: { S: 'abc123' },
+            UpdatedAt: { N: '1713200000' },
+          },
+        ],
+      })
+
+      const result = await getSessionsByUserId('user-456')
+
       expect(mockSend).toHaveBeenCalledWith({
-        Item: {
-          Data: {
-            S: JSON.stringify(session),
-          },
-          Expiration: {
-            N: `${session.expiration}`,
-          },
-          SessionId: {
-            S: sessionId,
-          },
-        },
+        ExpressionAttributeValues: { ':userId': { S: 'user-456' } },
+        IndexName: 'UserId-UpdatedAt-index',
+        KeyConditionExpression: 'UserId = :userId',
+        ProjectionExpression: 'SessionId, Claim, Confidence, UpdatedAt',
+        ScanIndexForward: false,
         TableName: 'session-table',
       })
+      expect(result).toEqual([{ claim: 'Test claim', confidence: 'agree', sessionId: 'abc123', updatedAt: 1713200000 }])
+    })
+
+    it('should return empty array when no items exist', async () => {
+      mockSend.mockResolvedValueOnce({ Items: [] })
+
+      const result = await getSessionsByUserId('user-789')
+
+      expect(result).toEqual([])
     })
   })
 

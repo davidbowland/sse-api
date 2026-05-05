@@ -6,6 +6,11 @@ process.env.SUGGEST_CLAIMS_URL = 'https://a-great.claims-site'
 
 process.env.VALIDATE_CLAIM_PROMPT_ID = 'validate-claim-prompt'
 
+// Auth
+
+process.env.COGNITO_CLIENT_ID = 'test-client-id-123'
+process.env.COGNITO_USER_POOL_ID = 'us-east-1_TestPool123'
+
 // DynamoDB
 
 process.env.DYNAMODB_PROMPT_TABLE_NAME = 'prompt-table'

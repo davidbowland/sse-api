@@ -187,6 +187,7 @@ const formatSession = (body: SessionBody): Session => {
     newConversation: true,
     originalConfidence: body.confidence,
     question: 0,
+    version: 0,
   }
 }
 

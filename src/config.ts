@@ -45,6 +45,11 @@ export const workerFunctionArn = process.env.WORKER_FUNCTION_ARN as string
 
 export const debugLogging = (process.env.DEBUG_LOGGING as string) === 'true'
 
+// Auth
+
+export const cognitoClientId = process.env.COGNITO_CLIENT_ID as string
+export const cognitoUserPoolId = process.env.COGNITO_USER_POOL_ID as string
+
 // Sessions
 
 export const sessionExpireHours = parseInt(process.env.SESSION_EXPIRE_HOURS as string, 10)

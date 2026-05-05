@@ -2,6 +2,8 @@ name: Pipeline
 
 env:
   GIT_EMAIL: ${{ secrets.GIT_EMAIL }}
+  GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+  GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
   HUSKY: 0
   PIPELINE_USER_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   PIPELINE_USER_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -85,7 +87,7 @@ jobs:
             --s3-prefix ${TESTING_STACK_NAME} \
             --no-fail-on-empty-changeset \
             --role-arn ${TESTING_CLOUDFORMATION_EXECUTION_ROLE} \
-            --parameter-overrides "Environment=test SuggestClaimsUrl=${SUGGEST_CLAIMS_URL}"
+            --parameter-overrides "Environment=test GoogleClientId=${GOOGLE_CLIENT_ID} GoogleClientSecret=${GOOGLE_CLIENT_SECRET} SuggestClaimsUrl=${SUGGEST_CLAIMS_URL}"
 
       - name: Install packages for prompt deployment
         run: npm ci
@@ -202,7 +204,7 @@ jobs:
             --s3-prefix ${TESTING_STACK_NAME} \
             --no-fail-on-empty-changeset \
             --role-arn ${TESTING_CLOUDFORMATION_EXECUTION_ROLE} \
-            --parameter-overrides "Environment=test SuggestClaimsUrl=${SUGGEST_CLAIMS_URL}"
+            --parameter-overrides "Environment=test GoogleClientId=${GOOGLE_CLIENT_ID} GoogleClientSecret=${GOOGLE_CLIENT_SECRET} SuggestClaimsUrl=${SUGGEST_CLAIMS_URL}"
 
       - name: Install Node 22
         uses: actions/setup-node@v4
@@ -254,7 +256,7 @@ jobs:
             --s3-prefix ${PROD_STACK_NAME} \
             --no-fail-on-empty-changeset \
             --role-arn ${PROD_CLOUDFORMATION_EXECUTION_ROLE} \
-            --parameter-overrides "SuggestClaimsUrl=${SUGGEST_CLAIMS_URL}"
+            --parameter-overrides "GoogleClientId=${GOOGLE_CLIENT_ID} GoogleClientSecret=${GOOGLE_CLIENT_SECRET} SuggestClaimsUrl=${SUGGEST_CLAIMS_URL}"
 
       - name: Install Node 22
         uses: actions/setup-node@v4

@@ -1,11 +1,31 @@
+### Get confidence levels
+# Response 200:
+#   { "confidenceLevels": [{ "label": "Strongly agree", "text": "strongly agree", "value": "strongly agree" }, ...] }
+
+GET https://{{sse-api-host}}/v1/confidence-levels HTTP/1.1
+
 ### Suggest claims
+# Request body:
+#   { "language?": "en-US" }
+# Response 200:
+#   { "claims": ["claim1", "claim2", ...] }
+# Response 400:
+#   { "message": "..." }
 
 POST https://{{sse-api-host}}/v1/suggest-claims HTTP/1.1
 content-type: application/json
 
-{}
+{
+  "language": "en-US"
+}
 
 ### Validate a claim
+# Request body:
+#   { "claim": "string", "language?": "string" }
+# Response 200:
+#   { "inappropriate": false, "suggestions": ["suggestion1", ...] }
+# Response 400:
+#   { "message": "..." }
 
 POST https://{{sse-api-host}}/v1/validate-claim HTTP/1.1
 content-type: application/json
@@ -14,7 +34,15 @@ content-type: application/json
   "claim": "Some citizens who can currently vote should not be able to."
 }
 
-### Create a new session
+### Create a new session (anonymous)
+# Request body:
+#   { "claim": "string", "confidence": "strongly agree|agree|slightly agree|neutral|slightly disagree|disagree|strongly disagree", "language?": "string", "expiration?": number }
+# Response 201:
+#   { "sessionId": "abc123" }
+# Response 400:
+#   { "message": "..." } (validation error or inappropriate claim)
+# Response 401:
+#   { "message": "Invalid authentication token" } (if token present but invalid)
 
 POST https://{{sse-api-host}}/v1/sessions HTTP/1.1
 content-type: application/json
@@ -24,11 +52,88 @@ content-type: application/json
   "confidence": "strongly disagree"
 }
 
+### Create a new session (authenticated)
+# Request body:
+#   { "claim": "string", "confidence": "strongly agree|agree|slightly agree|neutral|slightly disagree|disagree|strongly disagree", "language?": "string", "expiration?": number }
+# Response 201:
+#   { "sessionId": "abc123" }
+# Response 400:
+#   { "message": "..." }
+# Response 401:
+#   { "message": "Invalid authentication token" }
+
+POST https://{{sse-api-host}}/v1/sessions HTTP/1.1
+content-type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "claim": "Feelings are more important than truth.",
+  "confidence": "strongly disagree"
+}
+
 ### Retrieve a session
+# Response 200:
+#   { "context": { "claim": "...", "confidence": "...", "generatedReasons": [], "language": "en-US", "possibleConfidenceLevels": [...] },
+#     "conversationSteps": [...], "currentStep": "...", "dividers": { "0": { "label": "..." } },
+#     "expiration": 1234567890, "history": [{ "content": "...", "role": "user|assistant" }],
+#     "incorrect_guesses": 0, "llmHistory": [...], "newConversation": true,
+#     "originalConfidence": "...", "question": 0, "version": 0 }
+# Response 404: (session not found)
 
 GET https://{{sse-api-host}}/v1/sessions/8675309 HTTP/1.1
 
-### Send an "start chat" message
+### Get user sessions (requires auth)
+# Response 200:
+#   [{ "claim": "...", "confidence": "...", "sessionId": "...", "updatedAt": 1234567890 }, ...]
+# Response 401:
+#   { "message": "Valid authentication required" }
+
+GET https://{{sse-api-host}}/v1/me/sessions HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Change confidence
+# Request body:
+#   { "confidence": "strongly agree|agree|slightly agree|neutral|slightly disagree|disagree|strongly disagree" }
+# Response 200:
+#   { "confidence": "agree", "dividers": { ... }, "newConversation": true, "overrideStep": { ... } }
+# Response 400:
+#   { "message": "..." }
+# Response 404: (session not found)
+# Response 409: (version conflict)
+
+POST https://{{sse-api-host}}/v1/sessions/8675309/change-confidence HTTP/1.1
+content-type: application/json
+
+{
+  "confidence": "agree"
+}
+
+### Send an "analysis" message
+# Request body:
+#   { "content": "string" }
+# Response 200:
+#   { "currentStep": "...", "dividers": { ... }, "history": [...], "loadingTimeout": 1234567890000, "newConversation": true|false, "overrideStep": ... }
+# Response 400:
+#   { "message": "..." }
+# Response 404: (session not found)
+# Response 409: (version conflict)
+
+POST https://{{sse-api-host}}/v1/sessions/8675309/analysis HTTP/1.1
+content-type: application/json
+
+{
+  "content": "I strongly disagree with the claim: Feelings are more important than truth."
+}
+
+### Send a "start chat" message
+# Request body:
+#   { "content": "string" }
+# Response 200:
+#   { "currentStep": "...", "dividers": { ... }, "history": [...], "loadingTimeout": 1234567890000, "newConversation": true|false, "overrideStep": ... }
+# Response 400:
+#   { "message": "..." }
+# Response 404: (session not found)
+# Response 409: (version conflict)
 
 POST https://{{sse-api-host}}/v1/sessions/8675309/start-chat HTTP/1.1
 content-type: application/json
@@ -38,6 +143,14 @@ content-type: application/json
 }
 
 ### Send a "guess reasons" message
+# Request body:
+#   { "content": "string" }
+# Response 200:
+#   { "currentStep": "...", "dividers": { ... }, "history": [...], "loadingTimeout": 1234567890000, "newConversation": true|false, "overrideStep": ... }
+# Response 400:
+#   { "message": "..." }
+# Response 404: (session not found)
+# Response 409: (version conflict)
 
 POST https://{{sse-api-host}}/v1/sessions/8675309/guess-reasons HTTP/1.1
 content-type: application/json
@@ -47,6 +160,14 @@ content-type: application/json
 }
 
 ### Send a "probe confidence" message
+# Request body:
+#   { "content": "string" }
+# Response 200:
+#   { "currentStep": "...", "dividers": { ... }, "history": [...], "loadingTimeout": 1234567890000, "newConversation": true|false, "overrideStep": ... }
+# Response 400:
+#   { "message": "..." }
+# Response 404: (session not found)
+# Response 409: (version conflict)
 
 POST https://{{sse-api-host}}/v1/sessions/8675309/probe-confidence HTTP/1.1
 content-type: application/json
@@ -55,7 +176,32 @@ content-type: application/json
   "content": "I strongly disagree with the claim: Feelings are more important than truth."
 }
 
+### Send a "new confidence" message
+# Request body:
+#   { "content": "string" }
+# Response 200:
+#   { "currentStep": "...", "dividers": { ... }, "history": [...], "loadingTimeout": 1234567890000, "newConversation": true|false, "overrideStep": ... }
+# Response 400:
+#   { "message": "..." }
+# Response 404: (session not found)
+# Response 409: (version conflict)
+
+POST https://{{sse-api-host}}/v1/sessions/8675309/new-confidence HTTP/1.1
+content-type: application/json
+
+{
+  "content": "I strongly disagree with the claim: Feelings are more important than truth."
+}
+
 ### Send a "probe reasons" message
+# Request body:
+#   { "content": "string" }
+# Response 200:
+#   { "currentStep": "...", "dividers": { ... }, "history": [...], "loadingTimeout": 1234567890000, "newConversation": true|false, "overrideStep": ... }
+# Response 400:
+#   { "message": "..." }
+# Response 404: (session not found)
+# Response 409: (version conflict)
 
 POST https://{{sse-api-host}}/v1/sessions/8675309/probe-reasons HTTP/1.1
 content-type: application/json
@@ -65,6 +211,14 @@ content-type: application/json
 }
 
 ### Send an "end chat" message
+# Request body:
+#   { "content": "string" }
+# Response 200:
+#   { "currentStep": "...", "dividers": { ... }, "history": [...], "loadingTimeout": 1234567890000, "newConversation": true|false, "overrideStep": ... }
+# Response 400:
+#   { "message": "..." }
+# Response 404: (session not found)
+# Response 409: (version conflict)
 
 POST https://{{sse-api-host}}/v1/sessions/8675309/end-chat HTTP/1.1
 content-type: application/json

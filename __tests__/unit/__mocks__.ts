@@ -222,6 +222,7 @@ export const session: Session = {
   newConversation: false,
   originalConfidence: 'agree',
   question: 1,
+  version: 3,
 }
 
 export const newSession: Session = {
@@ -242,6 +243,7 @@ export const newSession: Session = {
   newConversation: true,
   originalConfidence: 'slightly agree',
   question: 0,
+  version: 0,
 }
 
 // Claims

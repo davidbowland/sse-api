@@ -4,12 +4,14 @@ import { postSessionHandler } from '@handlers/post-session'
 import * as bedrock from '@services/bedrock'
 import * as dynamodb from '@services/dynamodb'
 import { APIGatewayProxyEventV2 } from '@types'
+import * as auth from '@utils/auth'
 import * as events from '@utils/events'
 import * as idGenerator from '@utils/id-generator'
 import status from '@utils/status'
 
 jest.mock('@services/bedrock')
 jest.mock('@services/dynamodb')
+jest.mock('@utils/auth')
 jest.mock('@utils/id-generator')
 jest.mock('@utils/events')
 jest.mock('@utils/logging')
@@ -19,6 +21,9 @@ describe('post-session', () => {
   const event = eventJson as unknown as APIGatewayProxyEventV2
 
   beforeAll(() => {
+    jest
+      .mocked(auth)
+      .extractAuthFromToken.mockResolvedValue({ isAuthenticated: false, googleSub: null, tokenPresent: false })
     jest.mocked(bedrock).invokeModel.mockResolvedValue(validationResult)
     jest.mocked(dynamodb).getPromptById.mockResolvedValue(prompt)
     jest.mocked(events).extractSessionFromEvent.mockReturnValue(newSession)
@@ -39,6 +44,35 @@ describe('post-session', () => {
         body: JSON.stringify({ sessionId }),
       })
       expect(dynamodb.setSessionById).toHaveBeenCalledWith(sessionId, newSession)
+    })
+
+    it('should attach userId to session when authenticated', async () => {
+      jest.mocked(auth).extractAuthFromToken.mockResolvedValueOnce({
+        isAuthenticated: true,
+        googleSub: 'google-user-abc',
+        tokenPresent: true,
+      })
+
+      await postSessionHandler(event)
+
+      expect(dynamodb.setSessionById).toHaveBeenCalledWith(sessionId, {
+        ...newSession,
+        userId: 'google-user-abc',
+      })
+    })
+
+    it('should return 401 when token is present but invalid', async () => {
+      jest
+        .mocked(auth)
+        .extractAuthFromToken.mockResolvedValueOnce({ isAuthenticated: false, googleSub: null, tokenPresent: true })
+
+      const result = await postSessionHandler(event)
+
+      expect(result).toEqual({
+        ...status.UNAUTHORIZED,
+        body: JSON.stringify({ message: 'Invalid authentication token' }),
+      })
+      expect(dynamodb.setSessionById).not.toHaveBeenCalled()
     })
 
     it('should return bad request when claim is inappropriate', async () => {

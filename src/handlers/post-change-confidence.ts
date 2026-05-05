@@ -1,5 +1,5 @@
 import { confidenceChangedStep } from '../assets/conversation-steps'
-import { getSessionById, setSessionById } from '../services/dynamodb'
+import { getSessionById, setSessionById, VersionConflictError } from '../services/dynamodb'
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, Session } from '../types'
 import { extractConfidenceChangeRequest } from '../utils/events'
 import { log, logError } from '../utils/logging'
@@ -39,6 +39,9 @@ export const postChangeConfidenceHandler = async (
           }),
         }
       } catch (error: unknown) {
+        if (error instanceof VersionConflictError) {
+          return status.CONFLICT
+        }
         logError(error)
         return status.INTERNAL_SERVER_ERROR
       }

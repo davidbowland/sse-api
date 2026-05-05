@@ -80,6 +80,15 @@ export interface AssistantMessage {
 
 export type LLMMessage = UserMessage | AssistantMessage
 
+// Auth
+
+export interface AuthContext {
+  googleName?: string
+  googleSub: string | null
+  isAuthenticated: boolean
+  tokenPresent: boolean
+}
+
 // Sessions
 
 export type SessionId = string
@@ -107,6 +116,15 @@ export interface Session {
   overrideStep?: ConversationStep
   question: number
   storedMessage?: ChatMessage
+  userId?: string
+  version: number
+}
+
+export interface SessionSummary {
+  claim: string
+  confidence: string
+  sessionId: string
+  updatedAt: number
 }
 
 // Suggest claims
