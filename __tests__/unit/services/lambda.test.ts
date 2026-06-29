@@ -18,7 +18,7 @@ describe('lambda', () => {
     const functionArn = 'arn:aws:lambda:us-east-1:123456789:function:my-worker'
     const payload = { sessionId: 'abc', promptId: 'probe-confidence', userMessage: { content: 'hello', role: 'user' } }
 
-    beforeEach(() => {
+    beforeAll(() => {
       mockSend.mockResolvedValue({})
     })
 

@@ -88,20 +88,24 @@ export const getLatestSuggestClaims = async (dateKey: string): Promise<SuggestCl
   }
 }
 
-export const setGeneratingSuggestClaims = async (dateKey: string, language: string): Promise<number> => {
-  const now = getEpochSeconds()
+export const setGeneratingSuggestClaims = async (
+  dateKey: string,
+  language: string,
+  now = getEpochSeconds,
+): Promise<number> => {
+  const createdAt = now()
   const command = new PutItemCommand({
     Item: {
-      CreatedAt: { N: `${now}` },
+      CreatedAt: { N: `${createdAt}` },
       DateKey: { S: dateKey },
-      Expiration: { N: `${now + THIRTY_DAYS_IN_SECONDS}` },
+      Expiration: { N: `${createdAt + THIRTY_DAYS_IN_SECONDS}` },
       Generating: { BOOL: true },
       Language: { S: language },
     },
     TableName: dynamodbSuggestClaimsTableName,
   })
   await dynamodb.send(command)
-  return now
+  return createdAt
 }
 
 export const setSuggestClaims = async (

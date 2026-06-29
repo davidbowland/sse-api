@@ -151,19 +151,17 @@ describe('dynamodb', () => {
     const dateKey = '2026-04-15#en-US'
 
     it('should write a generating placeholder and return createdAt', async () => {
-      const before = Math.floor(Date.now() / 1000)
-      const createdAt = await setGeneratingSuggestClaims(dateKey, 'en-US')
-      const after = Math.floor(Date.now() / 1000)
+      const fakeNow = 1_776_340_800
+      const createdAt = await setGeneratingSuggestClaims(dateKey, 'en-US', () => fakeNow)
 
-      expect(createdAt).toBeGreaterThanOrEqual(before)
-      expect(createdAt).toBeLessThanOrEqual(after)
+      expect(createdAt).toBe(fakeNow)
 
       const call = mockSend.mock.calls[mockSend.mock.calls.length - 1][0]
       expect(call.Item.DateKey).toEqual({ S: dateKey })
       expect(call.Item.Generating).toEqual({ BOOL: true })
       expect(call.Item.Language).toEqual({ S: 'en-US' })
       expect(call.Item.Data).toBeUndefined()
-      expect(call.Item.CreatedAt).toEqual({ N: `${createdAt}` })
+      expect(call.Item.CreatedAt).toEqual({ N: `${fakeNow}` })
       expect(call.TableName).toBe('suggest-claims-table')
     })
   })

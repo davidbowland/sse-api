@@ -52,7 +52,7 @@ describe('llm-response-worker', () => {
     })
 
     it('clears loadingTimeout on the saved session', async () => {
-      const sessionWithTimeout = { ...questionSession, loadingTimeout: Date.now() + 180_000 }
+      const sessionWithTimeout = { ...questionSession, loadingTimeout: 9_999_999_999_999 }
       jest.mocked(dynamodb).getSessionById.mockResolvedValueOnce(sessionWithTimeout)
 
       await llmResponseWorkerHandler(workerEvent)

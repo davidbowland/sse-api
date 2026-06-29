@@ -8,6 +8,7 @@ import status from '../utils/status'
 
 export const postLlmResponseHandler = async (
   event: APIGatewayProxyEventV2,
+  now = Date.now,
 ): Promise<APIGatewayProxyResultV2<unknown>> => {
   log('Received event', { ...event, body: undefined })
   const sessionId = event.pathParameters?.sessionId as string
@@ -16,7 +17,7 @@ export const postLlmResponseHandler = async (
     try {
       const session = await getSessionById(sessionId)
       try {
-        const loadingTimeout = Date.now() + 180_000
+        const loadingTimeout = now() + 180_000
         const updatedSession: Session = { ...session, loadingTimeout }
         await setSessionById(sessionId, updatedSession)
         await invokeLambda(workerFunctionArn, {

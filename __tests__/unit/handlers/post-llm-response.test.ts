@@ -34,13 +34,11 @@ describe('post-llm-response', () => {
 
   describe('postLlmResponseHandler', () => {
     it('sets loadingTimeout on the session before invoking worker', async () => {
-      const before = Date.now()
-      await postLlmResponseHandler(event)
-      const after = Date.now()
+      const fakeNow = 1_000_000_000_000
+      await postLlmResponseHandler(event, () => fakeNow)
 
       const savedSession = jest.mocked(dynamodb).setSessionById.mock.calls[0][1] as Session
-      expect(savedSession.loadingTimeout).toBeGreaterThanOrEqual(before + 180_000)
-      expect(savedSession.loadingTimeout).toBeLessThanOrEqual(after + 180_000)
+      expect(savedSession.loadingTimeout).toBe(fakeNow + 180_000)
     })
 
     it('saves session before invoking worker', async () => {
@@ -68,7 +66,8 @@ describe('post-llm-response', () => {
     })
 
     it('returns session state with loadingTimeout', async () => {
-      const result = await postLlmResponseHandler(event)
+      const fakeNow = 1_000_000_000_000
+      const result = await postLlmResponseHandler(event, () => fakeNow)
       const body = JSON.parse((result as { body: string }).body)
 
       expect(body).toMatchObject({
@@ -77,7 +76,7 @@ describe('post-llm-response', () => {
         history: questionSession.history,
         newConversation: questionSession.newConversation,
       })
-      expect(body.loadingTimeout).toBeGreaterThan(Date.now())
+      expect(body.loadingTimeout).toBe(fakeNow + 180_000)
     })
 
     it('returns BAD_REQUEST when the event is invalid', async () => {

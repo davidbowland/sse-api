@@ -22,7 +22,7 @@ describe('suggest-claims', () => {
   const dateKeyEnUS = '2026-04-16#en-US'
   const dateKeyFrFR = '2026-04-16#fr-FR'
 
-  beforeEach(() => {
+  beforeAll(() => {
     jest.useFakeTimers({ now: fixedNowMs })
     jest.mocked(bedrock).invokeModel.mockResolvedValue({ suggestions: invokeModelSuggestClaims })
     jest.mocked(claimSourcesService).getClaimSources.mockResolvedValue(claimSources)
@@ -32,7 +32,7 @@ describe('suggest-claims', () => {
     jest.mocked(dynamodb).deleteGeneratingSuggestClaims.mockResolvedValue(undefined)
   })
 
-  afterEach(() => {
+  afterAll(() => {
     jest.useRealTimers()
   })
 
