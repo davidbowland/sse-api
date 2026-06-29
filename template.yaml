@@ -84,7 +84,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: src/handlers/get-confidence-levels.getConfidenceLevelsHandler
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       Architectures:
         - x86_64
       MemorySize: 512
@@ -141,7 +141,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: src/handlers/post-change-confidence.postChangeConfidenceHandler
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       Architectures:
         - x86_64
       MemorySize: 512
@@ -201,7 +201,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: src/handlers/post-session.postSessionHandler
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       Architectures:
         - x86_64
       MemorySize: 1536
@@ -278,7 +278,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: src/handlers/get-session.getSessionHandler
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       Architectures:
         - x86_64
       MemorySize: 1536
@@ -340,7 +340,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: src/handlers/llm-response-worker.llmResponseWorkerHandler
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       Architectures:
         - x86_64
       MemorySize: 1536
@@ -407,7 +407,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: src/handlers/post-llm-response.postLlmResponseHandler
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       Architectures:
         - x86_64
       MemorySize: 1536
@@ -490,7 +490,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: src/handlers/post-llm-response.postLlmResponseHandler
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       Architectures:
         - x86_64
       MemorySize: 1536
@@ -573,7 +573,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: src/handlers/post-llm-response.postLlmResponseHandler
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       Architectures:
         - x86_64
       MemorySize: 1536
@@ -656,7 +656,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: src/handlers/post-llm-response.postLlmResponseHandler
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       Architectures:
         - x86_64
       MemorySize: 1536
@@ -739,7 +739,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: src/handlers/post-llm-response.postLlmResponseHandler
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       Architectures:
         - x86_64
       MemorySize: 1536
@@ -822,7 +822,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: src/handlers/post-llm-response.postLlmResponseHandler
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       Architectures:
         - x86_64
       MemorySize: 1536
@@ -905,7 +905,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: src/handlers/post-llm-response.postLlmResponseHandler
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       Architectures:
         - x86_64
       MemorySize: 1536
@@ -990,7 +990,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: src/handlers/post-suggest-claims.postSuggestClaimsHandler
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       Architectures:
         - x86_64
       MemorySize: 1536
@@ -1071,7 +1071,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: src/handlers/post-validate-claim.postValidateClaimHandler
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       Architectures:
         - x86_64
       MemorySize: 1536

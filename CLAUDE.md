@@ -1,6 +1,4 @@
-# sse-api
-
-## General
+# Project Guidelines
 
 **Always commit changes** after completing work unless explicitly told not to.
 
