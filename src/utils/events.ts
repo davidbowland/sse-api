@@ -47,6 +47,17 @@ const formatClaim = (body: ClaimBody): Claim => {
         },
       ]),
     )
+  } else if (trim(body.claim).length > 500) {
+    throw new Error(
+      JSON.stringify([
+        {
+          instancePath: '/claim',
+          keyword: 'value',
+          message: 'Claim must be 500 characters or fewer',
+          schemaPath: '/properties/claim/value',
+        },
+      ]),
+    )
   }
   return { claim: trim(body.claim), language: body.language ?? 'en-US' }
 }
@@ -108,6 +119,17 @@ const formatLlmRequest = (body: LLMRequestBody): LLMRequest => {
         },
       ]),
     )
+  } else if (trim(body.content).length > 2000) {
+    throw new Error(
+      JSON.stringify([
+        {
+          instancePath: '/content',
+          keyword: 'value',
+          message: 'Content must be 2000 characters or fewer',
+          schemaPath: '/properties/content/value',
+        },
+      ]),
+    )
   }
   return {
     message: { content: trim(body.content), role: 'user' },
@@ -151,6 +173,17 @@ const formatSession = (body: SessionBody): Session => {
           instancePath: '/claim',
           keyword: 'value',
           message: 'Claim must be non-empty text',
+          schemaPath: '/properties/claim/value',
+        },
+      ]),
+    )
+  } else if (trim(body.claim).length > 500) {
+    throw new Error(
+      JSON.stringify([
+        {
+          instancePath: '/claim',
+          keyword: 'value',
+          message: 'Claim must be 500 characters or fewer',
           schemaPath: '/properties/claim/value',
         },
       ]),

@@ -1,14 +1,11 @@
+import { randomInt } from 'crypto'
+
 import { idMaxLength, idMinLength } from '../config'
 
 // Don't allow vowels, digits that look like vowels, or ambiguous characters
 const allowedCharacters = '256789bcdfghjmnpqrstvwxz'
 
 type GetById = (id: string) => Promise<unknown>
-
-const valueToId = (value: number): string => {
-  const digit = allowedCharacters.charAt(value % allowedCharacters.length)
-  return value >= allowedCharacters.length ? valueToId(Math.floor(value / allowedCharacters.length)) + digit : digit
-}
 
 const idExists = async (id: string, getById: GetById): Promise<boolean> => {
   try {
@@ -19,17 +16,13 @@ const idExists = async (id: string, getById: GetById): Promise<boolean> => {
   }
 }
 
-const getRandomId = async (minValue: number, maxValue: number, getById: GetById): Promise<string> => {
-  const randomValue = Math.round(Math.random() * (maxValue - minValue) + minValue)
-  const id = valueToId(randomValue)
+const getRandomId = async (getById: GetById): Promise<string> => {
+  const length = randomInt(idMinLength, idMaxLength + 1)
+  const id = Array.from({ length }, () => allowedCharacters[randomInt(allowedCharacters.length)]).join('')
   if (await idExists(id, getById)) {
-    return getRandomId(minValue, maxValue, getById)
+    return getRandomId(getById)
   }
   return id
 }
 
-export const getNextId = async (getById: GetById): Promise<string> => {
-  const minValue = Math.pow(allowedCharacters.length, idMinLength - 1)
-  const maxValue = Math.pow(allowedCharacters.length, idMaxLength)
-  return getRandomId(minValue, maxValue, getById)
-}
+export const getNextId = async (getById: GetById): Promise<string> => getRandomId(getById)

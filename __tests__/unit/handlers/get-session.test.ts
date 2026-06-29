@@ -16,12 +16,14 @@ describe('get-session', () => {
   })
 
   describe('getSessionHandler', () => {
-    it('should return session', async () => {
+    it('should return session without llmHistory', async () => {
       const result = await getSessionHandler(event)
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { llmHistory: _llmHistory, ...publicSession } = session
       expect(result).toEqual({
         ...status.OK,
-        body: JSON.stringify(session),
+        body: JSON.stringify(publicSession),
       })
     })
 

@@ -7,13 +7,18 @@ const runtimeClient = new BedrockRuntimeClient({ region: 'us-east-1' })
 
 const MAX_MESSAGE_HISTORY_COUNT = 30
 
+// Escape < and > so user-controlled text embedded in XML-tagged prompts can't
+// break out of JSON string context and be mistaken for instruction tags.
+const safeJsonForPrompt = (value: unknown): string =>
+  JSON.stringify(value).replace(/</g, '\\u003c').replace(/>/g, '\\u003e')
+
 export const invokeModel = async <T = unknown>(
   prompt: Prompt,
   data: string,
   context?: Record<string, unknown>,
 ): Promise<T> => {
   const promptWithContext = context
-    ? { ...prompt, contents: prompt.contents.replace('${context}', JSON.stringify(context)) }
+    ? { ...prompt, contents: prompt.contents.replace('${context}', safeJsonForPrompt(context)) }
     : prompt
   return invokeModelMessage<T>(promptWithContext, [{ content: data, role: 'user' }])
 }
@@ -30,7 +35,7 @@ export const invokeModelMessage = async <T = unknown>(
   history: LLMMessage[],
   data?: Record<string, unknown>,
 ): Promise<T> => {
-  const systemContent = data ? prompt.contents.replace('${data}', JSON.stringify(data)) : prompt.contents
+  const systemContent = data ? prompt.contents.replace('${data}', safeJsonForPrompt(data)) : prompt.contents
   logDebug('Invoking model', { data, prompt, systemContent })
 
   const messageBody = {

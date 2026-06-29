@@ -8,8 +8,8 @@ export const getSessionHandler = async (event: APIGatewayProxyEventV2): Promise<
   const sessionId = event.pathParameters?.sessionId as string
 
   try {
-    const result = await getSessionById(sessionId)
-    return { ...status.OK, body: JSON.stringify(result) }
+    const { llmHistory: _llmHistory, ...publicSession } = await getSessionById(sessionId)
+    return { ...status.OK, body: JSON.stringify(publicSession) }
   } catch (error: unknown) {
     return status.NOT_FOUND
   }

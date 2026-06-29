@@ -62,6 +62,15 @@ describe('events', () => {
 
       expect(() => extractClaimFromEvent(eventWithEmptyClaim)).toThrow()
     })
+
+    it('should error when claim is too long', () => {
+      const eventWithLongClaim = {
+        ...event,
+        body: JSON.stringify({ claim: 'a'.repeat(501) }),
+      }
+
+      expect(() => extractClaimFromEvent(eventWithLongClaim)).toThrow()
+    })
   })
 
   describe('extractConfidenceChangeRequest', () => {
@@ -134,6 +143,15 @@ describe('events', () => {
 
       expect(() => extractLlmRequestFromEvent(eventWithEmptyContents)).toThrow()
     })
+
+    it('should error when the chat content is too long', () => {
+      const eventWithLongContent = {
+        ...event,
+        body: JSON.stringify({ content: 'a'.repeat(2001) }),
+      }
+
+      expect(() => extractLlmRequestFromEvent(eventWithLongContent)).toThrow()
+    })
   })
 
   describe('extractSessionFromEvent', () => {
@@ -175,6 +193,18 @@ describe('events', () => {
       }
 
       expect(() => extractSessionFromEvent(eventWithEmptyClaim)).toThrow()
+    })
+
+    it('should error when the session claim is too long', () => {
+      const eventWithLongClaim = {
+        ...event,
+        body: JSON.stringify({
+          claim: 'a'.repeat(501),
+          confidence: 'slightly agree',
+        }),
+      }
+
+      expect(() => extractSessionFromEvent(eventWithLongClaim)).toThrow()
     })
 
     it("doesn't allow late expiration", () => {
