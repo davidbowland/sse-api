@@ -1,6 +1,6 @@
 import { llmRequest, session, sessionId, userMessage } from '../__mocks__'
 import eventJson from '@events/post-llm-response.json'
-import { postLlmResponseHandler } from '@handlers/post-llm-response'
+import { postLlmResponse, postLlmResponseHandler } from '@handlers/post-llm-response'
 import * as dynamodb from '@services/dynamodb'
 import * as lambda from '@services/lambda'
 import { APIGatewayProxyEventV2, Session } from '@types'
@@ -33,9 +33,16 @@ describe('post-llm-response', () => {
   })
 
   describe('postLlmResponseHandler', () => {
+    it('succeeds when Lambda runtime passes context object as second argument', async () => {
+      const lambdaContext = { functionName: 'sse-api', awsRequestId: 'test-id' }
+      const result = await postLlmResponseHandler(event, lambdaContext as unknown as () => number)
+
+      expect(result).toMatchObject(status.OK)
+    })
+
     it('sets loadingTimeout on the session before invoking worker', async () => {
       const fakeNow = 1_000_000_000_000
-      await postLlmResponseHandler(event, () => fakeNow)
+      await postLlmResponse(event, () => fakeNow)
 
       const savedSession = jest.mocked(dynamodb).setSessionById.mock.calls[0][1] as Session
       expect(savedSession.loadingTimeout).toBe(fakeNow + 180_000)
@@ -67,7 +74,7 @@ describe('post-llm-response', () => {
 
     it('returns session state with loadingTimeout', async () => {
       const fakeNow = 1_000_000_000_000
-      const result = await postLlmResponseHandler(event, () => fakeNow)
+      const result = await postLlmResponse(event, () => fakeNow)
       const body = JSON.parse((result as { body: string }).body)
 
       expect(body).toMatchObject({

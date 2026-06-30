@@ -6,7 +6,7 @@ import { extractLlmRequestFromEvent } from '../utils/events'
 import { log, logError } from '../utils/logging'
 import status from '../utils/status'
 
-export const postLlmResponseHandler = async (
+export const postLlmResponse = async (
   event: APIGatewayProxyEventV2,
   now = Date.now,
 ): Promise<APIGatewayProxyResultV2<unknown>> => {
@@ -47,3 +47,6 @@ export const postLlmResponseHandler = async (
     return { ...status.BAD_REQUEST, body: JSON.stringify({ message: (error as Error).message }) }
   }
 }
+
+export const postLlmResponseHandler = (event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2<unknown>> =>
+  postLlmResponse(event)
