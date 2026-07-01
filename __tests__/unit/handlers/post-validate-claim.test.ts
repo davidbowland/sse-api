@@ -67,6 +67,14 @@ describe('post-validate-claim', () => {
       expect(dynamodb.getPromptById).not.toHaveBeenCalled()
     })
 
+    it('returns claims validation information when the reCAPTCHA score is exactly the minimum', async () => {
+      jest.mocked(recaptcha).getCaptchaScore.mockResolvedValueOnce(0.7)
+      const result = await postValidateClaimHandler(event)
+
+      expect(result).toEqual(expect.objectContaining(status.OK))
+      expect(dynamodb.getPromptById).toHaveBeenCalled()
+    })
+
     it('returns INTERNAL_SERVER_ERROR when getPromptById rejects', async () => {
       jest.mocked(dynamodb).getPromptById.mockRejectedValueOnce(new Error('Rejected'))
       const result = await postValidateClaimHandler(event)

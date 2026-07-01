@@ -68,6 +68,14 @@ describe('post-suggest-claims', () => {
       expect(suggestClaimsService.getCachedOrGenerateClaims).not.toHaveBeenCalled()
     })
 
+    it('returns claims when the reCAPTCHA score is exactly the minimum', async () => {
+      jest.mocked(recaptcha).getCaptchaScore.mockResolvedValueOnce(0.7)
+      const result = await postSuggestClaimsHandler(event)
+
+      expect(result).toEqual(expect.objectContaining(status.OK))
+      expect(suggestClaimsService.getCachedOrGenerateClaims).toHaveBeenCalledWith('en-US')
+    })
+
     it('returns INTERNAL_SERVER_ERROR when getCachedOrGenerateClaims rejects', async () => {
       jest.mocked(suggestClaimsService).getCachedOrGenerateClaims.mockRejectedValueOnce(new Error('Rejected'))
       const result = await postSuggestClaimsHandler(event)
