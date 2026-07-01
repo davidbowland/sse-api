@@ -360,7 +360,7 @@
 
       it('returns BAD_REQUEST when extractRecaptchaToken throws', async () => {
         jest.mocked(events).extractRecaptchaToken.mockImplementationOnce(() => {
-          throw new Error('x-recaptcha-token header is required')
+          throw new Error('Bad request')
         })
         const result = await postSuggestClaimsHandler(event)
 
@@ -512,7 +512,7 @@
 
       it('returns BAD_REQUEST when extractRecaptchaToken throws', async () => {
         jest.mocked(events).extractRecaptchaToken.mockImplementationOnce(() => {
-          throw new Error('x-recaptcha-token header is required')
+          throw new Error('Bad request')
         })
         const result = await postValidateClaimHandler(event)
 
