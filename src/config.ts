@@ -48,3 +48,7 @@ export const debugLogging = (process.env.DEBUG_LOGGING as string) === 'true'
 // Sessions
 
 export const sessionExpireHours = parseInt(process.env.SESSION_EXPIRE_HOURS as string, 10)
+
+// reCAPTCHA
+
+export const recaptchaSecretKey = process.env.RECAPTCHA_SECRET_KEY as string

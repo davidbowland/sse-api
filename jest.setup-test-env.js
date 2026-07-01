@@ -30,3 +30,7 @@ process.env.RESPONSE_PROMPT_ID = 'probe-confidence-prompt'
 // Sessions
 
 process.env.SESSION_EXPIRE_HOURS = '24'
+
+// reCAPTCHA
+
+process.env.RECAPTCHA_SECRET_KEY = 'recaptcha-secret-key'
