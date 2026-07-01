@@ -100,7 +100,7 @@ Mirrors `choosee-api`'s existing setup exactly:
 
 ### Manual step (outside this repo, owned by the user)
 
-- Register a new reCAPTCHA v3 site (separate from choosee-api's) in the Google account tied to the sse domain(s), and add its secret key as the `RECAPTCHA_SECRET_KEY` GitHub Actions secret on the sse-api repo. This is required before the test/prod pipelines can deploy successfully post-merge, but does not block writing/merging the code itself (missing secret only breaks the *deploy* step, not local tests).
+- Register a new reCAPTCHA v3 site (separate from choosee-api's) in the Google account tied to the sse domain(s), and add its secret key as the `RECAPTCHA_SECRET_KEY` GitHub Actions secret on the sse-api repo. This does not block writing/merging the code itself, but **the deploy itself will succeed even if the secret is unset or empty** — CloudFormation happily accepts an empty string for a parameter with no `Default`. An empty/missing secret does not fail the deploy; it makes `getCaptchaScore` post `secret: ''` to Google on every request, which Google rejects, so every legitimate request gets a false `403 FORBIDDEN`. That is a full outage of both endpoints for real users, not merely a blocked deploy. **Do not deploy to test/prod until the secret is actually set** — sequence the manual step before (or atomically with) the first deploy of this branch, not just before merge.
 
 ### `endpoints.rest`
 
