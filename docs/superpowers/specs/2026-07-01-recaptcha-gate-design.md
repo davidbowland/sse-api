@@ -51,13 +51,16 @@ This throws a plain `Error`, consistent with every other `extract*` function in 
 Both `post-suggest-claims.ts` and `post-validate-claim.ts` get the same shape of change:
 
 1. In the outer `try` (existing 400-on-`Error` block), extract the recaptcha token alongside the existing body parsing:
+
    ```ts
    const recaptchaToken = extractRecaptchaToken(event)
    const suggestClaimsRequest = extractSuggestClaimsRequestFromEvent(event) // (or extractClaimFromEvent)
    ```
+
    A missing header behaves exactly like a malformed body today: caught by the outer catch, returns `400` with `{ message }`.
 
 2. At the top of the inner `try` (the block that currently does the Bedrock/DynamoDB work and returns 500 on failure), call the score check first:
+
    ```ts
    const score = await getCaptchaScore(recaptchaToken)
    log('reCAPTCHA result', { score })
@@ -65,6 +68,7 @@ Both `post-suggest-claims.ts` and `post-validate-claim.ts` get the same shape of
      return status.FORBIDDEN
    }
    ```
+
    This is a plain early `return`, not a thrown/caught error — it avoids introducing a `ForbiddenError` class (which `choosee-api` uses but sse-api has no precedent for) and avoids the inner catch mislabeling a low score as an unexpected 500.
 
 3. The rest of each handler (cache lookup / Bedrock invocation / response shaping) is unchanged.
@@ -78,12 +82,14 @@ Mirrors `choosee-api`'s existing setup exactly:
 ### `template.yaml`
 
 - New parameter:
+
   ```yaml
   RecaptchaSecretKey:
     Type: String
     Description: Secret key for reCAPTCHA v3
     NoEcho: true
   ```
+
 - Add `RECAPTCHA_SECRET_KEY: !Ref RecaptchaSecretKey` to the `Environment.Variables` of both `PostSuggestClaimsFunction` and `PostValidateClaimFunction`.
 - Add `X-Recaptcha-Token` to the `HttpApi.CorsConfiguration.AllowHeaders` list (alongside the existing `X-Twitch-Token`).
 
