@@ -258,6 +258,16 @@ const formatSuggestClaimsRequest = (body: SuggestClaimsRequestBody): SuggestClai
 export const extractSuggestClaimsRequestFromEvent = (event: APIGatewayProxyEventV2): SuggestClaimsRequest =>
   formatSuggestClaimsRequest(parseEventBody(event) as SuggestClaimsRequestBody)
 
+// reCAPTCHA
+
+export const extractRecaptchaToken = (event: APIGatewayProxyEventV2): string => {
+  const token = event.headers['x-recaptcha-token']
+  if (!token) {
+    throw new Error('x-recaptcha-token header is required')
+  }
+  return token
+}
+
 // Events
 
 const parseEventBody = (event: APIGatewayProxyEventV2): unknown =>

@@ -10,6 +10,7 @@ import {
   extractClaimFromEvent,
   extractConfidenceChangeRequest,
   extractLlmRequestFromEvent,
+  extractRecaptchaToken,
   extractSessionFromEvent,
   extractSuggestClaimsRequestFromEvent,
 } from '@utils/events'
@@ -271,6 +272,28 @@ describe('events', () => {
         body: JSON.stringify({ language: '  ' }),
       }
       expect(() => extractSuggestClaimsRequestFromEvent(eventWithMalformedRequest)).toThrow()
+    })
+  })
+
+  describe('extractRecaptchaToken', () => {
+    const event = validateEventJson as unknown as APIGatewayProxyEventV2
+
+    it('should extract the token from the x-recaptcha-token header', () => {
+      const eventWithToken = {
+        ...event,
+        headers: { ...event.headers, 'x-recaptcha-token': 'ytrewsdfghjmnbgtyu' },
+      }
+
+      const result = extractRecaptchaToken(eventWithToken)
+
+      expect(result).toEqual('ytrewsdfghjmnbgtyu')
+    })
+
+    it('should error when the header is missing', () => {
+      const eventWithoutToken = { ...event, headers: { ...event.headers } }
+      delete eventWithoutToken.headers['x-recaptcha-token']
+
+      expect(() => extractRecaptchaToken(eventWithoutToken)).toThrow('x-recaptcha-token header is required')
     })
   })
 })
