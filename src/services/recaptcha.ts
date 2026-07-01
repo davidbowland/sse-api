@@ -3,8 +3,11 @@ import axios from 'axios'
 import { recaptchaSecretKey } from '../config'
 import { logWarn } from '../utils/logging'
 
+const recaptchaTimeoutMs = 5000
+
 const google = axios.create({
   baseURL: 'https://www.google.com/',
+  timeout: recaptchaTimeoutMs,
 })
 
 interface RecaptchaResponse {
