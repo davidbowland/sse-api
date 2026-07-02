@@ -1,6 +1,7 @@
+import { getCaptchaScore, recaptchaMinScore } from '../services/recaptcha'
 import { getCachedOrGenerateClaims } from '../services/suggest-claims'
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from '../types'
-import { extractSuggestClaimsRequestFromEvent } from '../utils/events'
+import { extractRecaptchaToken, extractSuggestClaimsRequestFromEvent } from '../utils/events'
 import { log, logError } from '../utils/logging'
 import status from '../utils/status'
 
@@ -9,8 +10,15 @@ export const postSuggestClaimsHandler = async (
 ): Promise<APIGatewayProxyResultV2<unknown>> => {
   log('Received event', { ...event, body: undefined })
   try {
+    const recaptchaToken = extractRecaptchaToken(event)
     const suggestClaimsRequest = extractSuggestClaimsRequestFromEvent(event)
     try {
+      const score = await getCaptchaScore(recaptchaToken)
+      log('reCAPTCHA result', { score })
+      if (score < recaptchaMinScore) {
+        return status.FORBIDDEN
+      }
+
       const claims = await getCachedOrGenerateClaims(suggestClaimsRequest.language)
       log('Returning claims', { claims })
       return { ...status.OK, body: JSON.stringify({ claims }) }

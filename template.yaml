@@ -16,6 +16,10 @@ Parameters:
   SuggestClaimsUrl:
     Type: String
     Description: URL used for sourcing claims
+  RecaptchaSecretKey:
+    Type: String
+    Description: Secret key for reCAPTCHA v3
+    NoEcho: true
 
 Mappings:
   EnvironmentMap:
@@ -54,6 +58,7 @@ Resources:
           - X-Amz-Date
           - X-Amz-Security-Token
           - X-Api-Key
+          - X-Recaptcha-Token
           - X-Twitch-Token
         AllowMethods:
           - DELETE
@@ -1015,6 +1020,7 @@ Resources:
         Variables:
           DYNAMODB_PROMPT_TABLE_NAME: !Ref PromptTable
           DYNAMODB_SUGGEST_CLAIMS_TABLE_NAME: !Ref SuggestClaimsTable
+          RECAPTCHA_SECRET_KEY: !Ref RecaptchaSecretKey
           SUGGEST_CLAIMS_CACHE_HOURS: 4
           SUGGEST_CLAIMS_COUNT: 20
           SUGGEST_CLAIMS_GENERATION_STALE_SECONDS: 180
@@ -1093,6 +1099,7 @@ Resources:
       Environment:
         Variables:
           DYNAMODB_PROMPT_TABLE_NAME: !Ref PromptTable
+          RECAPTCHA_SECRET_KEY: !Ref RecaptchaSecretKey
           VALIDATE_CLAIM_PROMPT_ID: validate-claim
       Events:
         Api:

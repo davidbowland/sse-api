@@ -1,8 +1,9 @@
 import { validateClaimPromptId } from '../config'
 import { invokeModel } from '../services/bedrock'
 import { getPromptById } from '../services/dynamodb'
+import { getCaptchaScore, recaptchaMinScore } from '../services/recaptcha'
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, ValidationResponse } from '../types'
-import { extractClaimFromEvent } from '../utils/events'
+import { extractClaimFromEvent, extractRecaptchaToken } from '../utils/events'
 import { log, logError } from '../utils/logging'
 import status from '../utils/status'
 
@@ -11,8 +12,15 @@ export const postValidateClaimHandler = async (
 ): Promise<APIGatewayProxyResultV2<unknown>> => {
   log('Received event', { ...event, body: undefined })
   try {
+    const recaptchaToken = extractRecaptchaToken(event)
     const { claim, language } = extractClaimFromEvent(event)
     try {
+      const score = await getCaptchaScore(recaptchaToken)
+      log('reCAPTCHA result', { score })
+      if (score < recaptchaMinScore) {
+        return status.FORBIDDEN
+      }
+
       const prompt = await getPromptById(validateClaimPromptId)
       const validation = await invokeModel<ValidationResponse>(prompt, claim, { language })
       log('Claim validation complete', { claim, validation })

@@ -298,3 +298,7 @@ export const validationResult = {
     'US foreign policy should focus on diplomacy rather than military action.',
   ],
 }
+
+// reCAPTCHA
+
+export const recaptchaToken = 'ytrewsdfghjmnbgtyu'
