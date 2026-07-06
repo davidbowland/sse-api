@@ -2,6 +2,15 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: >-
   API for sse project
 
+# NOTE: The `kms:Decrypt` IAM statements below reference this AWS account's
+# `aws/ssm`-managed KMS key ARN directly (arn:...:key/74085ce3-4f95-4edd-99d4-0bb17aa7b879),
+# not an alias — KMS alias ARNs are not valid `Resource` matchers for `kms:Decrypt`
+# in IAM identity policies. Both the test and prod stacks deploy into this same
+# AWS account (shared with choosee-api), so one hardcoded key ARN is correct for
+# both. If this template is ever deployed to a different account, this key ID
+# must be updated to that account's equivalent (or the SecureString parameters
+# re-encrypted with it).
+
 Transform:
   - AWS::Serverless-2016-10-31
 
@@ -13,13 +22,6 @@ Parameters:
       - prod
       - test
     Description: Environment for deploy
-  SuggestClaimsUrl:
-    Type: String
-    Description: URL used for sourcing claims
-  RecaptchaSecretKey:
-    Type: String
-    Description: Secret key for reCAPTCHA v3
-    NoEcho: true
 
 Mappings:
   EnvironmentMap:
@@ -1016,17 +1018,26 @@ Resources:
                 - 'bedrock:List*'
               Effect: Allow
               Resource: '*'
+        - Statement:
+            - Effect: Allow
+              Action:
+                - ssm:GetParameter
+              Resource:
+                - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/sse/recaptcha-secret-key'
+                - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/sse/suggest-claims-url'
+            - Effect: Allow
+              Action:
+                - kms:Decrypt
+              Resource: !Sub 'arn:aws:kms:${AWS::Region}:${AWS::AccountId}:key/74085ce3-4f95-4edd-99d4-0bb17aa7b879'
       Environment:
         Variables:
           DYNAMODB_PROMPT_TABLE_NAME: !Ref PromptTable
           DYNAMODB_SUGGEST_CLAIMS_TABLE_NAME: !Ref SuggestClaimsTable
-          RECAPTCHA_SECRET_KEY: !Ref RecaptchaSecretKey
           SUGGEST_CLAIMS_CACHE_HOURS: 4
           SUGGEST_CLAIMS_COUNT: 20
           SUGGEST_CLAIMS_GENERATION_STALE_SECONDS: 180
           SUGGEST_CLAIMS_POLL_DEADLINE_SECONDS: 30
           SUGGEST_CLAIMS_PROMPT_ID: suggest-claims
-          SUGGEST_CLAIMS_URL: !Ref SuggestClaimsUrl
       Events:
         Api:
           Type: HttpApi
@@ -1096,10 +1107,18 @@ Resources:
                 - 'bedrock:List*'
               Effect: Allow
               Resource: '*'
+        - Statement:
+            - Effect: Allow
+              Action:
+                - ssm:GetParameter
+              Resource: !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/sse/recaptcha-secret-key'
+            - Effect: Allow
+              Action:
+                - kms:Decrypt
+              Resource: !Sub 'arn:aws:kms:${AWS::Region}:${AWS::AccountId}:key/74085ce3-4f95-4edd-99d4-0bb17aa7b879'
       Environment:
         Variables:
           DYNAMODB_PROMPT_TABLE_NAME: !Ref PromptTable
-          RECAPTCHA_SECRET_KEY: !Ref RecaptchaSecretKey
           VALIDATE_CLAIM_PROMPT_ID: validate-claim
       Events:
         Api:

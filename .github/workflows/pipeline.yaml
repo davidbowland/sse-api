@@ -10,9 +10,7 @@ env:
   PROD_PIPELINE_EXECUTION_ROLE: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/sse-pipeline
   PROD_REGION: ${{ secrets.AWS_REGION }}
   PROD_STACK_NAME: sse-api
-  RECAPTCHA_SECRET_KEY: ${{ secrets.RECAPTCHA_SECRET_KEY }}
   SAM_TEMPLATE: template.yaml
-  SUGGEST_CLAIMS_URL: ${{ secrets.SUGGEST_CLAIMS_URL }}
   TESTING_ARTIFACTS_BUCKET: sse-lambda-test
   TESTING_CLOUDFORMATION_EXECUTION_ROLE: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/sse-cloudformation-test
   TESTING_PIPELINE_EXECUTION_ROLE: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/sse-pipeline-test
@@ -86,7 +84,7 @@ jobs:
             --s3-prefix ${TESTING_STACK_NAME} \
             --no-fail-on-empty-changeset \
             --role-arn ${TESTING_CLOUDFORMATION_EXECUTION_ROLE} \
-            --parameter-overrides "Environment=test RecaptchaSecretKey=${RECAPTCHA_SECRET_KEY} SuggestClaimsUrl=${SUGGEST_CLAIMS_URL}"
+            --parameter-overrides "Environment=test"
 
       - name: Install packages for prompt deployment
         run: npm ci
@@ -203,7 +201,7 @@ jobs:
             --s3-prefix ${TESTING_STACK_NAME} \
             --no-fail-on-empty-changeset \
             --role-arn ${TESTING_CLOUDFORMATION_EXECUTION_ROLE} \
-            --parameter-overrides "Environment=test RecaptchaSecretKey=${RECAPTCHA_SECRET_KEY} SuggestClaimsUrl=${SUGGEST_CLAIMS_URL}"
+            --parameter-overrides "Environment=test"
 
       - name: Install Node 24
         uses: actions/setup-node@v6
@@ -254,8 +252,7 @@ jobs:
             --s3-bucket ${PROD_ARTIFACTS_BUCKET} \
             --s3-prefix ${PROD_STACK_NAME} \
             --no-fail-on-empty-changeset \
-            --role-arn ${PROD_CLOUDFORMATION_EXECUTION_ROLE} \
-            --parameter-overrides "RecaptchaSecretKey=${RECAPTCHA_SECRET_KEY} SuggestClaimsUrl=${SUGGEST_CLAIMS_URL}"
+            --role-arn ${PROD_CLOUDFORMATION_EXECUTION_ROLE}
 
       - name: Install Node 24
         uses: actions/setup-node@v6

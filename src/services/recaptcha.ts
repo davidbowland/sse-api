@@ -1,7 +1,7 @@
 import axios from 'axios'
 
-import { recaptchaSecretKey } from '../config'
 import { logWarn } from '../utils/logging'
+import { getRecaptchaSecretKey } from './secrets'
 
 const recaptchaTimeoutMs = 5000
 
@@ -22,13 +22,14 @@ interface RecaptchaResponse {
 export const recaptchaMinScore = 0.7
 
 export const getCaptchaScore = async (token: string): Promise<number> => {
+  const secret = await getRecaptchaSecretKey()
   const response = await google.post<RecaptchaResponse>(
     'recaptcha/api/siteverify',
     {},
     {
       params: {
         response: token,
-        secret: recaptchaSecretKey,
+        secret,
       },
     },
   )

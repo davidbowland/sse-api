@@ -1,10 +1,12 @@
 import axios from 'axios'
 
-import { suggestClaimsCount, suggestClaimsUrl } from '../config'
+import { suggestClaimsCount } from '../config'
+import { getSuggestClaimsUrl } from './secrets'
 
 const isValidTitle = (title: string): boolean => title.indexOf(' ') > 0
 
 export const getClaimSources = async () => {
+  const suggestClaimsUrl = await getSuggestClaimsUrl()
   const result = await axios.get(suggestClaimsUrl)
   const titles: RegExpMatchArray[] = Array.from(result.data.matchAll(/\\"title\\":\\"(.*?)\\"/g))
   const sources = titles.reduce((acc: Set<string>, match: RegExpMatchArray) => {

@@ -1,18 +1,22 @@
 import { recaptchaToken } from '../__mocks__'
-import { recaptchaSecretKey } from '@config'
 import { getCaptchaScore } from '@services/recaptcha'
+import { getRecaptchaSecretKey } from '@services/secrets'
 import { logWarn } from '@utils/logging'
+
+const recaptchaSecretKey = 'the-recaptcha-secret-key'
 
 const mockPost = jest.fn()
 jest.mock('axios', () => ({
   create: jest.fn().mockImplementation(() => ({ post: (...args) => mockPost(...args) })),
 }))
 jest.mock('axios-retry')
+jest.mock('@services/secrets')
 jest.mock('@utils/logging')
 
 describe('recaptcha', () => {
   beforeAll(() => {
     mockPost.mockResolvedValue({ data: { success: true, score: 0.9 } })
+    jest.mocked(getRecaptchaSecretKey).mockResolvedValue(recaptchaSecretKey)
   })
 
   describe('getCaptchaScore', () => {

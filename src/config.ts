@@ -9,7 +9,7 @@ axiosRetry(axios, { retries: 3 })
 
 export const suggestClaimsCount = parseInt(process.env.SUGGEST_CLAIMS_COUNT as string, 10)
 export const suggestClaimsPromptId = process.env.SUGGEST_CLAIMS_PROMPT_ID as string
-export const suggestClaimsUrl = process.env.SUGGEST_CLAIMS_URL as string
+export const suggestClaimsUrlParamName = '/sse/suggest-claims-url'
 
 export const validateClaimPromptId = process.env.VALIDATE_CLAIM_PROMPT_ID as string
 
@@ -51,4 +51,4 @@ export const sessionExpireHours = parseInt(process.env.SESSION_EXPIRE_HOURS as s
 
 // reCAPTCHA
 
-export const recaptchaSecretKey = process.env.RECAPTCHA_SECRET_KEY as string
+export const recaptchaSecretKeyParamName = '/sse/recaptcha-secret-key'

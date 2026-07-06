@@ -2,7 +2,6 @@
 
 process.env.SUGGEST_CLAIMS_COUNT = '10'
 process.env.SUGGEST_CLAIMS_PROMPT_ID = 'suggest-claims-prompt'
-process.env.SUGGEST_CLAIMS_URL = 'https://a-great.claims-site'
 
 process.env.VALIDATE_CLAIM_PROMPT_ID = 'validate-claim-prompt'
 
@@ -30,7 +29,3 @@ process.env.RESPONSE_PROMPT_ID = 'probe-confidence-prompt'
 // Sessions
 
 process.env.SESSION_EXPIRE_HOURS = '24'
-
-// reCAPTCHA
-
-process.env.RECAPTCHA_SECRET_KEY = 'recaptcha-secret-key'
