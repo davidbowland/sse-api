@@ -30,7 +30,7 @@ export const invokeModelSuggestClaimsResponseData = {
   id: 'msg_bdrk_01YA7pmVfUZvZM9reruSimYT',
   type: 'message',
   role: 'assistant',
-  model: 'us.anthropic.claude-sonnet-4-6',
+  model: 'us.anthropic.claude-sonnet-5',
   content: [
     {
       type: 'thinking',
@@ -75,7 +75,7 @@ export const invokeModelInvalidResponseData = {
   id: 'msg_bdrk_01YA7pmVfUZvZM9reruSimYT',
   type: 'message',
   role: 'assistant',
-  model: 'us.anthropic.claude-sonnet-4-6',
+  model: 'us.anthropic.claude-sonnet-5',
   content: [
     {
       type: 'thinking',
@@ -117,7 +117,7 @@ export const userMessage: ChatMessage = { content: 'I think I saw a cat', role: 
 export const promptConfig: PromptConfig = {
   anthropicVersion: 'bedrock-2023-05-31',
   maxTokens: 50000,
-  model: 'us.anthropic.claude-sonnet-4-6',
+  model: 'us.anthropic.claude-sonnet-5',
   thinkingBudgetTokens: 40000,
 }
 
@@ -132,7 +132,7 @@ export const invokeModelThinkingResponseData = {
   id: 'msg_bdrk_thinking_01',
   type: 'message',
   role: 'assistant',
-  model: 'us.anthropic.claude-sonnet-4-6',
+  model: 'us.anthropic.claude-sonnet-5',
   content: [
     {
       type: 'thinking',
@@ -167,7 +167,7 @@ export const invokeModelNoTextBlockResponseData = {
   id: 'msg_bdrk_no_text_01',
   type: 'message',
   role: 'assistant',
-  model: 'us.anthropic.claude-sonnet-4-6',
+  model: 'us.anthropic.claude-sonnet-5',
   content: [
     {
       type: 'thinking',

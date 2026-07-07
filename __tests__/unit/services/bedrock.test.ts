@@ -47,7 +47,7 @@ describe('bedrock', () => {
           }),
         ),
         contentType: 'application/json',
-        modelId: 'us.anthropic.claude-sonnet-4-6',
+        modelId: 'us.anthropic.claude-sonnet-5',
       })
     })
 
@@ -70,7 +70,7 @@ describe('bedrock', () => {
           }),
         ),
         contentType: 'application/json',
-        modelId: 'us.anthropic.claude-sonnet-4-6',
+        modelId: 'us.anthropic.claude-sonnet-5',
       })
     })
   })
@@ -100,7 +100,7 @@ describe('bedrock', () => {
           }),
         ),
         contentType: 'application/json',
-        modelId: 'us.anthropic.claude-sonnet-4-6',
+        modelId: 'us.anthropic.claude-sonnet-5',
       })
     })
 
@@ -135,7 +135,7 @@ describe('bedrock', () => {
           }),
         ),
         contentType: 'application/json',
-        modelId: 'us.anthropic.claude-sonnet-4-6',
+        modelId: 'us.anthropic.claude-sonnet-5',
       })
     })
 
