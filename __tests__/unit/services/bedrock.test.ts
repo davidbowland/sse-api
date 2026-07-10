@@ -15,7 +15,7 @@ import {
 } from '../__mocks__'
 import { invokeModel, invokeModelMessage } from '@services/bedrock'
 import { LLMMessage } from '@types'
-import { log } from '@utils/logging'
+import { log, logDebug } from '@utils/logging'
 
 const mockSend = jest.fn()
 jest.mock('@aws-sdk/client-bedrock-runtime', () => ({
@@ -359,6 +359,23 @@ describe('bedrock', () => {
       await expect(invokeModelMessage(prompt, testResponseSchema, history)).rejects.toThrow(
         `Model response failed schema validation for tool "${testResponseSchema.toolName}"`,
       )
+    })
+
+    it('should log only a truncated preview of the offending payload at production log level, full payload only via logDebug', async () => {
+      mockSend.mockResolvedValueOnce(invokeModelToolUseInvalidResponse)
+
+      await expect(invokeModelMessage(prompt, testResponseSchema, history)).rejects.toThrow()
+
+      const [, prodPayload] = (log as jest.Mock).mock.calls.find(
+        (call) => call[0] === 'Model response failed schema validation',
+      )
+      expect(prodPayload.parsedPreview.length).toBeLessThanOrEqual(500)
+      expect(prodPayload.parsed).toBeUndefined()
+
+      expect(logDebug).toHaveBeenCalledWith('Model response failed schema validation (full payload)', {
+        parsed: { suggestions: 'not-an-array' },
+        toolName: testResponseSchema.toolName,
+      })
     })
 
     it('should reject a fallback text response that fails schema validation', async () => {

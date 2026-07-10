@@ -34,13 +34,19 @@ const buildTool = (schema: ResponseSchema<unknown>) => ({
   input_schema: schema.jsonSchema,
 })
 
+const VALIDATION_FAILURE_PREVIEW_LENGTH = 500
+
 const validateResponse = <T>(schema: ResponseSchema<T>, parsed: unknown): T => {
   const validate = ajv.compile(schema.jsonSchema)
   if (!validate(parsed)) {
     const errors = ajv.errorsText(validate.errors)
-    // Log the offending payload here (unlike the routine per-invocation logs) because this is
+    // Some payload detail here (unlike the routine per-invocation logs) is warranted since this is
     // the one moment the feature is meant to catch, and without it a validation failure is undebuggable.
-    log('Model response failed schema validation', { errors, parsed, toolName: schema.toolName })
+    // Truncated at production log level since parsed often echoes user-submitted claim/conversation
+    // content; the untruncated payload is only ever logged when DEBUG_LOGGING is on.
+    const preview = JSON.stringify(parsed).slice(0, VALIDATION_FAILURE_PREVIEW_LENGTH)
+    log('Model response failed schema validation', { errors, parsedPreview: preview, toolName: schema.toolName })
+    logDebug('Model response failed schema validation (full payload)', { parsed, toolName: schema.toolName })
     throw new Error(`Model response failed schema validation for tool "${schema.toolName}": ${errors}`)
   }
   return parsed as T
