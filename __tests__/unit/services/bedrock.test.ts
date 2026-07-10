@@ -174,9 +174,9 @@ describe('bedrock', () => {
       })
     })
 
-    it('should log a distinguishable message and rethrow when the Bedrock invocation itself fails', async () => {
+    it('should log a distinguishable message (including retry metadata) and rethrow when the Bedrock invocation itself fails', async () => {
       const bedrockError = Object.assign(new Error('Rate exceeded'), {
-        $metadata: { httpStatusCode: 429 },
+        $metadata: { attempts: 4, httpStatusCode: 429, requestId: 'req-123', totalRetryDelay: 7000 },
         name: 'ThrottlingException',
       })
       mockSend.mockRejectedValueOnce(bedrockError)
@@ -184,9 +184,26 @@ describe('bedrock', () => {
       await expect(invokeModel(prompt, testResponseSchema, data)).rejects.toThrow('Rate exceeded')
 
       expect(log).toHaveBeenCalledWith('Bedrock invocation failed', {
+        attempts: 4,
         errorName: 'ThrottlingException',
         httpStatusCode: 429,
         message: 'Rate exceeded',
+        model: prompt.config.model,
+        requestId: 'req-123',
+        totalRetryDelay: 7000,
+      })
+    })
+
+    it('should log a distinguishable message and rethrow when the response body is not valid JSON', async () => {
+      mockSend.mockResolvedValueOnce({
+        $metadata: { httpStatusCode: 200 },
+        body: new TextEncoder().encode('not-json-at-all'),
+      })
+
+      await expect(invokeModel(prompt, testResponseSchema, data)).rejects.toThrow()
+
+      expect(log).toHaveBeenCalledWith('Failed to parse Bedrock response body as JSON', {
+        message: expect.any(String),
         model: prompt.config.model,
       })
     })

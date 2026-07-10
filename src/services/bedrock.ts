@@ -7,9 +7,9 @@ import { log, logDebug } from '../utils/logging'
 // SDK default is 3 attempts (exponential backoff, ~100-500ms base). Bumped to 4 for extra
 // resilience against transient Bedrock throttling. This only accounts for the added
 // inter-attempt backoff sleep (~7s worst case across all delays) fitting inside the tightest
-// caller budget (PostSessionFunction/PostValidateClaimFunction: 35s Lambda timeout, only ever
-// invoking the small/fast Haiku prompts) and the worker's 175s budget for the larger Sonnet
-// prompts — it does NOT bound the retried Bedrock call durations themselves, which for the
+// caller budget (PostSessionFunction/PostValidateClaimFunction/PostSuggestClaimsFunction: 35s
+// Lambda timeout, only ever invoking the small/fast Haiku prompts) and the worker's 175s budget
+// for the larger Sonnet prompts — it does NOT bound the retried Bedrock call durations themselves, which for the
 // large Sonnet prompts can legitimately run tens of seconds each. A slow-hang scenario (vs. a
 // fast-rejecting throttle) could still exceed the Lambda timeout with 4 attempts; if the Lambda
 // times out mid-call, the try/catch below never runs and this failure mode logs nothing beyond
@@ -111,16 +111,33 @@ export const invokeModelMessage = async <T>(
   try {
     response = await runtimeClient.send(command)
   } catch (error: unknown) {
-    const err = error as { $metadata?: { httpStatusCode?: number }; message?: string; name?: string } | null
+    const err = error as {
+      $metadata?: { attempts?: number; httpStatusCode?: number; requestId?: string; totalRetryDelay?: number }
+      message?: string
+      name?: string
+    } | null
     log('Bedrock invocation failed', {
+      attempts: err?.$metadata?.attempts,
       errorName: err?.name,
       httpStatusCode: err?.$metadata?.httpStatusCode,
       message: err?.message,
       model: prompt.config.model,
+      requestId: err?.$metadata?.requestId,
+      totalRetryDelay: err?.$metadata?.totalRetryDelay,
     })
     throw error
   }
-  const modelResponse = JSON.parse(new TextDecoder().decode(response.body))
+
+  let modelResponse
+  try {
+    modelResponse = JSON.parse(new TextDecoder().decode(response.body))
+  } catch (error: unknown) {
+    log('Failed to parse Bedrock response body as JSON', {
+      message: (error as Error | null)?.message,
+      model: prompt.config.model,
+    })
+    throw error
+  }
 
   const toolUseBlock = modelResponse.content.find((b: { type: string }) => b.type === 'tool_use')
   if (toolUseBlock) {
