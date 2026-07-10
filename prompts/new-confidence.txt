@@ -51,7 +51,7 @@
 {
   "claim": "The Fonz is a good role model",
   "confidence": "disagree",
-  "language": "en-US",
+  "language": "en-US"
 }
 </input>
 <output>

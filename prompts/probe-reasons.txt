@@ -84,17 +84,7 @@
 </input>
 <output>
 {
-  "finished": true,
-  "message": "Can you think of a person who used their feelings to come to the wrong conclusion?",
-  "question": 4
-}
-</output>
-</example>
-
-<example>
-<output>
-{
-  "finished": true,
+  "finished": false,
   "message": "Can you think of a person who used their feelings to come to the wrong conclusion?",
   "question": 4
 }
