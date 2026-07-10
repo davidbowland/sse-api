@@ -18,6 +18,25 @@ const getTimeInSeconds = () => Math.floor(Date.now() / 1000)
 
 const trim = (str: string) => str.replace(/^\s+|\r|\n|\s+$/g, '')
 
+// Bounds `language` to a BCP-47-shaped tag so it stays safe as a system-prompt
+// template value (see bedrock.ts's templateVars) instead of unbounded free text.
+const LANGUAGE_PATTERN = /^[a-zA-Z]{2,3}(-[a-zA-Z0-9]{2,8}){0,3}$/
+
+const validateLanguageOrThrow = (language: string | undefined): void => {
+  if (language !== undefined && !LANGUAGE_PATTERN.test(language)) {
+    throw new Error(
+      JSON.stringify([
+        {
+          instancePath: '/language',
+          keyword: 'value',
+          message: 'Language must be a valid BCP-47 language tag',
+          schemaPath: '/properties/language/value',
+        },
+      ]),
+    )
+  }
+}
+
 // Claims
 
 interface ClaimBody {
@@ -59,6 +78,7 @@ const formatClaim = (body: ClaimBody): Claim => {
       ]),
     )
   }
+  validateLanguageOrThrow(body.language)
   return { claim: trim(body.claim), language: body.language ?? 'en-US' }
 }
 
@@ -201,6 +221,7 @@ const formatSession = (body: SessionBody): Session => {
       ]),
     )
   }
+  validateLanguageOrThrow(body.language)
 
   return {
     context: {
@@ -240,18 +261,8 @@ const formatSuggestClaimsRequest = (body: SuggestClaimsRequestBody): SuggestClai
   }
   if (ajv.validate(jsonTypeDefinition, body) === false) {
     throw new Error(JSON.stringify(ajv.errors))
-  } else if (body.language && trim(body.language).length === 0) {
-    throw new Error(
-      JSON.stringify([
-        {
-          instancePath: '/language',
-          keyword: 'value',
-          message: 'Language must be non-empty text when present',
-          schemaPath: '/properties/language/value',
-        },
-      ]),
-    )
   }
+  validateLanguageOrThrow(body.language)
   return { language: body.language ?? 'en-US' }
 }
 
