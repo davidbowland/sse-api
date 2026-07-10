@@ -5,7 +5,7 @@ import {
   suggestClaimsPromptId,
 } from '../config'
 import { log, logError } from '../utils/logging'
-import { invokeModel } from './bedrock'
+import { invokeModel, singleTurn } from './bedrock'
 import { getClaimSources } from './claim-sources'
 import {
   deleteGeneratingSuggestClaims,
@@ -54,7 +54,10 @@ const generateAndCache = async (dateKey: string, language: string): Promise<stri
 
   const claimSources = await getClaimSources()
   const prompt = await getPromptById(suggestClaimsPromptId)
-  const response = await invokeModel(prompt, suggestClaimsResponseSchema, claimSources.join('\n'), { language })
+  const response = await invokeModel(prompt, suggestClaimsResponseSchema, {
+    history: singleTurn(claimSources.join('\n')),
+    templateVars: { language },
+  })
 
   // Fire-and-forget: clean up the placeholder on failure, don't break the response either way
   setSuggestClaims(dateKey, createdAt, response.suggestions, language).catch((error) => {
