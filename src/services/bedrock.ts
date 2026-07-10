@@ -4,7 +4,17 @@ import Ajv from 'ajv'
 import { LLMMessage, Prompt, ResponseSchema, ThinkingConfig } from '../types'
 import { log, logDebug } from '../utils/logging'
 
-const runtimeClient = new BedrockRuntimeClient({ region: 'us-east-1' })
+// SDK default is 3 attempts (exponential backoff, ~100-500ms base). Bumped to 4 for extra
+// resilience against transient Bedrock throttling. This only accounts for the added
+// inter-attempt backoff sleep (~7s worst case across all delays) fitting inside the tightest
+// caller budget (PostSessionFunction/PostValidateClaimFunction: 35s Lambda timeout, only ever
+// invoking the small/fast Haiku prompts) and the worker's 175s budget for the larger Sonnet
+// prompts — it does NOT bound the retried Bedrock call durations themselves, which for the
+// large Sonnet prompts can legitimately run tens of seconds each. A slow-hang scenario (vs. a
+// fast-rejecting throttle) could still exceed the Lambda timeout with 4 attempts; if the Lambda
+// times out mid-call, the try/catch below never runs and this failure mode logs nothing beyond
+// the bare platform timeout. Do not raise maxAttempts further without re-checking this.
+const runtimeClient = new BedrockRuntimeClient({ maxAttempts: 4, region: 'us-east-1' })
 
 // Standard JSON Schema mode (not the JTD dialect used in utils/events.ts) because
 // Anthropic's tool input_schema requires standard JSON Schema — this lets one schema
@@ -97,7 +107,19 @@ export const invokeModelMessage = async <T>(
     contentType: 'application/json',
     modelId: prompt.config.model,
   })
-  const response = await runtimeClient.send(command)
+  let response
+  try {
+    response = await runtimeClient.send(command)
+  } catch (error: unknown) {
+    const err = error as { $metadata?: { httpStatusCode?: number }; message?: string; name?: string } | null
+    log('Bedrock invocation failed', {
+      errorName: err?.name,
+      httpStatusCode: err?.$metadata?.httpStatusCode,
+      message: err?.message,
+      model: prompt.config.model,
+    })
+    throw error
+  }
   const modelResponse = JSON.parse(new TextDecoder().decode(response.body))
 
   const toolUseBlock = modelResponse.content.find((b: { type: string }) => b.type === 'tool_use')

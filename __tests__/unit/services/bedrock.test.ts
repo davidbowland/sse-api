@@ -160,6 +160,23 @@ describe('bedrock', () => {
         `Model response failed schema validation for tool "${testResponseSchema.toolName}"`,
       )
     })
+
+    it('should log a distinguishable message and rethrow when the Bedrock invocation itself fails', async () => {
+      const bedrockError = Object.assign(new Error('Rate exceeded'), {
+        $metadata: { httpStatusCode: 429 },
+        name: 'ThrottlingException',
+      })
+      mockSend.mockRejectedValueOnce(bedrockError)
+
+      await expect(invokeModel(prompt, testResponseSchema, data)).rejects.toThrow('Rate exceeded')
+
+      expect(log).toHaveBeenCalledWith('Bedrock invocation failed', {
+        errorName: 'ThrottlingException',
+        httpStatusCode: 429,
+        message: 'Rate exceeded',
+        model: prompt.config.model,
+      })
+    })
   })
 
   describe('invokeModelMessage', () => {
@@ -333,5 +350,18 @@ describe('bedrock', () => {
         'Model response failed schema validation',
       )
     })
+  })
+
+  it('should construct the Bedrock client with an explicit retry budget', () => {
+    // The client is a module-level singleton constructed once at import time, and clearMocks
+    // wipes that call before any test body runs. jest.resetModules() also re-runs the
+    // jest.mock() factory, producing a fresh BedrockRuntimeClient mock — re-require the mocked
+    // SDK module itself to get the same instance bedrock.ts actually constructs against.
+    jest.resetModules()
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const freshAwsSdk = require('@aws-sdk/client-bedrock-runtime')
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    require('@services/bedrock')
+    expect(freshAwsSdk.BedrockRuntimeClient).toHaveBeenCalledWith(expect.objectContaining({ maxAttempts: 4 }))
   })
 })
