@@ -4,7 +4,6 @@ import {
   suggestClaimsPollDeadlineSeconds,
   suggestClaimsPromptId,
 } from '../config'
-import { SuggestClaimsResponse } from '../types'
 import { log, logError } from '../utils/logging'
 import { invokeModel } from './bedrock'
 import { getClaimSources } from './claim-sources'
@@ -15,6 +14,7 @@ import {
   setGeneratingSuggestClaims,
   setSuggestClaims,
 } from './dynamodb'
+import { suggestClaimsResponseSchema } from './response-schemas'
 
 const POLL_INTERVAL_MS = 2_000
 
@@ -54,7 +54,7 @@ const generateAndCache = async (dateKey: string, language: string): Promise<stri
 
   const claimSources = await getClaimSources()
   const prompt = await getPromptById(suggestClaimsPromptId)
-  const response = await invokeModel<SuggestClaimsResponse>(prompt, claimSources.join('\n'), { language })
+  const response = await invokeModel(prompt, suggestClaimsResponseSchema, claimSources.join('\n'), { language })
 
   // Fire-and-forget: clean up the placeholder on failure, don't break the response either way
   setSuggestClaims(dateKey, createdAt, response.suggestions, language).catch((error) => {

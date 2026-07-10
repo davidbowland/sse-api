@@ -2,7 +2,8 @@ import { validateClaimPromptId } from '../config'
 import { invokeModel } from '../services/bedrock'
 import { getPromptById } from '../services/dynamodb'
 import { getCaptchaScore, recaptchaMinScore } from '../services/recaptcha'
-import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, ValidationResponse } from '../types'
+import { validationResponseSchema } from '../services/response-schemas'
+import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from '../types'
 import { extractClaimFromEvent, extractRecaptchaToken } from '../utils/events'
 import { log, logError } from '../utils/logging'
 import status from '../utils/status'
@@ -22,7 +23,7 @@ export const postValidateClaimHandler = async (
       }
 
       const prompt = await getPromptById(validateClaimPromptId)
-      const validation = await invokeModel<ValidationResponse>(prompt, claim, { language })
+      const validation = await invokeModel(prompt, validationResponseSchema, claim, { language })
       log('Claim validation complete', { claim, validation })
 
       return { ...status.OK, body: JSON.stringify(validation) }

@@ -1,7 +1,8 @@
 import { validateClaimPromptId } from '../config'
 import { invokeModel } from '../services/bedrock'
 import { getPromptById, getSessionById, setSessionById } from '../services/dynamodb'
-import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, ValidationResponse } from '../types'
+import { validationResponseSchema } from '../services/response-schemas'
+import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from '../types'
 import { extractSessionFromEvent } from '../utils/events'
 import { getNextId } from '../utils/id-generator'
 import { log, logError } from '../utils/logging'
@@ -13,7 +14,7 @@ export const postSessionHandler = async (event: APIGatewayProxyEventV2): Promise
     const session = extractSessionFromEvent(event)
     try {
       const prompt = await getPromptById(validateClaimPromptId)
-      const validation = await invokeModel<ValidationResponse>(prompt, session.context.claim, {
+      const validation = await invokeModel(prompt, validationResponseSchema, session.context.claim, {
         language: session.context.language,
       })
 

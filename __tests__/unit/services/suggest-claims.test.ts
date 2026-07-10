@@ -2,6 +2,7 @@ import { claimSources, invokeModelSuggestClaims, prompt } from '../__mocks__'
 import * as bedrock from '@services/bedrock'
 import * as claimSourcesService from '@services/claim-sources'
 import * as dynamodb from '@services/dynamodb'
+import { suggestClaimsResponseSchema } from '@services/response-schemas'
 import { getCachedOrGenerateClaims } from '@services/suggest-claims'
 
 jest.mock('@services/bedrock')
@@ -89,7 +90,9 @@ describe('suggest-claims', () => {
       await getCachedOrGenerateClaims('fr-FR')
 
       expect(dynamodb.getLatestSuggestClaims).toHaveBeenCalledWith(dateKeyFrFR)
-      expect(bedrock.invokeModel).toHaveBeenCalledWith(prompt, claimSources.join('\n'), { language: 'fr-FR' })
+      expect(bedrock.invokeModel).toHaveBeenCalledWith(prompt, suggestClaimsResponseSchema, claimSources.join('\n'), {
+        language: 'fr-FR',
+      })
     })
 
     it('does not fail the response when cache write fails', async () => {

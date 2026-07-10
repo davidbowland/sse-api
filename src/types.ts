@@ -60,6 +60,14 @@ export interface Prompt {
   contents: string
 }
 
+// _T is a phantom type parameter (unused in the fields) so invokeModel/invokeModelMessage
+// can infer their return type from the schema argument instead of an explicit type argument.
+export interface ResponseSchema<_T> {
+  toolName: string
+  toolDescription: string
+  jsonSchema: object
+}
+
 // LLM interactions
 
 export interface LLMRequest {
@@ -70,6 +78,7 @@ export interface LLMResponse {
   correct?: boolean
   finished: boolean
   message: string
+  question?: number
   reasons?: string[]
 }
 

@@ -3,6 +3,7 @@ import eventJson from '@events/post-session.json'
 import { postSessionHandler } from '@handlers/post-session'
 import * as bedrock from '@services/bedrock'
 import * as dynamodb from '@services/dynamodb'
+import { validationResponseSchema } from '@services/response-schemas'
 import { APIGatewayProxyEventV2 } from '@types'
 import * as events from '@utils/events'
 import * as idGenerator from '@utils/id-generator'
@@ -31,7 +32,7 @@ describe('post-session', () => {
     it('should validate claim and save new session and return session ID', async () => {
       const result = await postSessionHandler(event)
 
-      expect(bedrock.invokeModel).toHaveBeenCalledWith(prompt, newSession.context.claim, {
+      expect(bedrock.invokeModel).toHaveBeenCalledWith(prompt, validationResponseSchema, newSession.context.claim, {
         language: newSession.context.language,
       })
       expect(result).toEqual({

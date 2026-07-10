@@ -2,6 +2,7 @@ import { llmResponse, newAssistantMessage, prompt, session, sessionId, userMessa
 import { llmResponseWorkerHandler } from '@handlers/llm-response-worker'
 import * as bedrock from '@services/bedrock'
 import * as dynamodb from '@services/dynamodb'
+import { llmResponseSchema } from '@services/response-schemas'
 import { AssistantMessage, ChatMessage, Session, UserMessage } from '@types'
 
 jest.mock('@services/bedrock')
@@ -66,18 +67,23 @@ describe('llm-response-worker', () => {
     it('passes correct arguments to invokeModelMessage', async () => {
       await llmResponseWorkerHandler(workerEvent)
 
-      expect(bedrock.invokeModelMessage).toHaveBeenCalledWith(prompt, [...session.llmHistory, userMessage], {
-        changedConfidence: undefined,
-        claim: session.context.claim,
-        confidence: session.context.confidence,
-        generatedReasons: session.context.generatedReasons,
-        incorrect_guesses: undefined,
-        language: session.context.language,
-        newConversation: false,
-        possibleConfidenceLevels: expectedConfidenceLevels,
-        question: updatedSession.question,
-        storedMessage: session.storedMessage,
-      })
+      expect(bedrock.invokeModelMessage).toHaveBeenCalledWith(
+        prompt,
+        llmResponseSchema,
+        [...session.llmHistory, userMessage],
+        {
+          changedConfidence: undefined,
+          claim: session.context.claim,
+          confidence: session.context.confidence,
+          generatedReasons: session.context.generatedReasons,
+          incorrect_guesses: undefined,
+          language: session.context.language,
+          newConversation: false,
+          possibleConfidenceLevels: expectedConfidenceLevels,
+          question: updatedSession.question,
+          storedMessage: session.storedMessage,
+        },
+      )
     })
 
     it('synthesizes a first user message into the LLM call when newConversation is true', async () => {
@@ -88,6 +94,7 @@ describe('llm-response-worker', () => {
 
       expect(bedrock.invokeModelMessage).toHaveBeenCalledWith(
         prompt,
+        llmResponseSchema,
         [...session.llmHistory, synthesizedMessage],
         expect.any(Object),
       )
@@ -151,16 +158,21 @@ describe('llm-response-worker', () => {
 
       await llmResponseWorkerHandler(workerEvent)
 
-      expect(bedrock.invokeModelMessage).toHaveBeenCalledWith(prompt, [...session.llmHistory, userMessage], {
-        claim: session.context.claim,
-        confidence: session.context.confidence,
-        generatedReasons: session.context.generatedReasons,
-        incorrect_guesses: 0,
-        language: session.context.language,
-        newConversation: false,
-        possibleConfidenceLevels: expectedConfidenceLevels,
-        storedMessage: session.storedMessage,
-      })
+      expect(bedrock.invokeModelMessage).toHaveBeenCalledWith(
+        prompt,
+        llmResponseSchema,
+        [...session.llmHistory, userMessage],
+        {
+          claim: session.context.claim,
+          confidence: session.context.confidence,
+          generatedReasons: session.context.generatedReasons,
+          incorrect_guesses: 0,
+          language: session.context.language,
+          newConversation: false,
+          possibleConfidenceLevels: expectedConfidenceLevels,
+          storedMessage: session.storedMessage,
+        },
+      )
     })
 
     it('passes connect arguments to LLM on final step when confidence changed', async () => {
@@ -171,16 +183,21 @@ describe('llm-response-worker', () => {
 
       await llmResponseWorkerHandler(workerEvent)
 
-      expect(bedrock.invokeModelMessage).toHaveBeenCalledWith(prompt, [...session.llmHistory, userMessage], {
-        changedConfidence: 'Changed confidence from agree to strongly agree',
-        claim: session.context.claim,
-        generatedReasons: session.context.generatedReasons,
-        language: session.context.language,
-        newConversation: false,
-        possibleConfidenceLevels: expectedConfidenceLevels,
-        question: updatedSession.question,
-        storedMessage: session.storedMessage,
-      })
+      expect(bedrock.invokeModelMessage).toHaveBeenCalledWith(
+        prompt,
+        llmResponseSchema,
+        [...session.llmHistory, userMessage],
+        {
+          changedConfidence: 'Changed confidence from agree to strongly agree',
+          claim: session.context.claim,
+          generatedReasons: session.context.generatedReasons,
+          language: session.context.language,
+          newConversation: false,
+          possibleConfidenceLevels: expectedConfidenceLevels,
+          question: updatedSession.question,
+          storedMessage: session.storedMessage,
+        },
+      )
     })
 
     it('passes connect arguments to LLM on final step when confidence unchanged', async () => {
@@ -196,16 +213,21 @@ describe('llm-response-worker', () => {
 
       await llmResponseWorkerHandler(workerEvent)
 
-      expect(bedrock.invokeModelMessage).toHaveBeenCalledWith(prompt, [...session.llmHistory, userMessage], {
-        changedConfidence: 'Kept confidence at disagree',
-        claim: session.context.claim,
-        generatedReasons: session.context.generatedReasons,
-        language: session.context.language,
-        newConversation: false,
-        possibleConfidenceLevels: expectedConfidenceLevels,
-        question: updatedSession.question,
-        storedMessage: session.storedMessage,
-      })
+      expect(bedrock.invokeModelMessage).toHaveBeenCalledWith(
+        prompt,
+        llmResponseSchema,
+        [...session.llmHistory, userMessage],
+        {
+          changedConfidence: 'Kept confidence at disagree',
+          claim: session.context.claim,
+          generatedReasons: session.context.generatedReasons,
+          language: session.context.language,
+          newConversation: false,
+          possibleConfidenceLevels: expectedConfidenceLevels,
+          question: updatedSession.question,
+          storedMessage: session.storedMessage,
+        },
+      )
     })
 
     it("doesn't move on from final step", async () => {

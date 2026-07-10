@@ -10,12 +10,26 @@ import {
   Prompt,
   PromptConfig,
   PromptId,
+  ResponseSchema,
   Session,
   SessionId,
   UserMessage,
 } from '@types'
 
 // Bedrock
+
+export const testResponseSchema: ResponseSchema<{ suggestions: string[] }> = {
+  toolDescription: 'Submit the response for this test.',
+  toolName: 'submit_test_response',
+  jsonSchema: {
+    type: 'object',
+    properties: {
+      suggestions: { type: 'array', items: { type: 'string' } },
+    },
+    required: ['suggestions'],
+    additionalProperties: false,
+  },
+}
 
 export const invokeModelSuggestClaims = [
   'Voter ID requirements strengthen democracy.',
@@ -69,6 +83,84 @@ export const invokeModelSuggestClaimsResponse = {
     totalRetryDelay: 0,
   },
   body: new TextEncoder().encode(JSON.stringify(invokeModelSuggestClaimsResponseData)),
+}
+
+export const invokeModelToolUseResponseData = {
+  id: 'msg_bdrk_tool_use_01',
+  type: 'message',
+  role: 'assistant',
+  model: 'us.anthropic.claude-sonnet-5',
+  content: [
+    {
+      type: 'thinking',
+      thinking: 'Let me use the tool to submit my response.',
+    },
+    {
+      type: 'tool_use',
+      id: 'toolu_test_01',
+      name: 'submit_test_response',
+      input: { suggestions: ['Tool Claim A', 'Tool Claim B'] },
+    },
+    {
+      type: 'text',
+      text: '{"suggestions":["Text Claim, should be ignored"]}',
+    },
+  ],
+  stop_reason: 'tool_use',
+  stop_sequence: null,
+  usage: { input_tokens: 3398, output_tokens: 20 },
+}
+
+export const invokeModelToolUseResponse = {
+  $metadata: {
+    attempts: 1,
+    cfId: undefined,
+    extendedRequestId: undefined,
+    httpStatusCode: 200,
+    requestId: 'fragglerock-tool-use',
+    retryDelay: 0,
+    statusCode: 200,
+    success: true,
+    totalRetryDelay: 0,
+  },
+  body: new TextEncoder().encode(JSON.stringify(invokeModelToolUseResponseData)),
+}
+
+export const invokeModelToolUseInvalidResponseData = {
+  id: 'msg_bdrk_tool_use_invalid_01',
+  type: 'message',
+  role: 'assistant',
+  model: 'us.anthropic.claude-sonnet-5',
+  content: [
+    {
+      type: 'thinking',
+      thinking: 'Let me use the tool to submit my response.',
+    },
+    {
+      type: 'tool_use',
+      id: 'toolu_test_02',
+      name: 'submit_test_response',
+      input: { suggestions: 'not-an-array' },
+    },
+  ],
+  stop_reason: 'tool_use',
+  stop_sequence: null,
+  usage: { input_tokens: 3398, output_tokens: 20 },
+}
+
+export const invokeModelToolUseInvalidResponse = {
+  $metadata: {
+    attempts: 1,
+    cfId: undefined,
+    extendedRequestId: undefined,
+    httpStatusCode: 200,
+    requestId: 'fragglerock-tool-use-invalid',
+    retryDelay: 0,
+    statusCode: 200,
+    success: true,
+    totalRetryDelay: 0,
+  },
+  body: new TextEncoder().encode(JSON.stringify(invokeModelToolUseInvalidResponseData)),
 }
 
 export const invokeModelInvalidResponseData = {

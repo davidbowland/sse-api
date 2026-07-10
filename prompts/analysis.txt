@@ -27,9 +27,9 @@
   - Inform the user of your guess and the reasons you used to come up with it.
 - Finally, remind the user that this is an AI analysis. It is useful for consideration, but may not be accurate.
 
-- Respond in VALID JSON format with no preamble. Be sure to escape " to \" and a new line to \n. The object should contain:
+- Use the `submit_conversation_response` tool to submit your response. The tool's input should contain:
   - finished -- a boolean with the value of true
   - message -- a string containing the response of the assistant
 - ALWAYS answer in the language requested.
-- Respond with ONLY valid JSON. Do not include any other text or tags.
+- If you are unable to use the tool for any reason, respond with ONLY valid JSON matching the same shape, escaping " to \" and a new line to \n, and no other text, as a fallback.
 </instructions>

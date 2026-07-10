@@ -16,10 +16,10 @@
   - The first two truth claims should be controversial but unlikely to evoke strong emotions.
   - The next two truth claims should be controversial and likely to evoke mild emotions.
   - The final two truth claims should be highly controversial and very likely to evoke strong emotions.
-- Respond in JSON format. The object should contain:
+- Use the `submit_claim_suggestions` tool to submit your response. The tool's input should contain:
   - suggestions -- an array that contains six claim suggestions
 - ALWAYS provide suggestions in the language requested.
-- Respond with ONLY valid JSON. Do not include any other text or tags.
+- If you are unable to use the tool for any reason, respond with ONLY valid JSON matching the same shape and no other text, as a fallback.
 </instructions>
 
 <example>

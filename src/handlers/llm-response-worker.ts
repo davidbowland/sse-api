@@ -1,5 +1,6 @@
 import { invokeModelMessage } from '../services/bedrock'
 import { getPromptById, getSessionById, setSessionById } from '../services/dynamodb'
+import { llmResponseSchema } from '../services/response-schemas'
 import {
   AssistantMessage,
   ChatMessage,
@@ -67,8 +68,9 @@ export const llmResponseWorkerHandler = async (event: WorkerEvent): Promise<void
     }
     : (userMessage as UserMessage)
 
-  const response = await invokeModelMessage<LLMResponse>(
+  const response = await invokeModelMessage(
     prompt,
+    llmResponseSchema,
     [...(session.llmHistory ?? []), currentLlmMessage],
     llmContext,
   ).catch((error: unknown) => {

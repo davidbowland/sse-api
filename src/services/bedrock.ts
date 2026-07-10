@@ -1,9 +1,15 @@
 import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime'
+import Ajv from 'ajv'
 
-import { LLMMessage, Prompt, ThinkingConfig } from '../types'
+import { LLMMessage, Prompt, ResponseSchema, ThinkingConfig } from '../types'
 import { log, logDebug } from '../utils/logging'
 
 const runtimeClient = new BedrockRuntimeClient({ region: 'us-east-1' })
+
+// Standard JSON Schema mode (not the JTD dialect used in utils/events.ts) because
+// Anthropic's tool input_schema requires standard JSON Schema — this lets one schema
+// object drive both the tool definition and response validation below.
+const ajv = new Ajv()
 
 const MAX_MESSAGE_HISTORY_COUNT = 30
 
@@ -12,15 +18,34 @@ const MAX_MESSAGE_HISTORY_COUNT = 30
 const safeJsonForPrompt = (value: unknown): string =>
   JSON.stringify(value).replace(/</g, '\\u003c').replace(/>/g, '\\u003e')
 
-export const invokeModel = async <T = unknown>(
+const buildTool = (schema: ResponseSchema<unknown>) => ({
+  name: schema.toolName,
+  description: schema.toolDescription,
+  input_schema: schema.jsonSchema,
+})
+
+const validateResponse = <T>(schema: ResponseSchema<T>, parsed: unknown): T => {
+  const validate = ajv.compile(schema.jsonSchema)
+  if (!validate(parsed)) {
+    const errors = ajv.errorsText(validate.errors)
+    // Log the offending payload here (unlike the routine per-invocation logs) because this is
+    // the one moment the feature is meant to catch, and without it a validation failure is undebuggable.
+    log('Model response failed schema validation', { errors, parsed, toolName: schema.toolName })
+    throw new Error(`Model response failed schema validation for tool "${schema.toolName}": ${errors}`)
+  }
+  return parsed as T
+}
+
+export const invokeModel = async <T>(
   prompt: Prompt,
+  schema: ResponseSchema<T>,
   data: string,
   context?: Record<string, unknown>,
 ): Promise<T> => {
   const promptWithContext = context
     ? { ...prompt, contents: prompt.contents.replace('${context}', safeJsonForPrompt(context)) }
     : prompt
-  return invokeModelMessage<T>(promptWithContext, [{ content: data, role: 'user' }])
+  return invokeModelMessage<T>(promptWithContext, schema, [{ content: data, role: 'user' }])
 }
 
 const getMessageHistory = (history: LLMMessage[]): LLMMessage[] => history.slice(-MAX_MESSAGE_HISTORY_COUNT)
@@ -45,8 +70,9 @@ const buildThinkingFields = (
   }
 }
 
-export const invokeModelMessage = async <T = unknown>(
+export const invokeModelMessage = async <T>(
   prompt: Prompt,
+  schema: ResponseSchema<T>,
   history: LLMMessage[],
   data?: Record<string, unknown>,
 ): Promise<T> => {
@@ -61,18 +87,11 @@ export const invokeModelMessage = async <T = unknown>(
       content: msg.role === 'assistant' ? JSON.stringify(msg.content) : msg.content,
     })),
     system: systemContent,
+    tools: [buildTool(schema)],
+    tool_choice: { type: 'auto' },
     ...buildThinkingFields(prompt.config.thinking),
   }
-  log('Invoking model', {
-    history1: history.slice(0, 10),
-    history2: history.slice(10, 20),
-    history3: history.slice(20),
-    messageBody,
-    messages1: messageBody.messages.slice(0, 10),
-    messages2: messageBody.messages.slice(10, 20),
-    messages3: messageBody.messages.slice(20),
-    model: prompt.config.model,
-  })
+  log('Invoking model', { historyLength: messageBody.messages.length, model: prompt.config.model })
   const command = new InvokeModelCommand({
     body: new TextEncoder().encode(JSON.stringify(messageBody)),
     contentType: 'application/json',
@@ -80,11 +99,30 @@ export const invokeModelMessage = async <T = unknown>(
   })
   const response = await runtimeClient.send(command)
   const modelResponse = JSON.parse(new TextDecoder().decode(response.body))
+
+  const toolUseBlock = modelResponse.content.find((b: { type: string }) => b.type === 'tool_use')
+  if (toolUseBlock) {
+    log('Model response received via tool use', { model: prompt.config.model, toolName: toolUseBlock.name })
+    return validateResponse(schema, toolUseBlock.input)
+  }
+
   const textBlock = modelResponse.content.find((b: { type: string }) => b.type === 'text')
   if (!textBlock) {
-    log('Model response missing text block', { modelResponse })
-    throw new Error('Bedrock response contained no text block')
+    log('Model response missing text block and tool use block', {
+      blockTypes: modelResponse.content.map((b: { type: string }) => b.type),
+      model: prompt.config.model,
+      stopReason: modelResponse.stop_reason,
+    })
+    throw new Error('Bedrock response contained no text block or tool use block')
   }
-  log('Model response', { modelResponse, text: textBlock.text })
-  return JSON.parse(extractJson(textBlock.text))
+  log('Model replied without invoking the expected tool; falling back to text extraction', {
+    model: prompt.config.model,
+    toolName: schema.toolName,
+  })
+  log('Model response received', {
+    model: prompt.config.model,
+    stopReason: modelResponse.stop_reason,
+    textLength: textBlock.text.length,
+  })
+  return validateResponse(schema, JSON.parse(extractJson(textBlock.text)))
 }

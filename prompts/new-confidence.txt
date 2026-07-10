@@ -12,11 +12,11 @@
   - If the conversation is finished, thank the user for exploring why they changed their confidence. Think about the stored message and how it should be modified based on the user's new confidence, but do not significantly change it. After thanking the user, ALWAYS put two newlines \n\n then re-ask the stored message, modifying it only to represent the new confidence level.
   - If the conversation is not finished, always ask exactly one question. Use two, three, or four sentences.
   - A new conversation can NEVER be finished.
-- Respond in VALID JSON format. Be sure to escape " to \" and a new line to \n. The object should contain:
+- Use the `submit_conversation_response` tool to submit your response. The tool's input should contain:
   - finished -- a boolean indicating whether the conversation has finished
   - message -- a string containing the response of the assistant
 - ALWAYS answer in the language requested.
-- Respond with ONLY valid JSON. Do not include any other text or tags.
+- If you are unable to use the tool for any reason, respond with ONLY valid JSON matching the same shape, escaping " to \" and a new line to \n, and no other text, as a fallback.
 </instructions>
 
 <example>
