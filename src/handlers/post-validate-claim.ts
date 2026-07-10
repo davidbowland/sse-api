@@ -1,5 +1,5 @@
 import { validateClaimPromptId } from '../config'
-import { invokeModel } from '../services/bedrock'
+import { invokeModel, singleTurn } from '../services/bedrock'
 import { getPromptById } from '../services/dynamodb'
 import { getCaptchaScore, recaptchaMinScore } from '../services/recaptcha'
 import { validationResponseSchema } from '../services/response-schemas'
@@ -23,7 +23,10 @@ export const postValidateClaimHandler = async (
       }
 
       const prompt = await getPromptById(validateClaimPromptId)
-      const validation = await invokeModel(prompt, validationResponseSchema, claim, { language })
+      const validation = await invokeModel(prompt, validationResponseSchema, {
+        history: singleTurn(claim),
+        templateVars: { language },
+      })
       log('Claim validation complete', { claim, validation })
 
       return { ...status.OK, body: JSON.stringify(validation) }

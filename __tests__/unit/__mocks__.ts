@@ -224,12 +224,12 @@ export const promptId: PromptId = '5253'
 
 export const prompt: Prompt = {
   config: promptConfig,
-  contents: 'You are a helpful assistant. ${data}',
+  contents: 'You are a helpful assistant. ${context}',
 }
 
 export const promptManualThinking: Prompt = {
   config: promptConfigManualThinking,
-  contents: 'You are a helpful assistant. ${data}',
+  contents: 'You are a helpful assistant. ${context}',
 }
 
 export const invokeModelThinkingResponseData = {

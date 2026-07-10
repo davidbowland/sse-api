@@ -26,6 +26,7 @@ describe('suggest-claims', () => {
   beforeAll(() => {
     jest.useFakeTimers({ now: fixedNowMs })
     jest.mocked(bedrock).invokeModel.mockResolvedValue({ suggestions: invokeModelSuggestClaims })
+    jest.mocked(bedrock).singleTurn.mockImplementation((content) => [{ content, role: 'user' }])
     jest.mocked(claimSourcesService).getClaimSources.mockResolvedValue(claimSources)
     jest.mocked(dynamodb).getPromptById.mockResolvedValue(prompt)
     jest.mocked(dynamodb).setSuggestClaims.mockResolvedValue({} as any)
@@ -90,8 +91,9 @@ describe('suggest-claims', () => {
       await getCachedOrGenerateClaims('fr-FR')
 
       expect(dynamodb.getLatestSuggestClaims).toHaveBeenCalledWith(dateKeyFrFR)
-      expect(bedrock.invokeModel).toHaveBeenCalledWith(prompt, suggestClaimsResponseSchema, claimSources.join('\n'), {
-        language: 'fr-FR',
+      expect(bedrock.invokeModel).toHaveBeenCalledWith(prompt, suggestClaimsResponseSchema, {
+        history: [{ content: claimSources.join('\n'), role: 'user' }],
+        templateVars: { language: 'fr-FR' },
       })
     })
 

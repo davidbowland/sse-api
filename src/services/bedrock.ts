@@ -25,7 +25,7 @@ const MAX_MESSAGE_HISTORY_COUNT = 30
 
 // Escape < and > so user-controlled text embedded in XML-tagged prompts can't
 // break out of JSON string context and be mistaken for instruction tags.
-const safeJsonForPrompt = (value: unknown): string =>
+export const safeJsonForPrompt = (value: unknown): string =>
   JSON.stringify(value).replace(/</g, '\\u003c').replace(/>/g, '\\u003e')
 
 const buildTool = (schema: ResponseSchema<unknown>) => ({
@@ -52,17 +52,12 @@ const validateResponse = <T>(schema: ResponseSchema<T>, parsed: unknown): T => {
   return parsed as T
 }
 
-export const invokeModel = async <T>(
-  prompt: Prompt,
-  schema: ResponseSchema<T>,
-  data: string,
-  context?: Record<string, unknown>,
-): Promise<T> => {
-  const promptWithContext = context
-    ? { ...prompt, contents: prompt.contents.replace('${context}', safeJsonForPrompt(context)) }
-    : prompt
-  return invokeModelMessage<T>(promptWithContext, schema, [{ content: data, role: 'user' }])
+export interface InvokeModelOptions {
+  history: LLMMessage[]
+  templateVars?: Record<string, unknown>
 }
+
+export const singleTurn = (content: string): LLMMessage[] => [{ content, role: 'user' }]
 
 const getMessageHistory = (history: LLMMessage[]): LLMMessage[] => history.slice(-MAX_MESSAGE_HISTORY_COUNT)
 
@@ -86,36 +81,30 @@ const buildThinkingFields = (
   }
 }
 
-export const invokeModelMessage = async <T>(
-  prompt: Prompt,
-  schema: ResponseSchema<T>,
-  history: LLMMessage[],
-  data?: Record<string, unknown>,
-): Promise<T> => {
-  const systemContent = data ? prompt.contents.replace('${data}', safeJsonForPrompt(data)) : prompt.contents
-  logDebug('Invoking model', { data, prompt, systemContent })
+const buildSystemPrompt = (prompt: Prompt, templateVars?: Record<string, unknown>): string =>
+  templateVars ? prompt.contents.replace('${context}', safeJsonForPrompt(templateVars)) : prompt.contents
 
-  const messageBody = {
-    anthropic_version: prompt.config.anthropicVersion,
-    max_tokens: prompt.config.maxTokens,
-    messages: getMessageHistory(history).map((msg) => ({
-      role: msg.role,
-      content: msg.role === 'assistant' ? JSON.stringify(msg.content) : msg.content,
-    })),
-    system: systemContent,
-    tools: [buildTool(schema)],
-    tool_choice: { type: 'auto' },
-    ...buildThinkingFields(prompt.config.thinking),
-  }
-  log('Invoking model', { historyLength: messageBody.messages.length, model: prompt.config.model })
-  const command = new InvokeModelCommand({
-    body: new TextEncoder().encode(JSON.stringify(messageBody)),
-    contentType: 'application/json',
-    modelId: prompt.config.model,
-  })
-  let response
+const buildRequestBody = (
+  prompt: Prompt,
+  schema: ResponseSchema<unknown>,
+  systemPrompt: string,
+  history: LLMMessage[],
+) => ({
+  anthropic_version: prompt.config.anthropicVersion,
+  max_tokens: prompt.config.maxTokens,
+  messages: getMessageHistory(history).map((msg) => ({
+    role: msg.role,
+    content: msg.role === 'assistant' ? JSON.stringify(msg.content) : msg.content,
+  })),
+  system: systemPrompt,
+  tools: [buildTool(schema)],
+  tool_choice: { type: 'auto' },
+  ...buildThinkingFields(prompt.config.thinking),
+})
+
+const sendToBedrock = async (command: InvokeModelCommand, model: string) => {
   try {
-    response = await runtimeClient.send(command)
+    return await runtimeClient.send(command)
   } catch (error: unknown) {
     const err = error as {
       $metadata?: { attempts?: number; httpStatusCode?: number; requestId?: string; totalRetryDelay?: number }
@@ -127,58 +116,89 @@ export const invokeModelMessage = async <T>(
       errorName: err?.name,
       httpStatusCode: err?.$metadata?.httpStatusCode,
       message: err?.message,
-      model: prompt.config.model,
+      model,
       requestId: err?.$metadata?.requestId,
       totalRetryDelay: err?.$metadata?.totalRetryDelay,
     })
     throw error
   }
+}
 
-  let modelResponse
+const decodeResponseBody = (body: Uint8Array | undefined, model: string) => {
   try {
-    modelResponse = JSON.parse(new TextDecoder().decode(response.body))
+    return JSON.parse(new TextDecoder().decode(body))
   } catch (error: unknown) {
     log('Failed to parse Bedrock response body as JSON', {
       message: (error as Error | null)?.message,
-      model: prompt.config.model,
+      model,
     })
     throw error
   }
+}
 
-  const toolUseBlock = modelResponse.content.find((b: { type: string }) => b.type === 'tool_use')
+const extractModelPayload = (
+  modelResponse: {
+    content: { type: string; input?: unknown; name?: string; text: string }[]
+    stop_reason: string
+  },
+  schema: ResponseSchema<unknown>,
+  model: string,
+): unknown => {
+  const toolUseBlock = modelResponse.content.find((b) => b.type === 'tool_use')
   if (toolUseBlock) {
-    log('Model response received via tool use', { model: prompt.config.model, toolName: toolUseBlock.name })
-    return validateResponse(schema, toolUseBlock.input)
+    log('Model response received via tool use', { model, toolName: toolUseBlock.name })
+    return toolUseBlock.input
   }
 
-  const textBlock = modelResponse.content.find((b: { type: string }) => b.type === 'text')
+  const textBlock = modelResponse.content.find((b) => b.type === 'text')
   if (!textBlock) {
     log('Model response missing text block and tool use block', {
-      blockTypes: modelResponse.content.map((b: { type: string }) => b.type),
-      model: prompt.config.model,
+      blockTypes: modelResponse.content.map((b) => b.type),
+      model,
       stopReason: modelResponse.stop_reason,
     })
     throw new Error('Bedrock response contained no text block or tool use block')
   }
   log('Model replied without invoking the expected tool; falling back to text extraction', {
-    model: prompt.config.model,
+    model,
     toolName: schema.toolName,
   })
   log('Model response received', {
-    model: prompt.config.model,
+    model,
     stopReason: modelResponse.stop_reason,
     textLength: textBlock.text.length,
   })
-  let extractedJson: unknown
   try {
-    extractedJson = JSON.parse(extractJson(textBlock.text))
+    return JSON.parse(extractJson(textBlock.text))
   } catch (error: unknown) {
     log('Failed to parse JSON from fallback text response', {
       message: (error as Error | null)?.message,
-      model: prompt.config.model,
+      model,
       textLength: textBlock.text.length,
     })
     throw error
   }
-  return validateResponse(schema, extractedJson)
+}
+
+export const invokeModel = async <T>(
+  prompt: Prompt,
+  schema: ResponseSchema<T>,
+  { history, templateVars }: InvokeModelOptions,
+): Promise<T> => {
+  const systemPrompt = buildSystemPrompt(prompt, templateVars)
+  logDebug('Invoking model', { prompt, systemPrompt, templateVars })
+
+  const messageBody = buildRequestBody(prompt, schema, systemPrompt, history)
+  log('Invoking model', { historyLength: messageBody.messages.length, model: prompt.config.model })
+
+  const command = new InvokeModelCommand({
+    body: new TextEncoder().encode(JSON.stringify(messageBody)),
+    contentType: 'application/json',
+    modelId: prompt.config.model,
+  })
+
+  const response = await sendToBedrock(command, prompt.config.model)
+  const modelResponse = decodeResponseBody(response.body, prompt.config.model)
+  const payload = extractModelPayload(modelResponse, schema, prompt.config.model)
+  return validateResponse(schema, payload)
 }

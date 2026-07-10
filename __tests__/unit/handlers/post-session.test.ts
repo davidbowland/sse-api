@@ -21,6 +21,7 @@ describe('post-session', () => {
 
   beforeAll(() => {
     jest.mocked(bedrock).invokeModel.mockResolvedValue(validationResult)
+    jest.mocked(bedrock).singleTurn.mockImplementation((content: string) => [{ content, role: 'user' }])
     jest.mocked(dynamodb).getPromptById.mockResolvedValue(prompt)
     jest.mocked(events).extractSessionFromEvent.mockReturnValue(newSession)
     jest.mocked(idGenerator).getNextId.mockResolvedValue(sessionId)
@@ -32,8 +33,9 @@ describe('post-session', () => {
     it('should validate claim and save new session and return session ID', async () => {
       const result = await postSessionHandler(event)
 
-      expect(bedrock.invokeModel).toHaveBeenCalledWith(prompt, validationResponseSchema, newSession.context.claim, {
-        language: newSession.context.language,
+      expect(bedrock.invokeModel).toHaveBeenCalledWith(prompt, validationResponseSchema, {
+        history: [{ content: newSession.context.claim, role: 'user' }],
+        templateVars: { language: newSession.context.language },
       })
       expect(result).toEqual({
         ...status.CREATED,
