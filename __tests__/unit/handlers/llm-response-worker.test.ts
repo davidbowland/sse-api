@@ -9,6 +9,11 @@ jest.mock('@services/bedrock')
 jest.mock('@services/dynamodb')
 jest.mock('@utils/logging')
 
+const { safeJsonForPrompt } = jest.requireActual('@services/bedrock')
+
+const groundedContent = (llmContext: Record<string, unknown>, content: string): string =>
+  `<input>\n${safeJsonForPrompt(llmContext)}\n</input>\n\n${content}`
+
 describe('llm-response-worker', () => {
   const promptId = 'probe-confidence'
   const workerEvent = { promptId, sessionId, userMessage }
@@ -34,7 +39,8 @@ describe('llm-response-worker', () => {
   const expectedConfidenceLevels = session.context.possibleConfidenceLevels.map((level) => level.label)
 
   beforeAll(() => {
-    jest.mocked(bedrock).invokeModelMessage.mockResolvedValue(llmResponse)
+    jest.mocked(bedrock).invokeModel.mockResolvedValue(llmResponse)
+    jest.mocked(bedrock).safeJsonForPrompt.mockImplementation(safeJsonForPrompt)
     jest.mocked(dynamodb).getPromptById.mockResolvedValue(prompt)
     jest.mocked(dynamodb).getSessionById.mockResolvedValue(questionSession)
   })
@@ -64,26 +70,32 @@ describe('llm-response-worker', () => {
       )
     })
 
-    it('passes correct arguments to invokeModelMessage', async () => {
+    it('passes correct arguments to invokeModel, grounding the current turn instead of the system prompt', async () => {
       await llmResponseWorkerHandler(workerEvent)
 
-      expect(bedrock.invokeModelMessage).toHaveBeenCalledWith(
-        prompt,
-        llmResponseSchema,
-        [...session.llmHistory, userMessage],
-        {
-          changedConfidence: undefined,
-          claim: session.context.claim,
-          confidence: session.context.confidence,
-          generatedReasons: session.context.generatedReasons,
-          incorrect_guesses: undefined,
-          language: session.context.language,
-          newConversation: false,
-          possibleConfidenceLevels: expectedConfidenceLevels,
-          question: updatedSession.question,
-          storedMessage: session.storedMessage,
-        },
-      )
+      expect(bedrock.invokeModel).toHaveBeenCalledWith(prompt, llmResponseSchema, {
+        history: [
+          ...session.llmHistory,
+          {
+            content: groundedContent(
+              {
+                claim: session.context.claim,
+                confidence: session.context.confidence,
+                generatedReasons: session.context.generatedReasons,
+                language: session.context.language,
+                possibleConfidenceLevels: expectedConfidenceLevels,
+                changedConfidence: undefined,
+                incorrect_guesses: undefined,
+                newConversation: false,
+                question: updatedSession.question,
+                storedMessage: session.storedMessage,
+              },
+              userMessage.content,
+            ),
+            role: 'user',
+          },
+        ],
+      })
     })
 
     it('synthesizes a first user message into the LLM call when newConversation is true', async () => {
@@ -92,12 +104,29 @@ describe('llm-response-worker', () => {
 
       await llmResponseWorkerHandler(workerEvent)
 
-      expect(bedrock.invokeModelMessage).toHaveBeenCalledWith(
-        prompt,
-        llmResponseSchema,
-        [...session.llmHistory, synthesizedMessage],
-        expect.any(Object),
-      )
+      expect(bedrock.invokeModel).toHaveBeenCalledWith(prompt, llmResponseSchema, {
+        history: [
+          ...session.llmHistory,
+          {
+            content: groundedContent(
+              {
+                claim: session.context.claim,
+                confidence: session.context.confidence,
+                generatedReasons: session.context.generatedReasons,
+                language: session.context.language,
+                possibleConfidenceLevels: expectedConfidenceLevels,
+                changedConfidence: undefined,
+                incorrect_guesses: undefined,
+                newConversation: true,
+                question: updatedSession.question,
+                storedMessage: session.storedMessage,
+              },
+              synthesizedMessage.content,
+            ),
+            role: 'user',
+          },
+        ],
+      })
     })
 
     it('returns only the assistant response in history for new conversations', async () => {
@@ -135,7 +164,7 @@ describe('llm-response-worker', () => {
     })
 
     it('saves fallback message and clears loadingTimeout when the LLM throws', async () => {
-      jest.mocked(bedrock).invokeModelMessage.mockRejectedValueOnce(new Error('Bedrock error'))
+      jest.mocked(bedrock).invokeModel.mockRejectedValueOnce(new Error('Bedrock error'))
 
       await llmResponseWorkerHandler(workerEvent)
 
@@ -158,46 +187,58 @@ describe('llm-response-worker', () => {
 
       await llmResponseWorkerHandler(workerEvent)
 
-      expect(bedrock.invokeModelMessage).toHaveBeenCalledWith(
-        prompt,
-        llmResponseSchema,
-        [...session.llmHistory, userMessage],
-        {
-          claim: session.context.claim,
-          confidence: session.context.confidence,
-          generatedReasons: session.context.generatedReasons,
-          incorrect_guesses: 0,
-          language: session.context.language,
-          newConversation: false,
-          possibleConfidenceLevels: expectedConfidenceLevels,
-          storedMessage: session.storedMessage,
-        },
-      )
+      expect(bedrock.invokeModel).toHaveBeenCalledWith(prompt, llmResponseSchema, {
+        history: [
+          ...session.llmHistory,
+          {
+            content: groundedContent(
+              {
+                claim: session.context.claim,
+                confidence: session.context.confidence,
+                generatedReasons: session.context.generatedReasons,
+                language: session.context.language,
+                possibleConfidenceLevels: expectedConfidenceLevels,
+                incorrect_guesses: 0,
+                newConversation: false,
+                storedMessage: session.storedMessage,
+              },
+              userMessage.content,
+            ),
+            role: 'user',
+          },
+        ],
+      })
     })
 
     it('passes connect arguments to LLM on final step when confidence changed', async () => {
       const finishedLlmResponse = { ...llmResponse, finished: true }
       const sessionFinalStep = { ...questionSession, currentStep: 'end' }
-      jest.mocked(bedrock).invokeModelMessage.mockResolvedValueOnce(finishedLlmResponse)
+      jest.mocked(bedrock).invokeModel.mockResolvedValueOnce(finishedLlmResponse)
       jest.mocked(dynamodb).getSessionById.mockResolvedValueOnce(sessionFinalStep)
 
       await llmResponseWorkerHandler(workerEvent)
 
-      expect(bedrock.invokeModelMessage).toHaveBeenCalledWith(
-        prompt,
-        llmResponseSchema,
-        [...session.llmHistory, userMessage],
-        {
-          changedConfidence: 'Changed confidence from agree to strongly agree',
-          claim: session.context.claim,
-          generatedReasons: session.context.generatedReasons,
-          language: session.context.language,
-          newConversation: false,
-          possibleConfidenceLevels: expectedConfidenceLevels,
-          question: updatedSession.question,
-          storedMessage: session.storedMessage,
-        },
-      )
+      expect(bedrock.invokeModel).toHaveBeenCalledWith(prompt, llmResponseSchema, {
+        history: [
+          ...session.llmHistory,
+          {
+            content: groundedContent(
+              {
+                claim: session.context.claim,
+                generatedReasons: session.context.generatedReasons,
+                language: session.context.language,
+                possibleConfidenceLevels: expectedConfidenceLevels,
+                changedConfidence: 'Changed confidence from agree to strongly agree',
+                newConversation: false,
+                question: updatedSession.question,
+                storedMessage: session.storedMessage,
+              },
+              userMessage.content,
+            ),
+            role: 'user',
+          },
+        ],
+      })
     })
 
     it('passes connect arguments to LLM on final step when confidence unchanged', async () => {
@@ -208,32 +249,38 @@ describe('llm-response-worker', () => {
         currentStep: 'end',
         originalConfidence: 'disagree',
       }
-      jest.mocked(bedrock).invokeModelMessage.mockResolvedValueOnce(finishedLlmResponse)
+      jest.mocked(bedrock).invokeModel.mockResolvedValueOnce(finishedLlmResponse)
       jest.mocked(dynamodb).getSessionById.mockResolvedValueOnce(sessionFinalStep)
 
       await llmResponseWorkerHandler(workerEvent)
 
-      expect(bedrock.invokeModelMessage).toHaveBeenCalledWith(
-        prompt,
-        llmResponseSchema,
-        [...session.llmHistory, userMessage],
-        {
-          changedConfidence: 'Kept confidence at disagree',
-          claim: session.context.claim,
-          generatedReasons: session.context.generatedReasons,
-          language: session.context.language,
-          newConversation: false,
-          possibleConfidenceLevels: expectedConfidenceLevels,
-          question: updatedSession.question,
-          storedMessage: session.storedMessage,
-        },
-      )
+      expect(bedrock.invokeModel).toHaveBeenCalledWith(prompt, llmResponseSchema, {
+        history: [
+          ...session.llmHistory,
+          {
+            content: groundedContent(
+              {
+                claim: session.context.claim,
+                generatedReasons: session.context.generatedReasons,
+                language: session.context.language,
+                possibleConfidenceLevels: expectedConfidenceLevels,
+                changedConfidence: 'Kept confidence at disagree',
+                newConversation: false,
+                question: updatedSession.question,
+                storedMessage: session.storedMessage,
+              },
+              userMessage.content,
+            ),
+            role: 'user',
+          },
+        ],
+      })
     })
 
     it("doesn't move on from final step", async () => {
       const finishedLlmResponse = { ...llmResponse, finished: true }
       const sessionFinalStep = { ...questionSession, currentStep: 'end' }
-      jest.mocked(bedrock).invokeModelMessage.mockResolvedValueOnce(finishedLlmResponse)
+      jest.mocked(bedrock).invokeModel.mockResolvedValueOnce(finishedLlmResponse)
       jest.mocked(dynamodb).getSessionById.mockResolvedValueOnce(sessionFinalStep)
       const expectedSession = {
         ...updatedSession,
@@ -264,7 +311,7 @@ describe('llm-response-worker', () => {
         },
         storedMessage: newMessage,
       }
-      jest.mocked(bedrock).invokeModelMessage.mockResolvedValueOnce(finishedLlmResponse)
+      jest.mocked(bedrock).invokeModel.mockResolvedValueOnce(finishedLlmResponse)
       jest.mocked(dynamodb).getSessionById.mockResolvedValueOnce(sessionWithOverride)
       const expectedSession = {
         ...updatedSession,
@@ -287,7 +334,7 @@ describe('llm-response-worker', () => {
     it('moves on to next step when response is finished', async () => {
       const finishedLlmResponse = { ...llmResponse, finished: true }
       const sessionProbe = { ...questionSession, currentStep: 'probe confidence' }
-      jest.mocked(bedrock).invokeModelMessage.mockResolvedValueOnce(finishedLlmResponse)
+      jest.mocked(bedrock).invokeModel.mockResolvedValueOnce(finishedLlmResponse)
       jest.mocked(dynamodb).getSessionById.mockResolvedValueOnce(sessionProbe)
       const expectedSession = {
         ...updatedSession,

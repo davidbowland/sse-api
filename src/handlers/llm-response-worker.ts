@@ -1,4 +1,4 @@
-import { invokeModelMessage } from '../services/bedrock'
+import { invokeModel, safeJsonForPrompt } from '../services/bedrock'
 import { getPromptById, getSessionById, setSessionById } from '../services/dynamodb'
 import { llmResponseSchema } from '../services/response-schemas'
 import {
@@ -68,12 +68,14 @@ export const llmResponseWorkerHandler = async (event: WorkerEvent): Promise<void
     }
     : (userMessage as UserMessage)
 
-  const response = await invokeModelMessage(
-    prompt,
-    llmResponseSchema,
-    [...(session.llmHistory ?? []), currentLlmMessage],
-    llmContext,
-  ).catch((error: unknown) => {
+  const groundedMessage: UserMessage = {
+    content: `<input>\n${safeJsonForPrompt(llmContext)}\n</input>\n\n${currentLlmMessage.content}`,
+    role: 'user',
+  }
+
+  const response = await invokeModel(prompt, llmResponseSchema, {
+    history: [...(session.llmHistory ?? []), groundedMessage],
+  }).catch((error: unknown) => {
     logError(error)
     return {
       finished: false,
