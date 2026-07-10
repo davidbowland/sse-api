@@ -25,7 +25,7 @@
     - Two truth claims should be controversial and likely to evoke mild emotions.
     - Two truth claims should be highly controversial and very likely to evoke strong emotions.
 - ALWAYS provide suggestions in the language requested.
-- If you are unable to use the tool for any reason, respond with ONLY valid JSON matching the same shape as a fallback. Include your thinking in <thinking> tags before the JSON output but NO OTHER TAGS.
+- If you are unable to use the tool for any reason, respond with ONLY valid JSON matching the same shape and no other text, as a fallback.
 </instructions>
 
 <example>

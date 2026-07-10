@@ -146,5 +146,16 @@ export const invokeModelMessage = async <T>(
     stopReason: modelResponse.stop_reason,
     textLength: textBlock.text.length,
   })
-  return validateResponse(schema, JSON.parse(extractJson(textBlock.text)))
+  let extractedJson: unknown
+  try {
+    extractedJson = JSON.parse(extractJson(textBlock.text))
+  } catch (error: unknown) {
+    log('Failed to parse JSON from fallback text response', {
+      message: (error as Error | null)?.message,
+      model: prompt.config.model,
+      textLength: textBlock.text.length,
+    })
+    throw error
+  }
+  return validateResponse(schema, extractedJson)
 }

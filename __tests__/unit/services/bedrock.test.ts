@@ -1,6 +1,7 @@
 import {
   assistantLlmMessage,
   assistantLlmResponse,
+  invokeModelInvalidResponse,
   invokeModelNoTextBlockResponse,
   invokeModelSuggestClaims,
   invokeModelSuggestClaimsResponse,
@@ -159,6 +160,18 @@ describe('bedrock', () => {
       await expect(invokeModel(prompt, testResponseSchema, data)).rejects.toThrow(
         `Model response failed schema validation for tool "${testResponseSchema.toolName}"`,
       )
+    })
+
+    it('should log a distinguishable message and rethrow when the fallback text is not valid JSON', async () => {
+      mockSend.mockResolvedValueOnce(invokeModelInvalidResponse)
+
+      await expect(invokeModel(prompt, testResponseSchema, data)).rejects.toThrow()
+
+      expect(log).toHaveBeenCalledWith('Failed to parse JSON from fallback text response', {
+        message: expect.any(String),
+        model: prompt.config.model,
+        textLength: 'this-is-invalid-json'.length,
+      })
     })
 
     it('should log a distinguishable message and rethrow when the Bedrock invocation itself fails', async () => {
