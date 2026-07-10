@@ -13,7 +13,7 @@ import {
   testResponseSchema,
   userLlmMessage,
 } from '../__mocks__'
-import { invokeModel, invokeModelMessage } from '@services/bedrock'
+import { invokeModel, singleTurn } from '@services/bedrock'
 import { LLMMessage } from '@types'
 import { log, logDebug } from '@utils/logging'
 
@@ -39,13 +39,19 @@ const expectedTool = {
 describe('bedrock', () => {
   const data = 'super-happy-fun-data'
 
+  describe('singleTurn', () => {
+    it('wraps content into a single user-role turn', () => {
+      expect(singleTurn(data)).toEqual([{ content: data, role: 'user' }])
+    })
+  })
+
   describe('invokeModel', () => {
     beforeAll(() => {
       mockSend.mockResolvedValue(invokeModelSuggestClaimsResponse)
     })
 
     it('should invoke the correct model based on the prompt', async () => {
-      const result = await invokeModel(prompt, testResponseSchema, data)
+      const result = await invokeModel(prompt, testResponseSchema, { history: singleTurn(data) })
 
       expect(result).toEqual({ suggestions: invokeModelSuggestClaims })
       expect(mockSend).toHaveBeenCalledWith({
@@ -66,12 +72,42 @@ describe('bedrock', () => {
       })
     })
 
-    it('should inject context into the prompt when passed', async () => {
+    it('should invoke the correct model with multi-turn history and stringify assistant content', async () => {
+      const history: LLMMessage[] = [assistantLlmMessage, userLlmMessage]
+
+      const result = await invokeModel(prompt, testResponseSchema, { history })
+
+      expect(result).toEqual({ suggestions: invokeModelSuggestClaims })
+      expect(mockSend).toHaveBeenCalledWith({
+        body: new TextEncoder().encode(
+          JSON.stringify({
+            anthropic_version: 'bedrock-2023-05-31',
+            max_tokens: 50000,
+            messages: [
+              { role: 'assistant', content: JSON.stringify(assistantLlmResponse) },
+              { role: 'user', content: userLlmMessage.content },
+            ],
+            system: prompt.contents,
+            tools: [expectedTool],
+            tool_choice: { type: 'auto' },
+            thinking: { type: 'adaptive' },
+            output_config: { effort: 'high' },
+          }),
+        ),
+        contentType: 'application/json',
+        modelId: 'us.anthropic.claude-sonnet-5',
+      })
+    })
+
+    it('should inject templateVars into the prompt when passed', async () => {
       const promptWithContext = {
         ...prompt,
         contents: 'My context should go here: ${context}',
       }
-      const result = await invokeModel(promptWithContext, testResponseSchema, data, { foo: 'bar' })
+      const result = await invokeModel(promptWithContext, testResponseSchema, {
+        history: singleTurn(data),
+        templateVars: { foo: 'bar' },
+      })
 
       expect(result).toEqual({ suggestions: invokeModelSuggestClaims })
       expect(mockSend).toHaveBeenCalledWith({
@@ -93,7 +129,7 @@ describe('bedrock', () => {
     })
 
     it('should use manual budget_tokens thinking for models that require it, with no output_config', async () => {
-      const result = await invokeModel(promptManualThinking, testResponseSchema, data)
+      const result = await invokeModel(promptManualThinking, testResponseSchema, { history: singleTurn(data) })
 
       expect(result).toEqual({ suggestions: invokeModelSuggestClaims })
       expect(mockSend).toHaveBeenCalledWith({
@@ -118,127 +154,12 @@ describe('bedrock', () => {
         ...promptManualThinking,
         config: { ...promptManualThinking.config, thinking: { type: 'disabled' as const } },
       }
-      await invokeModel(promptWithDisabledThinking, testResponseSchema, data)
+      await invokeModel(promptWithDisabledThinking, testResponseSchema, { history: singleTurn(data) })
 
       const lastBody = mockSend.mock.calls.at(-1)[0].body
       const sentBody = JSON.parse(new TextDecoder().decode(lastBody))
       expect(sentBody.thinking).toEqual({ type: 'disabled' })
       expect(sentBody.output_config).toBeUndefined()
-    })
-
-    it('should prefer a tool_use block over a text block when both are present', async () => {
-      mockSend.mockResolvedValueOnce(invokeModelToolUseResponse)
-
-      const result = await invokeModel(prompt, testResponseSchema, data)
-
-      expect(result).toEqual({ suggestions: ['Tool Claim A', 'Tool Claim B'] })
-      expect(log).toHaveBeenCalledWith('Model response received via tool use', {
-        model: prompt.config.model,
-        toolName: testResponseSchema.toolName,
-      })
-      expect(log).not.toHaveBeenCalledWith(
-        'Model replied without invoking the expected tool; falling back to text extraction',
-        expect.anything(),
-      )
-    })
-
-    it('should fall back to text extraction and log when the model does not invoke the tool', async () => {
-      mockSend.mockResolvedValueOnce(invokeModelSuggestClaimsResponse)
-
-      const result = await invokeModel(prompt, testResponseSchema, data)
-
-      expect(result).toEqual({ suggestions: invokeModelSuggestClaims })
-      expect(log).toHaveBeenCalledWith(
-        'Model replied without invoking the expected tool; falling back to text extraction',
-        { model: prompt.config.model, toolName: testResponseSchema.toolName },
-      )
-    })
-
-    it('should reject a tool_use response that fails schema validation', async () => {
-      mockSend.mockResolvedValueOnce(invokeModelToolUseInvalidResponse)
-
-      await expect(invokeModel(prompt, testResponseSchema, data)).rejects.toThrow(
-        `Model response failed schema validation for tool "${testResponseSchema.toolName}"`,
-      )
-    })
-
-    it('should log a distinguishable message and rethrow when the fallback text is not valid JSON', async () => {
-      mockSend.mockResolvedValueOnce(invokeModelInvalidResponse)
-
-      await expect(invokeModel(prompt, testResponseSchema, data)).rejects.toThrow()
-
-      expect(log).toHaveBeenCalledWith('Failed to parse JSON from fallback text response', {
-        message: expect.any(String),
-        model: prompt.config.model,
-        textLength: 'this-is-invalid-json'.length,
-      })
-    })
-
-    it('should log a distinguishable message (including retry metadata) and rethrow when the Bedrock invocation itself fails', async () => {
-      const bedrockError = Object.assign(new Error('Rate exceeded'), {
-        $metadata: { attempts: 4, httpStatusCode: 429, requestId: 'req-123', totalRetryDelay: 7000 },
-        name: 'ThrottlingException',
-      })
-      mockSend.mockRejectedValueOnce(bedrockError)
-
-      await expect(invokeModel(prompt, testResponseSchema, data)).rejects.toThrow('Rate exceeded')
-
-      expect(log).toHaveBeenCalledWith('Bedrock invocation failed', {
-        attempts: 4,
-        errorName: 'ThrottlingException',
-        httpStatusCode: 429,
-        message: 'Rate exceeded',
-        model: prompt.config.model,
-        requestId: 'req-123',
-        totalRetryDelay: 7000,
-      })
-    })
-
-    it('should log a distinguishable message and rethrow when the response body is not valid JSON', async () => {
-      mockSend.mockResolvedValueOnce({
-        $metadata: { httpStatusCode: 200 },
-        body: new TextEncoder().encode('not-json-at-all'),
-      })
-
-      await expect(invokeModel(prompt, testResponseSchema, data)).rejects.toThrow()
-
-      expect(log).toHaveBeenCalledWith('Failed to parse Bedrock response body as JSON', {
-        message: expect.any(String),
-        model: prompt.config.model,
-      })
-    })
-  })
-
-  describe('invokeModelMessage', () => {
-    const history: LLMMessage[] = [assistantLlmMessage, userLlmMessage]
-    const expectedMessages = [
-      { role: 'assistant', content: JSON.stringify(assistantLlmResponse) },
-      { role: 'user', content: userLlmMessage.content },
-    ]
-
-    beforeAll(() => {
-      mockSend.mockResolvedValue(invokeModelSuggestClaimsResponse)
-    })
-
-    it('should invoke the correct model based on the prompt', async () => {
-      const result = await invokeModelMessage(prompt, testResponseSchema, history)
-      expect(result).toEqual({ suggestions: invokeModelSuggestClaims })
-      expect(mockSend).toHaveBeenCalledWith({
-        body: new TextEncoder().encode(
-          JSON.stringify({
-            anthropic_version: 'bedrock-2023-05-31',
-            max_tokens: 50000,
-            messages: expectedMessages,
-            system: prompt.contents,
-            tools: [expectedTool],
-            tool_choice: { type: 'auto' },
-            thinking: { type: 'adaptive' },
-            output_config: { effort: 'high' },
-          }),
-        ),
-        contentType: 'application/json',
-        modelId: 'us.anthropic.claude-sonnet-5',
-      })
     })
 
     it('should log the actual sent (capped) history length, not the raw input length', async () => {
@@ -247,7 +168,7 @@ describe('bedrock', () => {
         role: 'user' as const,
       }))
 
-      await invokeModelMessage(prompt, testResponseSchema, longHistory)
+      await invokeModel(prompt, testResponseSchema, { history: longHistory })
 
       expect(log).toHaveBeenCalledWith('Invoking model', {
         historyLength: 30,
@@ -255,8 +176,25 @@ describe('bedrock', () => {
       })
     })
 
+    it('should truncate history to the last 30 messages', async () => {
+      const longHistory: LLMMessage[] = Array.from({ length: 35 }, (_, i) => ({
+        content: `message ${i}`,
+        role: 'user' as const,
+      }))
+
+      await invokeModel(prompt, testResponseSchema, { history: longHistory })
+
+      const lastBody = mockSend.mock.calls.at(-1)[0].body
+      const sentBody = JSON.parse(new TextDecoder().decode(lastBody))
+      expect(sentBody.messages).toHaveLength(30)
+      expect(sentBody.messages[0].content).toBe('message 5')
+      expect(sentBody.messages[29].content).toBe('message 34')
+    })
+
     it('should log only a minimal breadcrumb, never full prompt/history/response content, at non-debug level', async () => {
-      await invokeModelMessage(prompt, testResponseSchema, history)
+      const history: LLMMessage[] = [assistantLlmMessage, userLlmMessage]
+
+      await invokeModel(prompt, testResponseSchema, { history })
 
       expect(log).toHaveBeenCalledWith('Invoking model', {
         historyLength: history.length,
@@ -275,72 +213,18 @@ describe('bedrock', () => {
       }
     })
 
-    it('should stringify assistant message content and pass user message content as-is', async () => {
-      mockSend.mockResolvedValue(invokeModelSuggestClaimsResponse)
-      const llmHistory: LLMMessage[] = [assistantLlmMessage, userLlmMessage]
-      await invokeModelMessage(prompt, testResponseSchema, llmHistory)
-
-      const lastBody = mockSend.mock.calls.at(-1)[0].body
-      const sentBody = JSON.parse(new TextDecoder().decode(lastBody))
-      expect(sentBody.messages).toEqual([
-        { role: 'assistant', content: JSON.stringify(assistantLlmResponse) },
-        { role: 'user', content: userLlmMessage.content },
-      ])
-    })
-
-    it('should inject passed data into the prompt', async () => {
-      const promptWithData = {
-        ...prompt,
-        contents: 'My data should go here: ${data}',
-      }
-      const result = await invokeModelMessage(promptWithData, testResponseSchema, history, { foo: 'bar' })
-      expect(result).toEqual({ suggestions: invokeModelSuggestClaims })
-      expect(mockSend).toHaveBeenCalledWith({
-        body: new TextEncoder().encode(
-          JSON.stringify({
-            anthropic_version: 'bedrock-2023-05-31',
-            max_tokens: 50000,
-            messages: expectedMessages,
-            system: 'My data should go here: {"foo":"bar"}',
-            tools: [expectedTool],
-            tool_choice: { type: 'auto' },
-            thinking: { type: 'adaptive' },
-            output_config: { effort: 'high' },
-          }),
-        ),
-        contentType: 'application/json',
-        modelId: 'us.anthropic.claude-sonnet-5',
-      })
-    })
-
-    it('should truncate history to the last 30 messages', async () => {
-      mockSend.mockResolvedValue(invokeModelSuggestClaimsResponse)
-      const longHistory: LLMMessage[] = Array.from({ length: 35 }, (_, i) => ({
-        content: `message ${i}`,
-        role: 'user' as const,
-      }))
-
-      await invokeModelMessage(prompt, testResponseSchema, longHistory)
-
-      const lastBody = mockSend.mock.calls.at(-1)[0].body
-      const sentBody = JSON.parse(new TextDecoder().decode(lastBody))
-      expect(sentBody.messages).toHaveLength(30)
-      expect(sentBody.messages[0].content).toBe('message 5')
-      expect(sentBody.messages[29].content).toBe('message 34')
-    })
-
     it('should throw when response contains no text block or tool use block', async () => {
-      mockSend.mockResolvedValue(invokeModelNoTextBlockResponse)
+      mockSend.mockResolvedValueOnce(invokeModelNoTextBlockResponse)
 
-      await expect(invokeModelMessage(prompt, testResponseSchema, [userLlmMessage])).rejects.toThrow(
+      await expect(invokeModel(prompt, testResponseSchema, { history: singleTurn(data) })).rejects.toThrow(
         'Bedrock response contained no text block',
       )
     })
 
     it('should extract JSON from response with thinking block', async () => {
-      mockSend.mockResolvedValue(invokeModelThinkingResponse)
+      mockSend.mockResolvedValueOnce(invokeModelThinkingResponse)
 
-      const result = await invokeModelMessage(prompt, testResponseSchema, history)
+      const result = await invokeModel(prompt, testResponseSchema, { history: singleTurn(data) })
 
       expect(result).toEqual({ suggestions: ['Claim A', 'Claim B'] })
     })
@@ -348,23 +232,37 @@ describe('bedrock', () => {
     it('should prefer a tool_use block over a text block when both are present', async () => {
       mockSend.mockResolvedValueOnce(invokeModelToolUseResponse)
 
-      const result = await invokeModelMessage(prompt, testResponseSchema, history)
+      const result = await invokeModel(prompt, testResponseSchema, { history: singleTurn(data) })
 
       expect(result).toEqual({ suggestions: ['Tool Claim A', 'Tool Claim B'] })
-    })
-
-    it('should reject a tool_use response that fails schema validation', async () => {
-      mockSend.mockResolvedValueOnce(invokeModelToolUseInvalidResponse)
-
-      await expect(invokeModelMessage(prompt, testResponseSchema, history)).rejects.toThrow(
-        `Model response failed schema validation for tool "${testResponseSchema.toolName}"`,
+      expect(log).toHaveBeenCalledWith('Model response received via tool use', {
+        model: prompt.config.model,
+        toolName: testResponseSchema.toolName,
+      })
+      expect(log).not.toHaveBeenCalledWith(
+        'Model replied without invoking the expected tool; falling back to text extraction',
+        expect.anything(),
       )
     })
 
-    it('should log only a truncated preview of the offending payload at production log level, full payload only via logDebug', async () => {
+    it('should fall back to text extraction and log when the model does not invoke the tool', async () => {
+      mockSend.mockResolvedValueOnce(invokeModelSuggestClaimsResponse)
+
+      const result = await invokeModel(prompt, testResponseSchema, { history: singleTurn(data) })
+
+      expect(result).toEqual({ suggestions: invokeModelSuggestClaims })
+      expect(log).toHaveBeenCalledWith(
+        'Model replied without invoking the expected tool; falling back to text extraction',
+        { model: prompt.config.model, toolName: testResponseSchema.toolName },
+      )
+    })
+
+    it('should reject a tool_use response that fails schema validation, logging a truncated preview at production level and the full payload via logDebug', async () => {
       mockSend.mockResolvedValueOnce(invokeModelToolUseInvalidResponse)
 
-      await expect(invokeModelMessage(prompt, testResponseSchema, history)).rejects.toThrow()
+      await expect(invokeModel(prompt, testResponseSchema, { history: singleTurn(data) })).rejects.toThrow(
+        `Model response failed schema validation for tool "${testResponseSchema.toolName}"`,
+      )
 
       const [, prodPayload] = (log as jest.Mock).mock.calls.find(
         (call) => call[0] === 'Model response failed schema validation',
@@ -393,9 +291,57 @@ describe('bedrock', () => {
         },
       }
 
-      await expect(invokeModelMessage(prompt, schemaRequiringExtraField, history)).rejects.toThrow(
+      await expect(invokeModel(prompt, schemaRequiringExtraField, { history: singleTurn(data) })).rejects.toThrow(
         'Model response failed schema validation',
       )
+    })
+
+    it('should log a distinguishable message and rethrow when the fallback text is not valid JSON', async () => {
+      mockSend.mockResolvedValueOnce(invokeModelInvalidResponse)
+
+      await expect(invokeModel(prompt, testResponseSchema, { history: singleTurn(data) })).rejects.toThrow()
+
+      expect(log).toHaveBeenCalledWith('Failed to parse JSON from fallback text response', {
+        message: expect.any(String),
+        model: prompt.config.model,
+        textLength: 'this-is-invalid-json'.length,
+      })
+    })
+
+    it('should log a distinguishable message (including retry metadata) and rethrow when the Bedrock invocation itself fails', async () => {
+      const bedrockError = Object.assign(new Error('Rate exceeded'), {
+        $metadata: { attempts: 4, httpStatusCode: 429, requestId: 'req-123', totalRetryDelay: 7000 },
+        name: 'ThrottlingException',
+      })
+      mockSend.mockRejectedValueOnce(bedrockError)
+
+      await expect(invokeModel(prompt, testResponseSchema, { history: singleTurn(data) })).rejects.toThrow(
+        'Rate exceeded',
+      )
+
+      expect(log).toHaveBeenCalledWith('Bedrock invocation failed', {
+        attempts: 4,
+        errorName: 'ThrottlingException',
+        httpStatusCode: 429,
+        message: 'Rate exceeded',
+        model: prompt.config.model,
+        requestId: 'req-123',
+        totalRetryDelay: 7000,
+      })
+    })
+
+    it('should log a distinguishable message and rethrow when the response body is not valid JSON', async () => {
+      mockSend.mockResolvedValueOnce({
+        $metadata: { httpStatusCode: 200 },
+        body: new TextEncoder().encode('not-json-at-all'),
+      })
+
+      await expect(invokeModel(prompt, testResponseSchema, { history: singleTurn(data) })).rejects.toThrow()
+
+      expect(log).toHaveBeenCalledWith('Failed to parse Bedrock response body as JSON', {
+        message: expect.any(String),
+        model: prompt.config.model,
+      })
     })
   })
 
