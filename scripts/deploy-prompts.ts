@@ -17,16 +17,57 @@ interface ExistingPrompt {
   systemPrompt: string
 }
 
+// Models that only accept adaptive thinking + output_config.effort (manual budget_tokens returns a 400)
+const ADAPTIVE_ONLY_MODEL_PATTERNS = [
+  /claude-sonnet-5$/,
+  /claude-sonnet-4-6/,
+  /claude-opus-4-6/,
+  /claude-opus-4-7/,
+  /claude-opus-4-8/,
+  /claude-fable-5/,
+  /claude-mythos/,
+]
+
+// Models that only accept manual thinking.enabled + budget_tokens (adaptive/effort isn't supported)
+const MANUAL_THINKING_ONLY_MODEL_PATTERNS = [
+  /claude-haiku-4-5/,
+  /claude-opus-4-5/,
+  /claude-sonnet-4-5/,
+  /claude-sonnet-4-20250514/,
+  /claude-opus-4-20250514/,
+  /claude-3-7-sonnet/,
+]
+
+const validateThinkingConfig = (filename: string, config: Record<string, unknown>): void => {
+  const model = (config.model as string) ?? ''
+  const thinkingType = (config.thinking as { type?: string } | undefined)?.type
+
+  if (ADAPTIVE_ONLY_MODEL_PATTERNS.some((pattern) => pattern.test(model)) && thinkingType === 'enabled') {
+    throw new Error(
+      `${filename}: model "${model}" does not support manual thinking with budgetTokens — ` +
+        'use {"type":"adaptive","effort":...}',
+    )
+  }
+  if (MANUAL_THINKING_ONLY_MODEL_PATTERNS.some((pattern) => pattern.test(model)) && thinkingType === 'adaptive') {
+    throw new Error(
+      `${filename}: model "${model}" does not support adaptive thinking/effort — ` +
+        'use {"type":"enabled","budgetTokens":...}',
+    )
+  }
+}
+
 const parsePromptFile = (filename: string, content: string, now: number): PromptData => {
   const promptId = filename.split('.', 1)[0]
   const { config, systemPrompt } =
     /^[\s#]*(?<config>[^\n]+)\s*\n\s+(?<systemPrompt>.*?)\s+$/s.exec(content)?.groups ?? {}
 
+  let parsedConfig: Record<string, unknown>
   try {
-    JSON.parse(config)
+    parsedConfig = JSON.parse(config)
   } catch {
     throw new Error(`Invalid JSON in prompt config: ${filename}`)
   }
+  validateThinkingConfig(filename, parsedConfig)
 
   return {
     promptId,

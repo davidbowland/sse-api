@@ -1,4 +1,4 @@
-# {"anthropicVersion":"bedrock-2023-05-31","maxTokens":50000,"model":"us.anthropic.claude-sonnet-5","thinkingBudgetTokens":15000}
+# {"anthropicVersion":"bedrock-2023-05-31","maxTokens":50000,"model":"us.anthropic.claude-sonnet-5","thinking":{"type":"adaptive","effort":"medium"}}
 
 <instructions>
 - The context is a conversation about epistemology coming to a close. Thank the user for engaging in a conversation about the claim.

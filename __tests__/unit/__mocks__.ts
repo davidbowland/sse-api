@@ -118,13 +118,25 @@ export const promptConfig: PromptConfig = {
   anthropicVersion: 'bedrock-2023-05-31',
   maxTokens: 50000,
   model: 'us.anthropic.claude-sonnet-5',
-  thinkingBudgetTokens: 40000,
+  thinking: { type: 'adaptive', effort: 'high' },
+}
+
+export const promptConfigManualThinking: PromptConfig = {
+  anthropicVersion: 'bedrock-2023-05-31',
+  maxTokens: 1500,
+  model: 'us.anthropic.claude-haiku-4-5-20251001-v1:0',
+  thinking: { type: 'enabled', budgetTokens: 1024 },
 }
 
 export const promptId: PromptId = '5253'
 
 export const prompt: Prompt = {
   config: promptConfig,
+  contents: 'You are a helpful assistant. ${data}',
+}
+
+export const promptManualThinking: Prompt = {
+  config: promptConfigManualThinking,
   contents: 'You are a helpful assistant. ${data}',
 }
 

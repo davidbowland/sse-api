@@ -1,6 +1,6 @@
 import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime'
 
-import { LLMMessage, Prompt } from '../types'
+import { LLMMessage, Prompt, ThinkingConfig } from '../types'
 import { log, logDebug } from '../utils/logging'
 
 const runtimeClient = new BedrockRuntimeClient({ region: 'us-east-1' })
@@ -30,6 +30,21 @@ const extractJson = (input: string): string => {
   return cleaned.match(/{.*}/s)?.[0] ?? cleaned
 }
 
+// Model-dependent: some models only accept manual budget_tokens, others only accept
+// adaptive thinking + a separate output_config.effort. See docs/llm-integration-spec.md.
+const buildThinkingFields = (
+  thinking: ThinkingConfig,
+): { thinking: Record<string, unknown>; output_config?: { effort: string } } => {
+  switch (thinking.type) {
+  case 'enabled':
+    return { thinking: { type: 'enabled', budget_tokens: thinking.budgetTokens } }
+  case 'adaptive':
+    return { thinking: { type: 'adaptive' }, output_config: { effort: thinking.effort } }
+  case 'disabled':
+    return { thinking: { type: 'disabled' } }
+  }
+}
+
 export const invokeModelMessage = async <T = unknown>(
   prompt: Prompt,
   history: LLMMessage[],
@@ -46,7 +61,7 @@ export const invokeModelMessage = async <T = unknown>(
       content: msg.role === 'assistant' ? JSON.stringify(msg.content) : msg.content,
     })),
     system: systemContent,
-    thinking: { type: 'enabled', budget_tokens: prompt.config.thinkingBudgetTokens },
+    ...buildThinkingFields(prompt.config.thinking),
   }
   log('Invoking model', {
     history1: history.slice(0, 10),

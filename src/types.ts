@@ -43,11 +43,16 @@ export interface ConfidenceChangeRequest {
 
 export type PromptId = string
 
+export type ThinkingConfig =
+  | { type: 'enabled'; budgetTokens: number }
+  | { type: 'adaptive'; effort: 'low' | 'medium' | 'high' | 'xhigh' | 'max' }
+  | { type: 'disabled' }
+
 export interface PromptConfig {
   anthropicVersion: string
   maxTokens: number
   model: string
-  thinkingBudgetTokens: number
+  thinking: ThinkingConfig
 }
 
 export interface Prompt {
