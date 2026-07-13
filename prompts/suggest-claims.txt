@@ -2,8 +2,14 @@
 
 <instructions>
 - A truth claim is a statement that MUST be true or false. Truth claims cannot be both true and false.
-- Truth claims cannot be a statement of fact. Truth claims must be about what should happen, what is best, what ought to happen, or what is moral.
-  - Use words like should / ought / best / fair rather than can / do
+- Truth claims typically take one of these forms:
+  - Normative — what should or ought to happen, or what is best or fair. Use words like should / ought / best / fair.
+  - Existential — whether something exists or is real, on which reasonable people disagree without decisive proof (e.g. "God exists," "Objective morality exists," "Free will exists").
+  - Causal or empirical-but-contested — a cause-and-effect claim not settled by simply looking it up (e.g. "Nuclear power is safer than fossil fuels").
+- Truth claims must not be resolved merely by looking up an agreed-upon fact or a dictionary definition.
+- A truth claim must not presuppose another contested claim as already settled. If a should-claim's truth depends on an unresolved existence or definitional question, suggest that underlying claim directly instead of the derived should-claim.
+  - e.g. Prefer "Objective moral principles exist." over "Societies should base their ethical systems on objective moral principles."
+  - e.g. Prefer "Moral realism is true." over "Philosophers ought to embrace moral realism rather than relativism."
 - Truth claims should be broader than a specific event or a specific person.
 - Truth claims should not promote violence, sexual violence, or felony crimes.
 - Truth claims should be in the positive, for example:
@@ -39,7 +45,7 @@ Google Confirms Gmail AI Upgrade—3 Billion Users Must Now Decide
 {
   "suggestions": [
     "AI in Gmail will be a net positive.",
-    "Popes should be able resign to focus on their health.",
+    "The Catholic Church's authority comes from God.",
     "The United States should deport more illegal immigrants.",
     "The United States should provide aid to Gaza.",
     "The president should be able to defy court orders.",
@@ -69,7 +75,7 @@ Kentucky Lt. Gov. says she is concerned about Education Department disassembly
     "Governments, not private organizations, should control who goes to space.",
     "Solar power should be subsidized by the government.",
     "The United States should be worried about countries forming alliances without it.",
-    "The United States should annex Greenland.",
+    "National borders are morally arbitrary.",
     "The department of education should be abolished."
   ]
 }

@@ -2,8 +2,14 @@
 
 <instructions>
 - A truth claim is a statement that MUST be true or false. Truth claims cannot be both true and false.
-- Truth claims cannot be a statement of fact. Truth claims must be about what should happen, what is best, what ought to happen, or what is moral.
-  - Use words like should / ought / best / fair rather than can / do
+- Truth claims typically take one of these forms:
+  - Normative — what should or ought to happen, or what is best or fair. Use words like should / ought / best / fair.
+  - Existential — whether something exists or is real, on which reasonable people disagree without decisive proof (e.g. "God exists," "Objective morality exists," "Free will exists").
+  - Causal or empirical-but-contested — a cause-and-effect claim not settled by simply looking it up (e.g. "Nuclear power is safer than fossil fuels").
+- Truth claims must not be resolved merely by looking up an agreed-upon fact or a dictionary definition.
+- A truth claim must not presuppose another contested claim as already settled. If a should-claim's truth depends on an unresolved existence or definitional question, suggest that underlying claim directly instead of the derived should-claim.
+  - e.g. Prefer "Objective moral principles exist." over "Societies should base their ethical systems on objective moral principles."
+  - e.g. Prefer "Moral realism is true." over "Philosophers ought to embrace moral realism rather than relativism."
 - Truth claims should be broader than a specific event or a specific person.
 - Truth claims should not promote violence, sexual violence, or felony crimes.
 - Truth claims should be in the positive, for example:
@@ -12,7 +18,7 @@
   - "agree" instead of "disagree"
 - Truth claims should be clear, correctly punctuated, and correctly capitalized.
 
-- Evaluate the provided text to determine if it contains a truth claim about they way things should be or the best way to organize something.
+- Evaluate the provided text to determine if it contains a truth claim as defined above.
 - If the provided text is not a truth claim, is unclear, or is ungrammatical, suggest six truth claims based on the provided text.
 - Otherwise, suggest five alternative truth claims based on the provided text.
 - If the truth claim promotes violence, sexual violence, or other felony crimes, mark the claim as inappropriate.
@@ -27,6 +33,27 @@
 - ALWAYS provide suggestions in the language requested.
 - If you are unable to use the tool for any reason, respond with ONLY valid JSON matching the same shape, escaping " to \" and a new line to \n, and no other text, as a fallback.
 </instructions>
+
+<example>
+<context>
+{
+  "language": "en-US"
+}
+</context>
+<input>
+Objective morality exists.
+</input>
+<output>
+{
+  "inappropriate": false,
+  "suggestions": [
+    "Objective morality exists.",
+    "Moral facts exist independently of human opinion.",
+    "Moral relativism is true."
+  ]
+}
+</output>
+</example>
 
 <example>
 <context>
