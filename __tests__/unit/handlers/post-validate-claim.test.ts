@@ -6,6 +6,7 @@ import * as dynamodb from '@services/dynamodb'
 import * as recaptcha from '@services/recaptcha'
 import { APIGatewayProxyEventV2 } from '@types'
 import * as events from '@utils/events'
+import { log } from '@utils/logging'
 import status from '@utils/status'
 
 jest.mock('@services/bedrock')
@@ -39,6 +40,15 @@ describe('post-validate-claim', () => {
       await postValidateClaimHandler(event)
 
       expect(recaptcha.getCaptchaScore).toHaveBeenCalledWith('ytrewsdfghjmnbgtyu')
+    })
+
+    it('never logs the claim text on the success path', async () => {
+      await postValidateClaimHandler(event)
+
+      expect(log).toHaveBeenCalledWith('Claim validation complete', { validation: validationResult })
+      for (const call of jest.mocked(log).mock.calls) {
+        expect(JSON.stringify(call)).not.toContain(claim)
+      }
     })
 
     it('returns BAD_REQUEST when extractRecaptchaToken throws', async () => {

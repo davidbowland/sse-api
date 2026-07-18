@@ -2,13 +2,13 @@ import { confidenceChangedStep } from '../assets/conversation-steps'
 import { getSessionById, setSessionById } from '../services/dynamodb'
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, Session } from '../types'
 import { extractConfidenceChangeRequest } from '../utils/events'
-import { log, logError } from '../utils/logging'
+import { log, logError, redactEvent } from '../utils/logging'
 import status from '../utils/status'
 
 export const postChangeConfidenceHandler = async (
   event: APIGatewayProxyEventV2,
 ): Promise<APIGatewayProxyResultV2<unknown>> => {
-  log('Received event', { ...event, body: undefined })
+  log('Received event', redactEvent(event))
   const sessionId = event.pathParameters?.sessionId as string
   try {
     const session = await getSessionById(sessionId)

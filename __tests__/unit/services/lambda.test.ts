@@ -1,6 +1,7 @@
 import { InvokeCommand } from '@aws-sdk/client-lambda'
 
 import { invokeLambda } from '@services/lambda'
+import { log } from '@utils/logging'
 
 const mockSend = jest.fn()
 jest.mock('@aws-sdk/client-lambda', () => ({
@@ -41,6 +42,13 @@ describe('lambda', () => {
         InvocationType: 'Event',
         Payload: new TextEncoder().encode(JSON.stringify(payload)),
       })
+    })
+
+    it('logs the payload key names but never the payload contents (worker payloads carry user chat text)', async () => {
+      await invokeLambda(functionArn, payload)
+
+      expect(log).toHaveBeenCalledWith('Invoking Lambda', { functionArn, payloadKeys: Object.keys(payload) })
+      expect(log).not.toHaveBeenCalledWith('Invoking Lambda', expect.objectContaining({ payload: expect.anything() }))
     })
   })
 })

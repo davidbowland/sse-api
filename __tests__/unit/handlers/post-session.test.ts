@@ -7,6 +7,7 @@ import { validationResponseSchema } from '@services/response-schemas'
 import { APIGatewayProxyEventV2 } from '@types'
 import * as events from '@utils/events'
 import * as idGenerator from '@utils/id-generator'
+import { log } from '@utils/logging'
 import status from '@utils/status'
 
 jest.mock('@services/bedrock')
@@ -55,6 +56,20 @@ describe('post-session', () => {
         body: JSON.stringify({ message: 'Inappropriate claim content' }),
       })
       expect(dynamodb.setSessionById).not.toHaveBeenCalled()
+    })
+
+    it('never logs the claim text when validation flags inappropriate content', async () => {
+      const inappropriateValidation = { ...validationResult, inappropriate: true }
+      jest.mocked(bedrock).invokeModel.mockResolvedValueOnce(inappropriateValidation)
+
+      await postSessionHandler(event)
+
+      expect(log).toHaveBeenCalledWith('Claim validation failed - inappropriate content', {
+        validation: inappropriateValidation,
+      })
+      for (const call of jest.mocked(log).mock.calls) {
+        expect(JSON.stringify(call)).not.toContain(newSession.context.claim)
+      }
     })
 
     it('should return bad request on invalid session', async () => {

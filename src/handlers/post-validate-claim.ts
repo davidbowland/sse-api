@@ -5,13 +5,13 @@ import { getCaptchaScore, recaptchaMinScore } from '../services/recaptcha'
 import { validationResponseSchema } from '../services/response-schemas'
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from '../types'
 import { extractClaimFromEvent, extractRecaptchaToken } from '../utils/events'
-import { log, logError } from '../utils/logging'
+import { log, logError, redactEvent } from '../utils/logging'
 import status from '../utils/status'
 
 export const postValidateClaimHandler = async (
   event: APIGatewayProxyEventV2,
 ): Promise<APIGatewayProxyResultV2<unknown>> => {
-  log('Received event', { ...event, body: undefined })
+  log('Received event', redactEvent(event))
   try {
     const recaptchaToken = extractRecaptchaToken(event)
     const { claim, language } = extractClaimFromEvent(event)
@@ -27,7 +27,7 @@ export const postValidateClaimHandler = async (
         history: singleTurn(claim),
         templateVars: { language },
       })
-      log('Claim validation complete', { claim, validation })
+      log('Claim validation complete', { validation })
 
       return { ...status.OK, body: JSON.stringify(validation) }
     } catch (error: unknown) {

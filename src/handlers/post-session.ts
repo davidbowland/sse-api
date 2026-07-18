@@ -5,11 +5,11 @@ import { validationResponseSchema } from '../services/response-schemas'
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from '../types'
 import { extractSessionFromEvent } from '../utils/events'
 import { getNextId } from '../utils/id-generator'
-import { log, logError } from '../utils/logging'
+import { log, logError, redactEvent } from '../utils/logging'
 import status from '../utils/status'
 
 export const postSessionHandler = async (event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2<unknown>> => {
-  log('Received event', { ...event, body: undefined })
+  log('Received event', redactEvent(event))
   try {
     const session = extractSessionFromEvent(event)
     try {
@@ -20,7 +20,7 @@ export const postSessionHandler = async (event: APIGatewayProxyEventV2): Promise
       })
 
       if (validation.inappropriate) {
-        log('Claim validation failed - inappropriate content', { claim: session.context.claim, validation })
+        log('Claim validation failed - inappropriate content', { validation })
         return { ...status.BAD_REQUEST, body: JSON.stringify({ message: 'Inappropriate claim content' }) }
       }
 

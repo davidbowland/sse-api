@@ -3,14 +3,14 @@ import { getSessionById, setSessionById } from '../services/dynamodb'
 import { invokeLambda } from '../services/lambda'
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, Session } from '../types'
 import { extractLlmRequestFromEvent } from '../utils/events'
-import { log, logError } from '../utils/logging'
+import { log, logError, redactEvent } from '../utils/logging'
 import status from '../utils/status'
 
 export const postLlmResponse = async (
   event: APIGatewayProxyEventV2,
   now = Date.now,
 ): Promise<APIGatewayProxyResultV2<unknown>> => {
-  log('Received event', { ...event, body: undefined })
+  log('Received event', redactEvent(event))
   const sessionId = event.pathParameters?.sessionId as string
   try {
     const llmRequest = extractLlmRequestFromEvent(event)

@@ -2,7 +2,8 @@ import { DynamoDB } from '@aws-sdk/client-dynamodb'
 import * as AWSXRay from 'aws-xray-sdk-core'
 import https from 'https'
 
-import { extractRequestError, log, logError, xrayCapture, xrayCaptureHttps } from '@utils/logging'
+import { APIGatewayProxyEventV2 } from '@types'
+import { extractRequestError, log, logError, redactEvent, xrayCapture, xrayCaptureHttps } from '@utils/logging'
 
 jest.mock('aws-xray-sdk-core')
 
@@ -78,6 +79,32 @@ describe('logging', () => {
 
       expect(AWSXRay.captureAWSv3Client).toHaveBeenCalledTimes(0)
       expect(result).toEqual(dynamodb)
+    })
+  })
+
+  describe('redactEvent', () => {
+    const event = {
+      body: JSON.stringify({ claim: 'The moon is made of cheese' }),
+      headers: { authorization: 'Bearer secret-token', Authorization: 'Bearer secret-token', 'content-type': 'json' },
+    } as unknown as APIGatewayProxyEventV2
+
+    it('drops the body', () => {
+      expect(redactEvent(event).body).toBeUndefined()
+    })
+
+    it('drops authorization headers (any casing) but keeps other headers', () => {
+      const result = redactEvent(event).headers as Record<string, string>
+
+      expect(result.authorization).toBeUndefined()
+      expect(result.Authorization).toBeUndefined()
+      expect(result['content-type']).toBe('json')
+    })
+
+    it('handles events with no headers', () => {
+      const noHeaders = { body: 'ignored' } as unknown as APIGatewayProxyEventV2
+      const result = redactEvent(noHeaders)
+
+      expect(result.headers).toEqual({})
     })
   })
 

@@ -2,13 +2,13 @@ import { getCaptchaScore, recaptchaMinScore } from '../services/recaptcha'
 import { getCachedOrGenerateClaims } from '../services/suggest-claims'
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from '../types'
 import { extractRecaptchaToken, extractSuggestClaimsRequestFromEvent } from '../utils/events'
-import { log, logError } from '../utils/logging'
+import { log, logError, redactEvent } from '../utils/logging'
 import status from '../utils/status'
 
 export const postSuggestClaimsHandler = async (
   event: APIGatewayProxyEventV2,
 ): Promise<APIGatewayProxyResultV2<unknown>> => {
-  log('Received event', { ...event, body: undefined })
+  log('Received event', redactEvent(event))
   try {
     const recaptchaToken = extractRecaptchaToken(event)
     const suggestClaimsRequest = extractSuggestClaimsRequestFromEvent(event)
