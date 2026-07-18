@@ -63,9 +63,9 @@ export const llmResponseWorkerHandler = async (event: WorkerEvent): Promise<void
 
   const currentLlmMessage: UserMessage = session.newConversation
     ? {
-      content: `I ${session.context.confidence} with the claim "${session.context.claim}". Let's have a conversation about epistemology: ${currentStepObject.label}.`,
-      role: 'user',
-    }
+        content: `I ${session.context.confidence} with the claim "${session.context.claim}". Let's have a conversation about epistemology: ${currentStepObject.label}.`,
+        role: 'user',
+      }
     : (userMessage as UserMessage)
 
   const groundedMessage: UserMessage = {
@@ -99,18 +99,18 @@ export const llmResponseWorkerHandler = async (event: WorkerEvent): Promise<void
 
   const finishedSession = response.finished
     ? {
-      currentStep:
+        currentStep:
           !session.overrideStep && !currentStepObject.isFinalStep ? nextStepObject.value : session.currentStep,
-      dividers: getDividers(session, currentStepObject, nextStepObject, newHistory),
-      newConversation: !session.overrideStep,
-      overrideStep: undefined,
-      question: session.overrideStep ? session.question : Math.max(0, session.question - 1),
-      storedMessage: undefined,
-    }
+        dividers: getDividers(session, currentStepObject, nextStepObject, newHistory),
+        newConversation: !session.overrideStep,
+        overrideStep: undefined,
+        question: session.overrideStep ? session.question : Math.max(0, session.question - 1),
+        storedMessage: undefined,
+      }
     : {
-      newConversation: false,
-      question: currentQuestion === undefined ? session.question : currentQuestion,
-    }
+        newConversation: false,
+        question: currentQuestion === undefined ? session.question : currentQuestion,
+      }
 
   const updatedSession: Session = {
     ...session,

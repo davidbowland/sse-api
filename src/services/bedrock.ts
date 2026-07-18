@@ -72,12 +72,12 @@ const buildThinkingFields = (
   thinking: ThinkingConfig,
 ): { thinking: Record<string, unknown>; output_config?: { effort: string } } => {
   switch (thinking.type) {
-  case 'enabled':
-    return { thinking: { type: 'enabled', budget_tokens: thinking.budgetTokens } }
-  case 'adaptive':
-    return { thinking: { type: 'adaptive' }, output_config: { effort: thinking.effort } }
-  case 'disabled':
-    return { thinking: { type: 'disabled' } }
+    case 'enabled':
+      return { thinking: { type: 'enabled', budget_tokens: thinking.budgetTokens } }
+    case 'adaptive':
+      return { thinking: { type: 'adaptive' }, output_config: { effort: thinking.effort } }
+    case 'disabled':
+      return { thinking: { type: 'disabled' } }
   }
 }
 

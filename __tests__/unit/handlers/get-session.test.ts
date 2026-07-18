@@ -19,7 +19,6 @@ describe('get-session', () => {
     it('should return session without llmHistory', async () => {
       const result = await getSessionHandler(event)
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { llmHistory: _llmHistory, ...publicSession } = session
       expect(result).toEqual({
         ...status.OK,

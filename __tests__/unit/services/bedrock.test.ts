@@ -351,9 +351,7 @@ describe('bedrock', () => {
     // jest.mock() factory, producing a fresh BedrockRuntimeClient mock — re-require the mocked
     // SDK module itself to get the same instance bedrock.ts actually constructs against.
     jest.resetModules()
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const freshAwsSdk = require('@aws-sdk/client-bedrock-runtime')
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     require('@services/bedrock')
     expect(freshAwsSdk.BedrockRuntimeClient).toHaveBeenCalledWith(expect.objectContaining({ maxAttempts: 4 }))
   })
