@@ -68,9 +68,9 @@ npm run lint
 
 ### Deploying to Production
 
-When a pull request is merged into `master`, the lambda code is transpiled to commonjs, zipped, and then copied to S3. Afterwards, the infrastructure portion of the project is deployed, which picks up the new versions in S3 and updates each lambda.
+Deploys run via GitHub Actions (`.github/workflows/pipeline.yaml`). On every push, unit tests run first. On `master`, resources are built with `sam build --use-container` (esbuild), packaged and uploaded as artifacts, then deployed to the testing stack and finally to production, with prompts deployed to DynamoDB after each stack deploy. Feature branches instead deploy directly to the testing stack.
 
-In extreme cases, lambdas can be transpiled, zipped, and uploaded locally with:
+In extreme cases, lambdas can be built and deployed locally with:
 
 ```bash
 npm run deploy
@@ -78,7 +78,7 @@ npm run deploy
 
 ## Infrastructure
 
-See `infrastructure` folder for information on updating infrastructure.
+See the sibling [sse-infrastructure](https://github.com/davidbowland/sse-infrastructure) repository for the SAM/CloudFormation stack that provisions this API's resources.
 
 ## Additional Documentation
 
