@@ -41,7 +41,7 @@ export const getSessionById = async (sessionId: SessionId): Promise<Session> => 
     TableName: dynamodbSessionTableName,
   })
   const response = await dynamodb.send(command)
-  return JSON.parse(response.Item?.Data?.S as string)
+  return JSON.parse(response.Item!.Data.S as string)
 }
 
 export const setSessionById = async (sessionId: SessionId, session: Session): Promise<PutItemOutput> => {
