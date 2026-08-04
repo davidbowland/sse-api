@@ -1,6 +1,3 @@
-import AWSXRay from 'aws-xray-sdk-core'
-import https from 'https'
-
 import { debugLogging } from '../config'
 import { APIGatewayProxyEventV2 } from '../types'
 
@@ -19,11 +16,6 @@ export const logDebug = (...args: unknown[]): unknown => (debugLogging ? console
 export const logError = (...args: unknown[]): unknown => console.error(...args)
 
 export const logWarn = (...args: unknown[]): unknown => console.warn(...args)
-
-export const xrayCapture = (x: any): any => (process.env.AWS_SAM_LOCAL === 'true' ? x : AWSXRay.captureAWSv3Client(x))
-
-export const xrayCaptureHttps = (): void =>
-  process.env.AWS_SAM_LOCAL === 'true' ? undefined : AWSXRay.captureHTTPsGlobal(https)
 
 const REDACTED_HEADERS = new Set(['authorization'])
 

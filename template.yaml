@@ -110,7 +110,6 @@ Resources:
         'created-for': 'sse'
         'environment': !Ref Environment
       Timeout: 15
-      Tracing: Active
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -172,7 +171,6 @@ Resources:
         'created-for': 'sse'
         'environment': !Ref Environment
       Timeout: 15
-      Tracing: Active
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -249,7 +247,6 @@ Resources:
         'created-for': 'sse'
         'environment': !Ref Environment
       Timeout: 35
-      Tracing: Active
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -309,7 +306,6 @@ Resources:
         'created-for': 'sse'
         'environment': !Ref Environment
       Timeout: 15
-      Tracing: Active
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -378,7 +374,6 @@ Resources:
         'created-for': 'sse'
         'environment': !Ref Environment
       Timeout: 175
-      Tracing: Active
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -461,7 +456,6 @@ Resources:
         'created-for': 'sse'
         'environment': !Ref Environment
       Timeout: 10
-      Tracing: Active
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -544,7 +538,6 @@ Resources:
         'created-for': 'sse'
         'environment': !Ref Environment
       Timeout: 10
-      Tracing: Active
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -627,7 +620,6 @@ Resources:
         'created-for': 'sse'
         'environment': !Ref Environment
       Timeout: 10
-      Tracing: Active
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -710,7 +702,6 @@ Resources:
         'created-for': 'sse'
         'environment': !Ref Environment
       Timeout: 10
-      Tracing: Active
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -793,7 +784,6 @@ Resources:
         'created-for': 'sse'
         'environment': !Ref Environment
       Timeout: 10
-      Tracing: Active
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -876,7 +866,6 @@ Resources:
         'created-for': 'sse'
         'environment': !Ref Environment
       Timeout: 10
-      Tracing: Active
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -959,7 +948,6 @@ Resources:
         'created-for': 'sse'
         'environment': !Ref Environment
       Timeout: 10
-      Tracing: Active
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -1050,7 +1038,6 @@ Resources:
         'created-for': 'sse'
         'environment': !Ref Environment
       Timeout: 35
-      Tracing: Active
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -1132,7 +1119,6 @@ Resources:
         'created-for': 'sse'
         'environment': !Ref Environment
       Timeout: 35
-      Tracing: Active
     Metadata:
       BuildMethod: esbuild
       BuildProperties:

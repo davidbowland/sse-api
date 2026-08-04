@@ -9,9 +9,8 @@ import {
 
 import { dynamodbPromptTableName, dynamodbSessionTableName, dynamodbSuggestClaimsTableName } from '../config'
 import { Prompt, PromptId, Session, SessionId, SuggestClaimsRecord } from '../types'
-import { xrayCapture } from '../utils/logging'
 
-const dynamodb = xrayCapture(new DynamoDB({ apiVersion: '2012-08-10' }))
+const dynamodb = new DynamoDB({ apiVersion: '2012-08-10' })
 
 // Prompts
 
@@ -42,7 +41,7 @@ export const getSessionById = async (sessionId: SessionId): Promise<Session> => 
     TableName: dynamodbSessionTableName,
   })
   const response = await dynamodb.send(command)
-  return JSON.parse(response.Item.Data.S as string)
+  return JSON.parse(response.Item?.Data?.S as string)
 }
 
 export const setSessionById = async (sessionId: SessionId, session: Session): Promise<PutItemOutput> => {

@@ -19,9 +19,6 @@ jest.mock('@aws-sdk/client-dynamodb', () => ({
   PutItemCommand: jest.fn().mockImplementation((x) => x),
   QueryCommand: jest.fn().mockImplementation((x) => x),
 }))
-jest.mock('@utils/logging', () => ({
-  xrayCapture: jest.fn().mockImplementation((x) => x),
-}))
 
 describe('dynamodb', () => {
   describe('getPromptById', () => {
