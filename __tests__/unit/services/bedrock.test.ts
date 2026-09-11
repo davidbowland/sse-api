@@ -3,6 +3,7 @@ import {
   assistantLlmResponse,
   invokeModelInvalidResponse,
   invokeModelNoTextBlockResponse,
+  invokeModelNoTextBlockResponseData,
   invokeModelSuggestClaims,
   invokeModelSuggestClaimsResponse,
   invokeModelSuggestClaimsResponseData,
@@ -307,6 +308,36 @@ describe('bedrock', () => {
 
       await expect(invokeModel(prompt, testResponseSchema, { history: singleTurn(data) })).rejects.toThrow(
         'Bedrock response contained no text block',
+      )
+      // This fixture stops on max_tokens, so the missing-block line escalates.
+      expect(logError).toHaveBeenCalledWith(
+        'Model response missing text block and tool use block',
+        expect.objectContaining({ blockTypes: ['thinking'], stopReason: 'max_tokens' }),
+      )
+      expect(log).not.toHaveBeenCalledWith('Model response missing text block and tool use block', expect.anything())
+    })
+
+    it('should leave the missing-block log at info when the response was not truncated', async () => {
+      mockSend.mockResolvedValueOnce({
+        ...invokeModelNoTextBlockResponse,
+        body: new TextEncoder().encode(
+          JSON.stringify({ ...invokeModelNoTextBlockResponseData, stop_reason: 'end_turn' }),
+        ),
+      })
+
+      await expect(invokeModel(prompt, testResponseSchema, { history: singleTurn(data) })).rejects.toThrow(
+        'Bedrock response contained no text block',
+      )
+      // Without this, dropping the max_tokens conditional would escalate EVERY extraction
+      // failure to ERROR. The fleet's log subscription filters on level="ERROR", so that
+      // regression pages on the ordinary case and still passes the rest of the suite.
+      expect(log).toHaveBeenCalledWith(
+        'Model response missing text block and tool use block',
+        expect.objectContaining({ stopReason: 'end_turn' }),
+      )
+      expect(logError).not.toHaveBeenCalledWith(
+        'Model response missing text block and tool use block',
+        expect.anything(),
       )
     })
 
