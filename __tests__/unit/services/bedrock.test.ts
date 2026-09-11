@@ -5,6 +5,7 @@ import {
   invokeModelNoTextBlockResponse,
   invokeModelSuggestClaims,
   invokeModelSuggestClaimsResponse,
+  invokeModelSuggestClaimsResponseData,
   invokeModelThinkingResponse,
   invokeModelToolUseInvalidResponse,
   invokeModelToolUseResponse,
@@ -15,7 +16,7 @@ import {
 } from '../__mocks__'
 import { invokeModel, singleTurn } from '@services/bedrock'
 import { LLMMessage } from '@types'
-import { log, logDebug } from '@utils/logging'
+import { log, logDebug, logError } from '@utils/logging'
 
 const mockSend = jest.fn()
 jest.mock('@aws-sdk/client-bedrock-runtime', () => ({
@@ -27,6 +28,7 @@ jest.mock('@aws-sdk/client-bedrock-runtime', () => ({
 jest.mock('@utils/logging', () => ({
   log: jest.fn(),
   logDebug: jest.fn(),
+  logError: jest.fn(),
 }))
 
 const expectedTool = {
@@ -210,6 +212,94 @@ describe('bedrock', () => {
         expect(serialized).not.toContain(prompt.contents)
         expect(serialized).not.toContain(invokeModelSuggestClaims[0])
       }
+    })
+
+    it('should log per-call token usage, since the AWS/Bedrock service metrics are keyed only by model', async () => {
+      await invokeModel(prompt, testResponseSchema, { history: singleTurn(data) })
+
+      expect(log).toHaveBeenCalledWith('Model invocation complete', {
+        inputTokens: 3398,
+        maxTokens: prompt.config.maxTokens,
+        model: prompt.config.model,
+        outputTokens: 99,
+        stopReason: 'end_turn',
+        thinkingTokens: undefined,
+        toolName: testResponseSchema.toolName,
+      })
+    })
+
+    it('should report thinking tokens when the model breaks them out', async () => {
+      mockSend.mockResolvedValueOnce({
+        $metadata: { httpStatusCode: 200 },
+        body: new TextEncoder().encode(
+          JSON.stringify({
+            ...invokeModelSuggestClaimsResponseData,
+            usage: {
+              input_tokens: 1200,
+              output_tokens: 8000,
+              output_tokens_details: { thinking_tokens: 7400 },
+            },
+          }),
+        ),
+      })
+
+      await invokeModel(prompt, testResponseSchema, { history: singleTurn(data) })
+
+      expect(log).toHaveBeenCalledWith('Model invocation complete', {
+        inputTokens: 1200,
+        maxTokens: prompt.config.maxTokens,
+        model: prompt.config.model,
+        outputTokens: 8000,
+        stopReason: 'end_turn',
+        thinkingTokens: 7400,
+        toolName: testResponseSchema.toolName,
+      })
+    })
+
+    it('should cost the usage line one field, never the line, when the model reports no usage at all', async () => {
+      mockSend.mockResolvedValueOnce({
+        $metadata: { httpStatusCode: 200 },
+        body: new TextEncoder().encode(JSON.stringify({ ...invokeModelSuggestClaimsResponseData, usage: undefined })),
+      })
+
+      await invokeModel(prompt, testResponseSchema, { history: singleTurn(data) })
+
+      expect(log).toHaveBeenCalledWith('Model invocation complete', {
+        inputTokens: undefined,
+        maxTokens: prompt.config.maxTokens,
+        model: prompt.config.model,
+        outputTokens: undefined,
+        stopReason: 'end_turn',
+        thinkingTokens: undefined,
+        toolName: testResponseSchema.toolName,
+      })
+    })
+
+    it('should escalate a truncated generation to error level so the subscription filter sees it', async () => {
+      mockSend.mockResolvedValueOnce(invokeModelNoTextBlockResponse)
+
+      await expect(invokeModel(prompt, testResponseSchema, { history: singleTurn(data) })).rejects.toThrow()
+
+      expect(logError).toHaveBeenCalledWith('Model invocation complete', {
+        inputTokens: 100,
+        maxTokens: prompt.config.maxTokens,
+        model: prompt.config.model,
+        outputTokens: 40000,
+        stopReason: 'max_tokens',
+        thinkingTokens: undefined,
+        toolName: testResponseSchema.toolName,
+      })
+      expect(log).not.toHaveBeenCalledWith('Model invocation complete', expect.anything())
+    })
+
+    it('should log usage before extraction, so the runs that fail still report what they spent', async () => {
+      mockSend.mockResolvedValueOnce(invokeModelNoTextBlockResponse)
+
+      await expect(invokeModel(prompt, testResponseSchema, { history: singleTurn(data) })).rejects.toThrow(
+        'Bedrock response contained no text block',
+      )
+
+      expect(logError).toHaveBeenCalledWith('Model invocation complete', expect.anything())
     })
 
     it('should throw when response contains no text block or tool use block', async () => {
