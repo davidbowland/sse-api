@@ -191,7 +191,10 @@ const extractModelPayload = (
 
   const textBlock = modelResponse.content.find((b) => b.type === 'text')
   if (!textBlock) {
-    log('Model response missing text block and tool use block', {
+    // Same conditional and the same reasoning as logModelUsage above: this is the shape a
+    // max_tokens stop actually arrives in, and it was the quietest line in the file.
+    const write = modelResponse.stop_reason === 'max_tokens' ? logError : log
+    write('Model response missing text block and tool use block', {
       blockTypes: modelResponse.content.map((b) => b.type),
       model,
       stopReason: modelResponse.stop_reason,
