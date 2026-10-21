@@ -212,6 +212,7 @@ Resources:
       MemorySize: 1536
       Description: Create session
       Policies:
+        - !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:policy/kill-switch-bedrock-${Environment}'
         - AWSLambdaBasicExecutionRole
         - DynamoDBCrudPolicy:
             TableName: !Ref SessionTable
@@ -349,6 +350,7 @@ Resources:
       MemorySize: 1536
       Description: Background worker that executes LLM calls asynchronously
       Policies:
+        - !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:policy/kill-switch-bedrock-${Environment}'
         - AWSLambdaBasicExecutionRole
         - DynamoDBCrudPolicy:
             TableName: !Ref SessionTable
@@ -415,6 +417,7 @@ Resources:
       MemorySize: 1536
       Description: Send a message to end chat handler
       Policies:
+        - !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:policy/kill-switch-bedrock-${Environment}'
         - AWSLambdaBasicExecutionRole
         - DynamoDBCrudPolicy:
             TableName: !Ref SessionTable
@@ -497,6 +500,7 @@ Resources:
       MemorySize: 1536
       Description: Send a message to end chat handler
       Policies:
+        - !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:policy/kill-switch-bedrock-${Environment}'
         - AWSLambdaBasicExecutionRole
         - DynamoDBCrudPolicy:
             TableName: !Ref SessionTable
@@ -579,6 +583,7 @@ Resources:
       MemorySize: 1536
       Description: Send a message to guess reasons handler
       Policies:
+        - !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:policy/kill-switch-bedrock-${Environment}'
         - AWSLambdaBasicExecutionRole
         - DynamoDBCrudPolicy:
             TableName: !Ref SessionTable
@@ -661,6 +666,7 @@ Resources:
       MemorySize: 1536
       Description: Send a message to new confidence handler
       Policies:
+        - !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:policy/kill-switch-bedrock-${Environment}'
         - AWSLambdaBasicExecutionRole
         - DynamoDBCrudPolicy:
             TableName: !Ref SessionTable
@@ -743,6 +749,7 @@ Resources:
       MemorySize: 1536
       Description: Send a message to probe confidence handler
       Policies:
+        - !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:policy/kill-switch-bedrock-${Environment}'
         - AWSLambdaBasicExecutionRole
         - DynamoDBCrudPolicy:
             TableName: !Ref SessionTable
@@ -825,6 +832,7 @@ Resources:
       MemorySize: 1536
       Description: Send a message to probe reasons handler
       Policies:
+        - !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:policy/kill-switch-bedrock-${Environment}'
         - AWSLambdaBasicExecutionRole
         - DynamoDBCrudPolicy:
             TableName: !Ref SessionTable
@@ -907,6 +915,7 @@ Resources:
       MemorySize: 1536
       Description: Send a message to start chat handler
       Policies:
+        - !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:policy/kill-switch-bedrock-${Environment}'
         - AWSLambdaBasicExecutionRole
         - DynamoDBCrudPolicy:
             TableName: !Ref SessionTable
@@ -991,6 +1000,7 @@ Resources:
       MemorySize: 1536
       Description: Suggest claims
       Policies:
+        - !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:policy/kill-switch-bedrock-${Environment}'
         - AWSLambdaBasicExecutionRole
         - DynamoDBReadPolicy:
             TableName: !Ref PromptTable
@@ -1081,6 +1091,7 @@ Resources:
       MemorySize: 1536
       Description: Validate a claim
       Policies:
+        - !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:policy/kill-switch-bedrock-${Environment}'
         - AWSLambdaBasicExecutionRole
         - DynamoDBReadPolicy:
             TableName: !Ref PromptTable

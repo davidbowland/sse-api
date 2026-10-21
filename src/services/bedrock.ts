@@ -2,7 +2,7 @@ import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedroc
 import Ajv from 'ajv'
 
 import { LLMMessage, Prompt, ResponseSchema, ThinkingConfig } from '../types'
-import { log, logDebug } from '../utils/logging'
+import { log, logDebug, logError } from '../utils/logging'
 
 // SDK default is 3 attempts (exponential backoff, ~100-500ms base). Bumped to 4 for extra
 // resilience against transient Bedrock throttling. This only accounts for the added
@@ -136,6 +136,45 @@ const decodeResponseBody = (body: Uint8Array | undefined, model: string) => {
   }
 }
 
+// AWS emits InputTokenCount/OutputTokenCount/Invocations to AWS/Bedrock for free, but the only
+// dimension is ModelId — and three repos in this fleet share Sonnet 5. So the service metrics can
+// say what was spent and never which application spent it. These eleven functions are by far the
+// largest Bedrock surface in the account; this line is what attributes the bill to them, and what
+// splits a given call's spend across prompt, answer and reasoning.
+//
+// maxTokens rides along as the denominator: `outputTokens: 40000` reads identically for a long
+// healthy answer and for a generation that hit the ceiling, and the ceiling lives in a DynamoDB
+// prompt record the reader does not have open. With it, headroom is one division on one line.
+//
+// Every usage field is optional-chained. A model that returns no breakdown must cost this line one
+// FIELD, never the line — the invocations worth attributing are disproportionately the ones that
+// went wrong.
+const logModelUsage = (
+  modelResponse: {
+    stop_reason?: string
+    usage?: { input_tokens?: number; output_tokens?: number; output_tokens_details?: { thinking_tokens?: number } }
+  },
+  schema: ResponseSchema<unknown>,
+  model: string,
+  maxTokens: number,
+): void => {
+  // ERROR only on max_tokens. Every subscription filter in the fleet is
+  // [timestamp, uuid, level="ERROR", message], so anything written at `log` is invisible to
+  // alerting and anything written at ERROR becomes a page. A truncated generation is a real
+  // failure — it bills in full and returns a payload that cannot parse — while every other stop
+  // reason is a healthy run that must not reach the subscription.
+  const write = modelResponse.stop_reason === 'max_tokens' ? logError : log
+  write('Model invocation complete', {
+    inputTokens: modelResponse.usage?.input_tokens,
+    maxTokens,
+    model,
+    outputTokens: modelResponse.usage?.output_tokens,
+    stopReason: modelResponse.stop_reason,
+    thinkingTokens: modelResponse.usage?.output_tokens_details?.thinking_tokens,
+    toolName: schema.toolName,
+  })
+}
+
 const extractModelPayload = (
   modelResponse: {
     content: { type: string; input?: unknown; name?: string; text: string }[]
@@ -152,7 +191,10 @@ const extractModelPayload = (
 
   const textBlock = modelResponse.content.find((b) => b.type === 'text')
   if (!textBlock) {
-    log('Model response missing text block and tool use block', {
+    // Same conditional and the same reasoning as logModelUsage above: this is the shape a
+    // max_tokens stop actually arrives in, and it was the quietest line in the file.
+    const write = modelResponse.stop_reason === 'max_tokens' ? logError : log
+    write('Model response missing text block and tool use block', {
       blockTypes: modelResponse.content.map((b) => b.type),
       model,
       stopReason: modelResponse.stop_reason,
@@ -199,6 +241,10 @@ export const invokeModel = async <T>(
 
   const response = await sendToBedrock(command, prompt.config.model)
   const modelResponse = decodeResponseBody(response.body, prompt.config.model)
+  // Before extraction, not after: extraction throws on exactly the runs whose token counts matter
+  // most — a max_tokens truncation bills for every token it produced and then yields nothing this
+  // code can parse.
+  logModelUsage(modelResponse, schema, prompt.config.model, prompt.config.maxTokens)
   const payload = extractModelPayload(modelResponse, schema, prompt.config.model)
   return validateResponse(schema, payload)
 }
